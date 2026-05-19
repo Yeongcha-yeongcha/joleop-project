@@ -1,0 +1,43 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-library: #3C1204;
+  --color-primary: #FF9600;
+  --color-primary-disabled: #C4C0D0;
+  --color-streak-bg: #FFE8E0;
+  --color-hearts-bg: #EDE8FF;
+  --color-xp-bar: #4CD964;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #6B6B7B;
+  --color-locked: #B83030;
+  --color-badge-lv: #FF9600;
+  --color-badge-reading: #E85D5D;
+  --color-badge-done: #F5A623;
+  --radius-full: 999px;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #e8e8e8;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}

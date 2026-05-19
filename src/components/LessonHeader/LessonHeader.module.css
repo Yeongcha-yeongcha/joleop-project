@@ -1,0 +1,44 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px 12px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #555;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.progressTrack {
+  height: 8px;
+  background: #E8E8E8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #FF9600;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
