@@ -1,73 +1,75 @@
-# React + TypeScript + Vite
+# 라이온 — 프론트엔드
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+어린이 영어 학습 모바일 웹앱입니다.
 
-Currently, two official plugins are available:
+## 기술 스택
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite
+- Zustand (전역 상태)
+- React Router v7
+- CSS Modules
 
-## React Compiler
+## 시작하기
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+브라우저에서 `http://localhost:5173` 열기 (모바일 사이즈 430px 권장)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 백엔드 연동
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. 환경 변수 설정
+
+```bash
+cp .env.example .env.local
+# .env.local 에서 VITE_API_BASE_URL 값을 백엔드 주소로 변경
+```
+
+### 2. API 연결 지점
+
+모든 API 호출은 **`src/services/api.ts`** 한 파일에 모여 있습니다.
+각 함수의 `TODO:` 주석 아래 mock return을 실제 fetch로 교체하면 됩니다.
+
+| 함수 | 메서드 | 엔드포인트 |
+|---|---|---|
+| `fetchUserStats` | GET | `/users/me/stats` |
+| `fetchBooks` | GET | `/books` |
+| `fetchLesson` | GET | `/books/:bookId/lessons/:lessonId` |
+| `postProgress` | POST | `/users/me/progress` |
+| `postSpeechRecognize` | POST | `/speech/recognize` |
+
+자세한 요청/응답 스펙은 **`API_SPEC.md`** 를 참고하세요.
+
+## 폴더 구조
+
+```
+src/
+├── services/       ← API 호출 (백엔드 연동 지점)
+├── types/          ← API 응답과 맞춰야 하는 인터페이스
+├── store/          ← Zustand 전역 상태
+├── pages/          ← 화면 단위 컴포넌트
+│   ├── HomePage/
+│   ├── BookChoicePage/
+│   └── LearnPage/
+├── components/     ← 재사용 컴포넌트
+│   ├── StatsBar/
+│   ├── BookCard/
+│   └── LessonHeader/
+├── data/           ← 목업 데이터 (API 연동 전 임시)
+├── constants/      ← 이미지·에셋 경로 상수
+└── index.css       ← 전역 스타일 + 폰트
+
+public/
+├── images/         ← PNG 에셋
+└── fonts/          ← KCC-Ganpan 폰트 (eot / woff / woff2)
+```
+
+## 빌드
+
+```bash
+npm run build
+# dist/ 폴더 결과물을 정적 서버에 배포
 ```

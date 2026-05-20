@@ -1,17 +1,4 @@
-/**
- * HomePage — 앱 진입 화면 (/)
- *
- * 레이아웃:
- *   [StatsBar]           ← 🔥 💜 ⚡ 학습 통계
- *   [LionArea]           ← StartLion 이미지 + 책 버튼 오버레이
- *   [BookInfoCard?]      ← 책 선택 시에만 표시 (제목 / Lesson / 진도바)
- *   [StartButton]        ← 책 미선택: 비활성 / 선택: 활성
- *
- * 상태 흐름:
- *   책 미선택 → BookBtn 클릭 → /books → 책 선택 → 홈 복귀
- *   책 선택됨 → 시작하기 클릭 → /learn/:bookId
- */
-
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import { IMAGES } from '../../constants/assets'
@@ -20,7 +7,9 @@ import styles from './HomePage.module.css'
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { selectedBook, userStats } = useAppStore()
+  const { selectedBook, userStats, loadUserStats } = useAppStore()
+
+  useEffect(() => { loadUserStats() }, [loadUserStats])
 
   const handleStart = () => {
     if (!selectedBook) return
