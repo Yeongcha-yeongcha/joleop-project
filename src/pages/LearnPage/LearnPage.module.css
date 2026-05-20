@@ -66,58 +66,48 @@
 /* 하단 버튼 */
 .bottomArea {
   padding: 0 20px 40px;
-}
-
-.nextBtn {
-  width: 100%;
-  padding: 18px;
-  border-radius: 16px;
-  background: #FF9600;
-  color: white;
-  font-size: 22px;
-  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(255, 150, 0, 0.35);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.imgBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-}
-
-.nextBtn:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(255, 150, 0, 0.25);
-}
-
-.micBtn {
-  width: 100%;
-  padding: 18px;
-  border-radius: 16px;
-  background: #FF9600;
-  color: white;
-  font-size: 17px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 16px rgba(255, 150, 0, 0.35);
   transition: transform 0.1s ease;
-  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.micBtn:active {
-  transform: scale(0.97);
+.imgBtn:active {
+  transform: scale(0.96);
 }
 
-.micBtn.recording {
-  background: #E05A2B;
+.nextBtnImg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+}
+
+.recordBtnImg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+}
+
+.recordBtnImg.recording {
   animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 4px 16px rgba(224, 90, 43, 0.35); }
-  50%       { box-shadow: 0 4px 28px rgba(224, 90, 43, 0.6); }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
 }
 
 /* 씬 전환 애니메이션 */

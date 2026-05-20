@@ -35,22 +35,77 @@
   justify-content: center;
 }
 
+.lionContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.lionImg {
+  width: 80%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+  pointer-events: none;
+}
+
+.bookBtn {
+  position: absolute;
+  top: 47%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease;
+}
+
+.bookBtn:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.corner {
+  position: absolute;
+  width: 38px;
+  height: 29px;
+  background: #F0AD21;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cornerTL { top: 25%;  left: 0;   transform: translate(-50%, -50%); }
+.cornerTR { top: 25%;  right: 0;  transform: translate(50%,  -50%); }
+.cornerBL { bottom: 0; left: 0;   transform: translate(-50%, 30%); }
+.cornerBR { bottom: 0; right: 0;  transform: translate(50%,  30%); }
+
+.bookBtnImg {
+  width: 122px;
+  height: auto;
+  display: block;
+}
+
 .bottomArea {
   padding: 16px 20px 40px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 32px;
 }
 
 /* 책 정보 카드 */
 .bookInfoCard {
   background: white;
   border-radius: 20px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  border: 2px solid #EFF1F6;
+  box-shadow: 0px 8px 0px 0px #EFF1F6;
   padding: 14px 16px;
   display: flex;
   gap: 14px;
   align-items: center;
+  min-height: 157px;
+  box-sizing: border-box;
   animation: slideUp 0.3s ease;
 }
 
@@ -77,21 +132,21 @@
 }
 
 .bookTitle {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-text-primary);
   line-height: 1.2;
 }
 
 .bookSubtitle {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
 
 .progressTrack {
-  height: 8px;
-  background: #EBEBEB;
+  height: 20px;
+  background: #E9EDF5;
   border-radius: 999px;
   overflow: hidden;
   margin-top: 6px;
@@ -99,35 +154,47 @@
 
 .progressFill {
   height: 100%;
-  background: var(--color-primary);
+  background: #FF9D00;
   border-radius: 999px;
   transition: width 0.5s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressHighlight {
+  position: absolute;
+  height: 5px;
+  left: 12px;
+  right: 12px;
+  top: 25%;
+  transform: translateY(calc(-50% + 1px));
+  background: #FFC669;
+  border-radius: 999px;
 }
 
 /* 시작하기 버튼 */
 .startBtn {
   width: 100%;
-  padding: 18px;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 800;
-  color: white;
-  letter-spacing: 0.5px;
-  transition: background 0.25s ease, transform 0.1s ease, box-shadow 0.25s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, opacity 0.1s ease;
 }
 
-.startBtnDisabled {
-  background: var(--color-primary-disabled);
-  box-shadow: none;
+.startBtn:disabled {
   cursor: default;
 }
 
-.startBtnActive {
-  background: var(--color-primary);
-  box-shadow: 0 4px 16px rgba(255, 150, 0, 0.4);
+.startBtn:not(:disabled):active {
+  transform: scale(0.97);
 }
 
-.startBtnActive:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(255, 150, 0, 0.3);
+.startBtnImg {
+  width: 100%;
+  height: auto;
+  display: block;
 }

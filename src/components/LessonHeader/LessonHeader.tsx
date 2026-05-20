@@ -16,7 +16,9 @@ export default function LessonHeader({ title, progress, onBack }: Props) {
         <span className={styles.title}>{title}</span>
       </div>
       <div className={styles.progressTrack}>
-        <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
+        <div className={styles.progressFill} style={{ width: `${progress * 100}%` }}>
+          <div className={styles.progressHighlight} />
+        </div>
       </div>
     </div>
   )

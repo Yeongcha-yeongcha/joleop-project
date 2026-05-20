@@ -30,15 +30,27 @@
 }
 
 .progressTrack {
-  height: 8px;
-  background: #E8E8E8;
+  height: 20px;
+  background: #E9EDF5;
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: #FF9600;
+  background: #FF9D00;
   border-radius: 999px;
   transition: width 0.4s ease;
+  position: relative;
+}
+
+.progressHighlight {
+  position: absolute;
+  height: 5px;
+  left: 12px;
+  right: 12px;
+  top: 25%;
+  transform: translateY(calc(-50% + 1px));
+  background: #FFC669;
+  border-radius: 999px;
 }

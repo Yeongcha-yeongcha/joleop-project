@@ -3,25 +3,29 @@
   flex-direction: row;
   gap: 8px;
   padding: 10px 16px 6px;
+  justify-content: center;
+  align-items: center;
 }
 
 .badge {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  border-radius: 999px;
+  padding: 0 12px;
+  height: 44px;
+  border-radius: 16px;
   font-size: 14px;
   font-weight: 700;
+  background: white;
+  border: 2px solid #EFF1F6;
+  box-shadow: 0px 8px 0px 0px #EFF1F6;
 }
 
 .streak {
-  background: var(--color-streak-bg);
   color: #E05A2B;
 }
 
 .hearts {
-  background: var(--color-hearts-bg);
   color: #7B5EA7;
 }
 
@@ -29,9 +33,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  background: #F0F0F0;
-  border-radius: 999px;
+  padding: 0 10px;
+  height: 44px;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #EFF1F6;
+  box-shadow: 0px 8px 0px 0px #EFF1F6;
 }
 
 .xpTrack {
