@@ -18,7 +18,11 @@ export const useAppStore = create<AppStore>((set) => ({
   clearBook: () => set({ selectedBook: null }),
 
   loadUserStats: async () => {
-    const stats = await fetchUserStats()
-    set({ userStats: stats })
+    try {
+      const stats = await fetchUserStats()
+      set({ userStats: stats })
+    } catch {
+      // stats 실패 시 기본값 유지 — 홈 화면 자체는 정상 작동
+    }
   },
 }))

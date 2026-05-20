@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore'
 import { fetchLesson, postProgress, postSpeechRecognize } from '../../services/api'
 import { IMAGES } from '../../constants/assets'
 import LessonHeader from '../../components/LessonHeader/LessonHeader'
+import StatusScreen from '../../components/StatusScreen/StatusScreen'
 import type { Lesson } from '../../types'
 import styles from './LearnPage.module.css'
 
@@ -16,17 +17,30 @@ export default function LearnPage() {
   const { selectedBook } = useAppStore()
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   const [phase, setPhase] = useState<Phase>('reading')
   const [pageIndex, setPageIndex] = useState(0)
   const [repeatState, setRepeatState] = useState<RepeatState>('idle')
   const [showPhaseBanner, setShowPhaseBanner] = useState(false)
   const [sceneKey, setSceneKey] = useState(0)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!bookId) return
+    setIsLoading(true)
+    setError(null)
     const lessonId = `${bookId}-lesson-${selectedBook?.currentLesson ?? 1}`
-    fetchLesson(bookId, lessonId).then((l) => setLesson(l ?? null))
+    fetchLesson(bookId, lessonId)
+      .then((l) => {
+        if (!l) setError('레슨을 찾을 수 없어요.')
+        else setLesson(l)
+      })
+      .catch(() => setError('레슨을 불러오지 못했어요.'))
+      .finally(() => setIsLoading(false))
   }, [bookId, selectedBook])
+
+  useEffect(() => { load() }, [load])
 
   const totalPages = lesson?.pages.length ?? 0
   const currentPage = lesson?.pages[pageIndex]
@@ -52,7 +66,6 @@ export default function LearnPage() {
           setSceneKey((k) => k + 1)
         }, 2000)
       } else {
-        // TODO: postProgress 호출 후 navigate
         if (bookId && lesson) postProgress(bookId, lesson.id)
         navigate('/', { replace: true })
       }
@@ -62,26 +75,28 @@ export default function LearnPage() {
   const handleMicTap = useCallback(() => {
     if (repeatState === 'idle') {
       setRepeatState('recording')
-      // TODO: 실제 녹음 blob을 전달하도록 교체
-      postSpeechRecognize(new Blob(), currentPage?.text ?? '').then(() => {
-        setRepeatState('done')
-      })
+      postSpeechRecognize(new Blob(), currentPage?.text ?? '')
+        .then(() => setRepeatState('done'))
+        .catch(() => setRepeatState('idle'))
     } else if (repeatState === 'done') {
       goToNextScene()
     }
   }, [repeatState, goToNextScene, currentPage])
 
-  if (!lesson || !currentPage) {
+  const lessonTitle = selectedBook
+    ? `${selectedBook.title} - lesson ${selectedBook.currentLesson}`
+    : lesson?.title ?? ''
+
+  if (isLoading || error) {
     return (
-      <div className={styles.page} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#888' }}>레슨을 찾을 수 없습니다.</p>
+      <div className={styles.page}>
+        <LessonHeader title={lessonTitle} progress={0} onBack={() => navigate(-1)} />
+        <StatusScreen isLoading={isLoading} error={error} onRetry={load} />
       </div>
     )
   }
 
-  const lessonTitle = selectedBook
-    ? `${selectedBook.title} - lesson ${selectedBook.currentLesson}`
-    : lesson.title
+  if (!lesson || !currentPage) return null
 
   return (
     <div className={styles.page}>
