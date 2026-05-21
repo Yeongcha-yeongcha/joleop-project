@@ -85,6 +85,14 @@
 
 /* ── Phase Transition (reading → repeat → quiz → roleplay) ── */
 
+/* Base layout shared by both enter/exit states */
+.phaseEnter,
+.phaseExit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .phaseEnter {
   animation: phaseSlideIn 0.32s ease-out both;
 }
@@ -92,6 +100,14 @@
 .phaseExit {
   animation: phaseSlideOut 0.22s ease-in both;
   pointer-events: none;
+}
+
+/* ── Reading / Repeat scene wrapper ──────────────── */
+
+.sceneContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes phaseSlideIn {

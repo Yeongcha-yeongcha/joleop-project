@@ -24,6 +24,15 @@ function TrophyAnimation({ className, onComplete }: { className?: string; onComp
   return <div ref={ref} className={className} />
 }
 
+// Progress range: intro starts at 70%, chat fills the remaining 30% as turns complete
+const PROGRESS_INTRO = 0.70
+const PROGRESS_CHAT_RANGE = 0.30
+
+const MOCK_RECORD_MS = 2000       // simulated recording duration (replace with real STT)
+const FINAL_NPC_DELAY_MS = 3000   // pause after last user turn before showing completion
+const COMPLETION_TEXT_MS = 700    // delay before "Very nice!" fades in
+const COMPLETION_BTN_MS = 1400    // delay before next button fades in
+
 type RoleplayView = 'intro' | 'chat'
 type RecordState = 'idle' | 'recording'
 
@@ -44,11 +53,10 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
   const chatBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (view === 'intro') {
-      onProgressChange(0.70)
-    } else {
-      onProgressChange(0.70 + (userAnswers.length / roleplay.turns.length) * 0.30)
-    }
+    const progress = view === 'intro'
+      ? PROGRESS_INTRO
+      : PROGRESS_INTRO + (userAnswers.length / roleplay.turns.length) * PROGRESS_CHAT_RANGE
+    onProgressChange(progress)
   }, [view, userAnswers, roleplay.turns.length, onProgressChange])
 
   useEffect(() => {
@@ -66,9 +74,9 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
       setRecordState('idle')
       if (currentIdx + 1 >= roleplay.turns.length) {
         setShowFinalNpc(true)
-        setTimeout(() => setShowCompletion(true), 3000)
+        setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
       }
-    }, 2000)
+    }, MOCK_RECORD_MS)
   }
 
   if (view === 'intro') {
@@ -147,8 +155,8 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
             <TrophyAnimation
               className={styles.trophyAnim}
               onComplete={() => {
-                setTimeout(() => setShowText(true), 700)
-                setTimeout(() => setShowButton(true), 1400)
+                setTimeout(() => setShowText(true), COMPLETION_TEXT_MS)
+                setTimeout(() => setShowButton(true), COMPLETION_BTN_MS)
               }}
             />
           </div>

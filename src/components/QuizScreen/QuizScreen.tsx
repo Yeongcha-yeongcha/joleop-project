@@ -3,6 +3,8 @@ import type { QuizQuestion } from '../../types'
 import { IMAGES } from '../../constants/assets'
 import styles from './QuizScreen.module.css'
 
+const MOCK_RECORD_MS = 2000  // simulated recording duration (replace with real STT)
+
 type QuizState = 'idle' | 'recording' | 'done'
 
 interface Props {
@@ -16,7 +18,7 @@ export default function QuizScreen({ quiz, onNext }: Props) {
   const handleMicTap = () => {
     if (state === 'idle') {
       setState('recording')
-      setTimeout(() => setState('done'), 2000)
+      setTimeout(() => setState('done'), MOCK_RECORD_MS)
     } else if (state === 'done') {
       onNext()
     }

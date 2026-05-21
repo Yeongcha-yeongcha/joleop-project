@@ -13,6 +13,9 @@ import styles from './LearnPage.module.css'
 type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
 type RepeatState = 'idle' | 'recording' | 'done'
 
+/** Must match the phaseExit animation duration in LearnPage.module.css */
+const PHASE_EXIT_MS = 230
+
 export default function LearnPage() {
   const navigate = useNavigate()
   const { bookId } = useParams<{ bookId: string }>()
@@ -62,7 +65,7 @@ export default function LearnPage() {
       setPhase(next)
       onSwitch?.()
       setIsExiting(false)
-    }, 230)
+    }, PHASE_EXIT_MS)
   }, [])
 
   const goToNextScene = useCallback(() => {
@@ -116,7 +119,6 @@ export default function LearnPage() {
       <div
         key={phase}
         className={isExiting ? styles.phaseExit : styles.phaseEnter}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
       >
         <LessonHeader title={lessonTitle} progress={headerProgress} onBack={() => navigate(-1)} />
 
@@ -146,7 +148,7 @@ export default function LearnPage() {
 
         {(phase === 'reading' || phase === 'repeat') && (
           <>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div className={styles.sceneContent}>
               <div
                 className={styles.illustration}
                 style={{ background: currentPage.imageColor }}
