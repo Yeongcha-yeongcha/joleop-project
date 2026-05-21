@@ -23,4 +23,7 @@ export const IMAGES = {
   nextBtnActive: '/images/NextBtn_active.png',
   recordBtnActive: '/images/RecordBtn_active.png',
   recordBtnInactive: '/images/RecordBtn_inactive.png',
+
+  // 롤플레잉
+  roleplayBg: '/images/Roleplaying_Background.png',
 } as const

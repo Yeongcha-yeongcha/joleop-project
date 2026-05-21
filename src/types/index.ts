@@ -14,12 +14,39 @@ export interface LessonPage {
   imageUrl?: string      // 일러스트 이미지 URL (백엔드 연동 후 사용)
 }
 
+/** 롤플레잉 대화 한 턴 */
+export interface RoleplayTurn {
+  npc: string    // 상대방 대사
+  user: string   // 사용자 예시 대사
+}
+
+/** 레슨 말미 롤플레잉 미션 */
+export interface RoleplayMission {
+  thumbnailColor: string   // 썸네일 원형 배경색 (이미지 없을 때 플레이스홀더)
+  thumbnailUrl?: string
+  mission: string          // 인트로 카드 전체 미션 설명 (\n 사용 가능)
+  missionSummary: string   // 채팅창 상단 한 줄 요약
+  turns: RoleplayTurn[]    // 대화 턴 목록 (사용자 응답 포함)
+  finalNpc: string         // 사용자 마지막 답변 후 상대방의 마지막 버블
+}
+
+/** 레슨 말미 묘사 퀴즈 */
+export interface QuizQuestion {
+  question: string       // "Q. 여왕의 옷 색이 무엇인가요?"
+  sentence: string       // 빈칸 앞 문장 (e.g. "The color of the queen's clothes is")
+  answer: string         // 빈칸 정답 (e.g. "red.")
+  imageColor: string
+  imageUrl?: string
+}
+
 /** 레슨 (책 한 권의 학습 단위) */
 export interface Lesson {
   id: string
   bookId: string
   title: string          // e.g. "The Dragon Story - lesson 1"
   pages: LessonPage[]
+  quiz?: QuizQuestion
+  roleplay?: RoleplayMission
 }
 
 /** 책 한 권의 메타 정보 */

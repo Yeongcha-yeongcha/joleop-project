@@ -8,6 +8,14 @@
   box-shadow: 0 0 40px rgba(0,0,0,0.12);
 }
 
+/* On screens narrower than the app frame, expand to full width */
+@media (max-width: 430px) {
+  .app-shell {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
 /* 페이지 진입 애니메이션 */
 .page-enter {
   animation-duration: 0.28s;

@@ -77,5 +77,6 @@ export async function postSpeechRecognize(audio: Blob, expected: string): Promis
     const res = await fetch(`${BASE_URL}/speech/recognize`, { method: 'POST', body: form })
     return res.json()
   }
+  await new Promise((resolve) => setTimeout(resolve, 1500))
   return { recognized: expected, correct: true, score: 1.0 }
 }

@@ -6,21 +6,8 @@
   flex-direction: column;
 }
 
-.statusBar {
-  height: 44px;
-  padding: 12px 16px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* ── Illustration ─────────────────────────────── */
 
-.time {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
-}
-
-/* 일러스트 영역 */
 .illustration {
   width: 100%;
   aspect-ratio: 1 / 0.85;
@@ -32,7 +19,8 @@
   font-size: 72px;
 }
 
-/* 문장 영역 */
+/* ── Sentence ─────────────────────────────────── */
+
 .textArea {
   flex: 1;
   display: flex;
@@ -42,28 +30,21 @@
 }
 
 .sentence {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.5;
   text-align: center;
   transition: color 0.3s ease;
 }
 
-.sentence.reading {
-  font-weight: 800;
-  color: #1a1a2e;
-}
+/* reading: bold, dark */
+.sentence.reading    { font-weight: 800; color: #1a1a2e; }
+/* repeat idle: dim, waiting for user to speak */
+.sentence.repeatIdle { font-weight: 400; color: #AAAAAA; }
+/* repeat done: orange, confirmed correct */
+.sentence.repeatDone { font-weight: 800; color: #FF9600; }
 
-.sentence.repeatIdle {
-  font-weight: 400;
-  color: #AAAAAA;
-}
+/* ── Bottom Button Area ───────────────────────── */
 
-.sentence.repeatDone {
-  font-weight: 800;
-  color: #FF9600;
-}
-
-/* 하단 버튼 */
 .bottomArea {
   padding: 0 20px 40px;
   display: flex;
@@ -83,25 +64,17 @@
   justify-content: center;
 }
 
-.imgBtn:active {
-  transform: scale(0.96);
-}
+.imgBtn:active { transform: scale(0.96); }
 
-.nextBtnImg {
+.btnImg {
   width: 100%;
   max-width: 360px;
   height: auto;
   display: block;
 }
 
-.recordBtnImg {
-  width: 100%;
-  max-width: 360px;
-  height: auto;
-  display: block;
-}
-
-.recordBtnImg.recording {
+/* pulse while recording */
+.btnImg.recording {
   animation: pulse 1s ease-in-out infinite;
 }
 
@@ -110,56 +83,23 @@
   50%       { opacity: 0.75; }
 }
 
-/* 씬 전환 애니메이션 */
-.sceneEnter {
-  animation: fadeSlide 0.3s ease both;
+/* ── Phase Transition (reading → repeat → quiz → roleplay) ── */
+
+.phaseEnter {
+  animation: phaseSlideIn 0.32s ease-out both;
 }
 
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateX(24px); }
+.phaseExit {
+  animation: phaseSlideOut 0.22s ease-in both;
+  pointer-events: none;
+}
+
+@keyframes phaseSlideIn {
+  from { opacity: 0; transform: translateX(56px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* 페이즈 전환 배너 */
-.phaseBanner {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  animation: fadeIn 0.2s ease;
-}
-
-.phaseBannerCard {
-  background: white;
-  border-radius: 24px;
-  padding: 32px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-}
-
-.phaseBannerIcon {
-  font-size: 48px;
-}
-
-.phaseBannerTitle {
-  font-size: 20px;
-  font-weight: 800;
-  color: #1a1a2e;
-}
-
-.phaseBannerSub {
-  font-size: 14px;
-  color: #888;
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes phaseSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-56px); }
 }

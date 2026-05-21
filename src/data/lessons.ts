@@ -21,6 +21,32 @@ export const LESSONS: Lesson[] = [
       { id: 'p3', text: 'He is a dragon.',        imageColor: '#C4D4B8' },
       { id: 'p4', text: 'The dragon is flying.',  imageColor: '#D4B8E8' },
     ],
+    quiz: {
+      question: 'Q. 드래곤은 무엇을 하고 있나요?',
+      sentence: 'The dragon is',
+      answer: 'flying.',
+      imageColor: '#D4B8E8',
+    },
+    roleplay: {
+      thumbnailColor: '#C4D4B8',
+      mission: '거울이 되어, 여왕님이 화내지 않도록\n예쁘다고 칭찬해주기',
+      missionSummary: '거울이 되어 여왕님 칭찬해주기',
+      turns: [
+        {
+          npc: 'Mirror mirror on the wall, who is the most beautiful of them all?',
+          user: 'Of course it\'s you, Queen!',
+        },
+        {
+          npc: 'Really? Am I truly more beautiful than Snow White?',
+          user: 'Yes! You are the most beautiful in the whole world!',
+        },
+        {
+          npc: 'Ha ha ha! That\'s exactly what I wanted to hear!',
+          user: 'You are the fairest of them all, my Queen!',
+        },
+      ],
+      finalNpc: 'Ha ha ha! I knew it! Now go away, mirror!',
+    },
   },
 ]
 

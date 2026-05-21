@@ -5,10 +5,12 @@ import { fetchLesson, postProgress, postSpeechRecognize } from '../../services/a
 import { IMAGES } from '../../constants/assets'
 import LessonHeader from '../../components/LessonHeader/LessonHeader'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
+import QuizScreen from '../../components/QuizScreen/QuizScreen'
+import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { Lesson } from '../../types'
 import styles from './LearnPage.module.css'
 
-type Phase = 'reading' | 'repeat'
+type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
 type RepeatState = 'idle' | 'recording' | 'done'
 
 export default function LearnPage() {
@@ -23,8 +25,8 @@ export default function LearnPage() {
   const [phase, setPhase] = useState<Phase>('reading')
   const [pageIndex, setPageIndex] = useState(0)
   const [repeatState, setRepeatState] = useState<RepeatState>('idle')
-  const [showPhaseBanner, setShowPhaseBanner] = useState(false)
-  const [sceneKey, setSceneKey] = useState(0)
+  const [roleplayProgress, setRoleplayProgress] = useState(0.70)
+  const [isExiting, setIsExiting] = useState(false)
 
   const load = useCallback(() => {
     if (!bookId) return
@@ -45,32 +47,41 @@ export default function LearnPage() {
   const totalPages = lesson?.pages.length ?? 0
   const currentPage = lesson?.pages[pageIndex]
 
-  const progress =
-    phase === 'reading'
-      ? (pageIndex / totalPages) * 0.5
-      : 0.5 + ((pageIndex + (repeatState === 'done' ? 1 : 0)) / totalPages) * 0.5
+  // Progress: reading 0–30%, repeat 30–60%, quiz 65%, roleplay 70–100%
+  const lessonProgress =
+    phase === 'reading' ? (pageIndex / totalPages) * 0.3
+    : phase === 'repeat' ? 0.3 + ((pageIndex + (repeatState === 'done' ? 1 : 0)) / totalPages) * 0.3
+    : 0.65
+  const headerProgress = phase === 'roleplay' ? roleplayProgress : lessonProgress
+
+  // Slide out current phase, then switch — keeps LessonHeader inside the
+  // animated wrapper so position:fixed overlays (e.g. completion) cover it too.
+  const goToPhase = useCallback((next: Phase, onSwitch?: () => void) => {
+    setIsExiting(true)
+    setTimeout(() => {
+      setPhase(next)
+      onSwitch?.()
+      setIsExiting(false)
+    }, 230)
+  }, [])
 
   const goToNextScene = useCallback(() => {
     if (pageIndex < totalPages - 1) {
       setPageIndex((i) => i + 1)
       setRepeatState('idle')
-      setSceneKey((k) => k + 1)
-    } else {
-      if (phase === 'reading') {
-        setShowPhaseBanner(true)
-        setTimeout(() => {
-          setShowPhaseBanner(false)
-          setPhase('repeat')
-          setPageIndex(0)
-          setRepeatState('idle')
-          setSceneKey((k) => k + 1)
-        }, 2000)
+      return
+    }
+    if (phase === 'reading') {
+      goToPhase('repeat', () => { setPageIndex(0); setRepeatState('idle') })
+    } else if (phase === 'repeat') {
+      if (lesson?.quiz) {
+        goToPhase('quiz')
       } else {
         if (bookId && lesson) postProgress(bookId, lesson.id)
         navigate('/', { replace: true })
       }
     }
-  }, [pageIndex, totalPages, phase, navigate, bookId, lesson])
+  }, [pageIndex, totalPages, phase, navigate, bookId, lesson, goToPhase])
 
   const handleMicTap = useCallback(() => {
     if (repeatState === 'idle') {
@@ -98,66 +109,88 @@ export default function LearnPage() {
 
   if (!lesson || !currentPage) return null
 
+  const showNextBtn = phase === 'reading' || repeatState === 'done'
+
   return (
     <div className={styles.page}>
+      <div
+        key={phase}
+        className={isExiting ? styles.phaseExit : styles.phaseEnter}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+      >
+        <LessonHeader title={lessonTitle} progress={headerProgress} onBack={() => navigate(-1)} />
 
-      <LessonHeader title={lessonTitle} progress={progress} onBack={() => navigate(-1)} />
+        {phase === 'roleplay' && lesson.roleplay && (
+          <RoleplayScreen
+            roleplay={lesson.roleplay}
+            onProgressChange={setRoleplayProgress}
+            onFinish={() => {
+              if (bookId) postProgress(bookId, lesson.id)
+              navigate('/', { replace: true })
+            }}
+          />
+        )}
 
-      <div key={sceneKey} className={styles.sceneEnter} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {phase === 'quiz' && lesson.quiz && (
+          <QuizScreen
+            quiz={lesson.quiz}
+            onNext={() => {
+              if (lesson.roleplay) goToPhase('roleplay')
+              else {
+                if (bookId) postProgress(bookId, lesson.id)
+                navigate('/', { replace: true })
+              }
+            }}
+          />
+        )}
 
-        <div
-          className={styles.illustration}
-          style={{ background: currentPage.imageColor }}
-          aria-label="동화 일러스트"
-        >
-          {currentPage.imageUrl
-            ? <img src={currentPage.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <span>📖</span>
-          }
-        </div>
+        {(phase === 'reading' || phase === 'repeat') && (
+          <>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div
+                className={styles.illustration}
+                style={{ background: currentPage.imageColor }}
+                aria-label="동화 일러스트"
+              >
+                {currentPage.imageUrl
+                  ? <img src={currentPage.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span>📖</span>
+                }
+              </div>
 
-        <div className={styles.textArea}>
-          <p className={`${styles.sentence} ${
-            phase === 'reading'        ? styles.reading    :
-            repeatState === 'done'     ? styles.repeatDone :
-                                         styles.repeatIdle
-          }`}>
-            {currentPage.text}
-          </p>
-        </div>
+              <div className={styles.textArea}>
+                <p className={`${styles.sentence} ${
+                  phase === 'reading'    ? styles.reading    :
+                  repeatState === 'done' ? styles.repeatDone :
+                                           styles.repeatIdle
+                }`}>
+                  {currentPage.text}
+                </p>
+              </div>
+            </div>
 
-      </div>
-
-      <div className={styles.bottomArea}>
-        {phase === 'reading' || repeatState === 'done' ? (
-          <button className={styles.imgBtn} onClick={goToNextScene} aria-label="다음">
-            <img src={IMAGES.nextBtnActive} alt="다음" className={styles.nextBtnImg} />
-          </button>
-        ) : (
-          <button
-            className={styles.imgBtn}
-            onClick={handleMicTap}
-            aria-label={repeatState === 'recording' ? '녹음 중...' : '탭하여 말하기'}
-          >
-            <img
-              src={repeatState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
-              alt={repeatState === 'recording' ? '녹음 중' : '탭하여 말하기'}
-              className={`${styles.recordBtnImg} ${repeatState === 'recording' ? styles.recording : ''}`}
-            />
-          </button>
+            <div className={styles.bottomArea}>
+              {showNextBtn ? (
+                <button className={styles.imgBtn} onClick={goToNextScene} aria-label="다음">
+                  <img src={IMAGES.nextBtnActive} alt="다음" className={styles.btnImg} />
+                </button>
+              ) : (
+                <button
+                  className={styles.imgBtn}
+                  onClick={handleMicTap}
+                  aria-label={repeatState === 'recording' ? '녹음 중...' : '탭하여 말하기'}
+                >
+                  <img
+                    src={repeatState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
+                    alt={repeatState === 'recording' ? '녹음 중' : '탭하여 말하기'}
+                    className={`${styles.btnImg} ${repeatState === 'recording' ? styles.recording : ''}`}
+                  />
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
-
-      {showPhaseBanner && (
-        <div className={styles.phaseBanner}>
-          <div className={styles.phaseBannerCard}>
-            <span className={styles.phaseBannerIcon}>🎤</span>
-            <span className={styles.phaseBannerTitle}>이제 따라 말해봐요!</span>
-            <span className={styles.phaseBannerSub}>들은 문장을 따라 말하면 돼요</span>
-          </div>
-        </div>
-      )}
-
     </div>
   )
 }
