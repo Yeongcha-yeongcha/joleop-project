@@ -43,6 +43,10 @@
 /* repeat done: orange, confirmed correct */
 .sentence.repeatDone { font-weight: 800; color: #FF9600; }
 
+/* 단어별 STT 결과 하이라이트 */
+.wordCorrect { color: #FF9D00; font-weight: 800; }
+.wordWrong   { color: #FF4D4D; font-weight: 800; }
+
 /* ── Bottom Button Area ───────────────────────── */
 
 .bottomArea {

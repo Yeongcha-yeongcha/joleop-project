@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import { fetchLesson, postProgress, postSpeechRecognize } from '../../services/api'
+import type { SpeechResult } from '../../services/api'
+import { useAudioRecorder } from '../../hooks/useAudioRecorder'
+import { useAudioPlayer } from '../../hooks/useAudioPlayer'
 import { IMAGES } from '../../constants/assets'
 import LessonHeader from '../../components/LessonHeader/LessonHeader'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
@@ -16,6 +19,16 @@ type RepeatState = 'idle' | 'recording' | 'done'
 /** Must match the phaseExit animation duration in LearnPage.module.css */
 const PHASE_EXIT_MS = 230
 
+function getWordHighlights(expected: string, recognized: string) {
+  const normalize = (s: string) => s.toLowerCase().replace(/[.,!?'"]/g, '').trim()
+  const expWords = expected.trim().split(/\s+/)
+  const recWords = recognized.trim().split(/\s+/)
+  return expWords.map((word, i) => ({
+    word,
+    correct: normalize(word) === normalize(recWords[i] ?? ''),
+  }))
+}
+
 export default function LearnPage() {
   const navigate = useNavigate()
   const { bookId } = useParams<{ bookId: string }>()
@@ -28,8 +41,12 @@ export default function LearnPage() {
   const [phase, setPhase] = useState<Phase>('reading')
   const [pageIndex, setPageIndex] = useState(0)
   const [repeatState, setRepeatState] = useState<RepeatState>('idle')
+  const [sttResult, setSttResult] = useState<SpeechResult | null>(null)
   const [roleplayProgress, setRoleplayProgress] = useState(0.70)
   const [isExiting, setIsExiting] = useState(false)
+
+  const recorder = useAudioRecorder()
+  const { play: playAudio, stop: stopAudio } = useAudioPlayer()
 
   const load = useCallback(() => {
     if (!bookId) return
@@ -50,6 +67,14 @@ export default function LearnPage() {
   const totalPages = lesson?.pages.length ?? 0
   const currentPage = lesson?.pages[pageIndex]
 
+  // 읽기/따라말하기 단계에서 페이지 바뀔 때 오디오 자동 재생
+  useEffect(() => {
+    if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
+      playAudio(currentPage.audioUrl)
+    }
+    return () => { stopAudio() }
+  }, [phase, pageIndex, currentPage?.audioUrl, playAudio, stopAudio])
+
   // Progress: reading 0–30%, repeat 30–60%, quiz 65%, roleplay 70–100%
   const lessonProgress =
     phase === 'reading' ? (pageIndex / totalPages) * 0.3
@@ -57,12 +82,11 @@ export default function LearnPage() {
     : 0.65
   const headerProgress = phase === 'roleplay' ? roleplayProgress : lessonProgress
 
-  // Slide out current phase, then switch — keeps LessonHeader inside the
-  // animated wrapper so position:fixed overlays (e.g. completion) cover it too.
   const goToPhase = useCallback((next: Phase, onSwitch?: () => void) => {
     setIsExiting(true)
     setTimeout(() => {
       setPhase(next)
+      setSttResult(null)
       onSwitch?.()
       setIsExiting(false)
     }, PHASE_EXIT_MS)
@@ -72,11 +96,13 @@ export default function LearnPage() {
     if (pageIndex < totalPages - 1) {
       setPageIndex((i) => i + 1)
       setRepeatState('idle')
+      setSttResult(null)
       return
     }
     if (phase === 'reading') {
       goToPhase('repeat', () => { setPageIndex(0); setRepeatState('idle') })
     } else if (phase === 'repeat') {
+      setSttResult(null)
       if (lesson?.quiz) {
         goToPhase('quiz')
       } else {
@@ -86,16 +112,19 @@ export default function LearnPage() {
     }
   }, [pageIndex, totalPages, phase, navigate, bookId, lesson, goToPhase])
 
-  const handleMicTap = useCallback(() => {
-    if (repeatState === 'idle') {
-      setRepeatState('recording')
-      postSpeechRecognize(new Blob(), currentPage?.text ?? '')
-        .then(() => setRepeatState('done'))
-        .catch(() => setRepeatState('idle'))
-    } else if (repeatState === 'done') {
-      goToNextScene()
+  const handleMicTap = useCallback(async () => {
+    if (repeatState !== 'idle') return
+    setSttResult(null)
+    setRepeatState('recording')
+    try {
+      const blob = await recorder.record()
+      const result = await postSpeechRecognize(blob, currentPage?.text ?? '')
+      setSttResult(result)
+      setRepeatState('done')
+    } catch {
+      setRepeatState('idle')
     }
-  }, [repeatState, goToNextScene, currentPage])
+  }, [repeatState, currentPage, recorder])
 
   const lessonTitle = selectedBook
     ? `${selectedBook.title} - lesson ${selectedBook.currentLesson}`
@@ -161,13 +190,23 @@ export default function LearnPage() {
               </div>
 
               <div className={styles.textArea}>
-                <p className={`${styles.sentence} ${
-                  phase === 'reading'    ? styles.reading    :
-                  repeatState === 'done' ? styles.repeatDone :
-                                           styles.repeatIdle
-                }`}>
-                  {currentPage.text}
-                </p>
+                {phase === 'repeat' && sttResult ? (
+                  <p className={styles.sentence}>
+                    {getWordHighlights(currentPage.text, sttResult.recognized).map(({ word, correct }, i: number) => (
+                      <span key={i} className={correct ? styles.wordCorrect : styles.wordWrong}>
+                        {word}{' '}
+                      </span>
+                    ))}
+                  </p>
+                ) : (
+                  <p className={`${styles.sentence} ${
+                    phase === 'reading'    ? styles.reading    :
+                    repeatState === 'done' ? styles.repeatDone :
+                                             styles.repeatIdle
+                  }`}>
+                    {currentPage.text}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -180,6 +219,7 @@ export default function LearnPage() {
                 <button
                   className={styles.imgBtn}
                   onClick={handleMicTap}
+                  disabled={repeatState === 'recording'}
                   aria-label={repeatState === 'recording' ? '녹음 중...' : '탭하여 말하기'}
                 >
                   <img

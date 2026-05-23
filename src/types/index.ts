@@ -12,6 +12,7 @@ export interface LessonPage {
   text: string           // 화면에 표시되는 영어 문장
   imageColor: string     // 일러스트 배경색 (임시 — 실제 imageUrl로 교체 예정)
   imageUrl?: string      // 일러스트 이미지 URL (백엔드 연동 후 사용)
+  audioUrl?: string      // 읽기/따라말하기 오디오 URL (백엔드 연동 후 사용)
 }
 
 /** 롤플레잉 대화 한 턴 */
