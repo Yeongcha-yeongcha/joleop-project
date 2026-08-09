@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     MAX_CHILD_PROFILES_PER_PARENT: int = 5
     PROFILE_IMAGE_BASE_URL: str = "https://cdn.example.com/profiles"
     MAX_AUDIO_UPLOAD_BYTES: int = 10 * 1024 * 1024
+    COMPLETION_REWARD_HEARTS: int = 10
+    COMPLETION_REWARD_ENERGY: int = 1
 
     KAKAO_CLIENT_ID: str = ""
     KAKAO_CLIENT_SECRET: str = ""

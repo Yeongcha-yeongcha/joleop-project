@@ -30,7 +30,10 @@ from app.models import (
     UserBookProgress,
 )
 from app.services.evaluation import DescriptionEvaluationService, RepeatEvaluationService
+from app.services.final_score import FinalScoreService
 from app.services.progress import ProgressService
+from app.services.rewards import RewardService
+from app.services.roleplay import MockRoleplayService, RoleplayService
 
 
 class LearningSessionService:
@@ -41,6 +44,9 @@ class LearningSessionService:
         progress_service: ProgressService | None = None,
         repeat_evaluation_service: RepeatEvaluationService | None = None,
         description_evaluation_service: DescriptionEvaluationService | None = None,
+        roleplay_service: RoleplayService | None = None,
+        final_score_service: FinalScoreService | None = None,
+        reward_service: RewardService | None = None,
     ) -> None:
         self.session = session
         self.progress_service = progress_service or ProgressService()
@@ -50,6 +56,9 @@ class LearningSessionService:
         self.description_evaluation_service = (
             description_evaluation_service or DescriptionEvaluationService()
         )
+        self.roleplay_service = roleplay_service or MockRoleplayService()
+        self.final_score_service = final_score_service or FinalScoreService()
+        self.reward_service = reward_service or RewardService()
 
     async def start_or_resume_session(self, *, profile: ChildProfile, book_id: int) -> dict:
         await self._ensure_book_exists(book_id)
@@ -398,20 +407,27 @@ class LearningSessionService:
         self._ensure_course(learning_session, CourseType.ROLEPLAY)
         mission = await self._roleplay_mission(learning_session.book_id)
         message_count = await self._roleplay_message_count(learning_session.session_id)
+        course_progress = self.progress_service.course_progress(
+            current_step=message_count,
+            total_steps=mission.required_turns,
+        )
         return {
             "courseType": CourseType.ROLEPLAY.value,
             "courseNumber": 4,
-            "currentStep": learning_session.current_step,
+            "courseProgress": course_progress,
             "totalProgress": learning_session.total_progress,
             "mission": {
                 "missionId": mission.mission_id,
                 "title": mission.title,
                 "description": mission.description,
-                "characterName": mission.character_name,
-                "characterImageUrl": mission.character_image_url,
-                "openingMessage": mission.opening_message,
-                "requiredTurns": mission.required_turns,
-                "currentTurns": message_count,
+            },
+            "character": {
+                "name": mission.character_name,
+                "imageUrl": mission.character_image_url,
+            },
+            "openingMessage": {
+                "speaker": mission.character_name.upper(),
+                "text": mission.opening_message,
             },
         }
 
@@ -434,31 +450,54 @@ class LearningSessionService:
             raise QuestionNotFoundException()
 
         turn = await self._roleplay_message_count(learning_session.session_id) + 1
-        character_response = f"{mission.character_name}: {transcript}"
+        roleplay_result = await self.roleplay_service.respond(
+            mission=mission,
+            transcript=transcript,
+            turn=turn,
+        )
+        character_response = roleplay_result["text"]
         mission_completed = turn >= mission.required_turns
+        total_progress = self.progress_service.total_progress(
+            course_type=CourseType.ROLEPLAY,
+            current_step=min(turn, mission.required_turns),
+            total_steps=mission.required_turns,
+        )
         message = RoleplayMessage(
             session_id=learning_session.session_id,
             mission_id=mission.mission_id,
             turn=turn,
             user_transcript=transcript,
             character_response=character_response,
-            score=85,
+            score=roleplay_result["score"],
             mission_completed=mission_completed,
         )
         self.session.add(message)
-        if mission_completed:
-            learning_session.total_progress = 100
+        learning_session.total_progress = total_progress
+        learning_session.last_studied_at = datetime.now(UTC)
+        progress = await self._get_or_create_book_progress(
+            profile_id=profile.profile_id,
+            book_id=learning_session.book_id,
+            now=learning_session.last_studied_at,
+        )
+        progress.progress = total_progress
+        progress.last_studied_at = learning_session.last_studied_at
         await self.session.flush()
         await self.session.commit()
         return {
             "messageId": message.message_id,
-            "missionId": mission.mission_id,
             "turn": turn,
-            "userTranscript": transcript,
-            "characterResponse": character_response,
+            "user": {"transcript": transcript},
+            "character": {
+                "speaker": roleplay_result["speaker"],
+                "text": character_response,
+            },
             "score": message.score,
             "missionCompleted": mission_completed,
-            "totalProgress": learning_session.total_progress,
+            "courseProgress": self.progress_service.course_progress(
+                current_step=min(turn, mission.required_turns),
+                total_steps=mission.required_turns,
+            ),
+            "totalProgress": total_progress,
         }
 
     async def exit_session(self, *, profile: ChildProfile, session_id: int) -> dict:
@@ -472,7 +511,15 @@ class LearningSessionService:
         learning_session.status = LearningSessionStatus.EXITED
         learning_session.last_studied_at = datetime.now(UTC)
         await self.session.commit()
-        return {"sessionId": learning_session.session_id, "status": learning_session.status.value}
+        return {
+            "sessionId": learning_session.session_id,
+            "status": learning_session.status.value,
+            "bookId": learning_session.book_id,
+            "currentCourse": learning_session.current_course.value,
+            "currentStep": learning_session.current_step,
+            "totalProgress": learning_session.total_progress,
+            "saved": True,
+        }
 
     async def complete_session(self, *, profile: ChildProfile, session_id: int) -> dict:
         learning_session = await self.get_owned_session(
@@ -484,14 +531,19 @@ class LearningSessionService:
             raise SessionAlreadyCompletedException()
 
         now = datetime.now(UTC)
+        attempts = await self._attempts(learning_session.session_id)
+        roleplay_messages = await self._roleplay_messages(learning_session.session_id)
+        score_result = self.final_score_service.calculate(
+            attempts=attempts,
+            roleplay_messages=roleplay_messages,
+        )
+        rewards = self.reward_service.apply_completion_reward(profile)
         learning_session.status = LearningSessionStatus.COMPLETED
         learning_session.completed_at = now
         learning_session.last_studied_at = now
         learning_session.total_progress = max(learning_session.total_progress, 100)
-        if learning_session.total_score is None:
-            learning_session.total_score = 85
-        if learning_session.stars is None:
-            learning_session.stars = 3
+        learning_session.total_score = score_result["totalScore"]
+        learning_session.stars = score_result["stars"]
 
         progress = await self._get_or_create_book_progress(
             profile_id=profile.profile_id,
@@ -502,7 +554,15 @@ class LearningSessionService:
         progress.completed = True
         progress.last_studied_at = now
         await self.session.commit()
-        return self.result_response(learning_session)
+        return {
+            "sessionId": learning_session.session_id,
+            "status": learning_session.status.value,
+            "bookId": learning_session.book_id,
+            "totalScore": learning_session.total_score,
+            "stars": learning_session.stars,
+            "completedAt": learning_session.completed_at.isoformat(),
+            "rewards": rewards,
+        }
 
     async def get_result(self, *, profile: ChildProfile, session_id: int) -> dict:
         learning_session = await self.get_owned_session(
@@ -511,7 +571,22 @@ class LearningSessionService:
         )
         if learning_session.status != LearningSessionStatus.COMPLETED:
             raise ResultNotAvailableException()
-        return self.result_response(learning_session)
+        profile_data = {
+            "profileId": profile.profile_id,
+            "nickname": profile.nickname,
+        }
+        book = await self._book(learning_session.book_id)
+        return {
+            "profile": profile_data,
+            "book": {
+                "bookId": book.book_id,
+                "title": book.title,
+            },
+            "totalScore": learning_session.total_score,
+            "stars": learning_session.stars,
+            "completed": True,
+            "completedAt": learning_session.completed_at.isoformat(),
+        }
 
     async def get_owned_session(
         self,
@@ -562,6 +637,13 @@ class LearningSessionService:
         if result.scalar_one_or_none() is None:
             raise BookNotFoundException()
 
+    async def _book(self, book_id: int) -> Book:
+        result = await self.session.execute(select(Book).where(Book.book_id == book_id))
+        book = result.scalar_one_or_none()
+        if book is None:
+            raise BookNotFoundException()
+        return book
+
     async def _reading_chunks(self, book_id: int) -> list[ReadingChunk]:
         result = await self.session.execute(
             select(ReadingChunk)
@@ -586,6 +668,18 @@ class LearningSessionService:
             select(RoleplayMessage).where(RoleplayMessage.session_id == session_id)
         )
         return len(result.scalars().all())
+
+    async def _roleplay_messages(self, session_id: int) -> list[RoleplayMessage]:
+        result = await self.session.execute(
+            select(RoleplayMessage).where(RoleplayMessage.session_id == session_id)
+        )
+        return list(result.scalars().all())
+
+    async def _attempts(self, session_id: int) -> list[LearningAttempt]:
+        result = await self.session.execute(
+            select(LearningAttempt).where(LearningAttempt.session_id == session_id)
+        )
+        return list(result.scalars().all())
 
     async def _repeat_questions(self, book_id: int) -> list[RepeatQuestion]:
         result = await self.session.execute(

@@ -14,8 +14,11 @@ from app.api.v1.learning_sessions import (
 from app.core.exceptions import SessionAlreadyCompletedException, validation_exception_handler
 from app.main import app
 from app.models import (
+    Book,
     ChildProfile,
     CourseType,
+    Difficulty,
+    LearningAttempt,
     LearningSession,
     LearningSessionStatus,
     RoleplayMessage,
@@ -23,6 +26,7 @@ from app.models import (
     UserBookProgress,
 )
 from app.services.learning_sessions import LearningSessionService
+from app.services.final_score import FinalScoreService
 from app.services.speech import MockSpeechToTextService
 
 
@@ -87,6 +91,12 @@ class FakeRoleplayStore:
             completed=False,
             unlocked=True,
         )
+        self.book = Book(
+            book_id=1,
+            title="The Dragon Story",
+            lesson_name="Lesson 1",
+            difficulty=Difficulty.BEGINNER,
+        )
         self.mission = RoleplayMission(
             mission_id=401,
             book_id=1,
@@ -95,20 +105,56 @@ class FakeRoleplayStore:
             character_name="Dori",
             character_image_url="https://cdn.example.com/dori.png",
             opening_message="Can you help me?",
-            required_turns=1,
+            required_turns=3,
         )
         self.messages: list[RoleplayMessage] = []
+        self.attempts: list[LearningAttempt] = [
+            LearningAttempt(
+                attempt_id=1,
+                session_id=128,
+                course_type=CourseType.REPEAT,
+                question_id=201,
+                transcript="She is reading a book.",
+                score=95,
+                passed=True,
+            ),
+            LearningAttempt(
+                attempt_id=2,
+                session_id=128,
+                course_type=CourseType.DESCRIPTION,
+                question_id=301,
+                transcript="The queen is wearing red.",
+                score=88,
+                passed=True,
+            ),
+        ]
         self.next_message_id = 1
 
     async def execute(self, statement):
         entity = statement.column_descriptions[0].get("entity")
         params = statement.compile().params
         if entity is LearningSession:
+            if "session_id_1" in params:
+                return FakeResult(
+                    self.learning_session
+                    if self.learning_session.session_id == params["session_id_1"]
+                    else None
+                )
             return FakeResult(
-                self.learning_session
-                if self.learning_session.session_id == params["session_id_1"]
-                else None
+                values=[self.learning_session]
+                if (
+                    self.learning_session.profile_id == params["profile_id_1"]
+                    and self.learning_session.book_id == params["book_id_1"]
+                    and self.learning_session.status
+                    in {
+                        LearningSessionStatus.IN_PROGRESS,
+                        LearningSessionStatus.EXITED,
+                    }
+                )
+                else []
             )
+        if entity is Book:
+            return FakeResult(self.book if self.book.book_id == params["book_id_1"] else None)
         if entity is RoleplayMission:
             return FakeResult(values=[self.mission])
         if entity is RoleplayMessage:
@@ -117,6 +163,14 @@ class FakeRoleplayStore:
                     message
                     for message in self.messages
                     if message.session_id == params["session_id_1"]
+                ]
+            )
+        if entity is LearningAttempt:
+            return FakeResult(
+                values=[
+                    attempt
+                    for attempt in self.attempts
+                    if attempt.session_id == params["session_id_1"]
                 ]
             )
         if entity is UserBookProgress:
@@ -216,6 +270,11 @@ async def test_roleplay(roleplay_context) -> None:
         learning_session_service=roleplay_context["service"],
     )
     assert response["data"]["mission"]["missionId"] == 401
+    assert response["data"]["character"] == {
+        "name": "Dori",
+        "imageUrl": "https://cdn.example.com/dori.png",
+    }
+    assert response["data"]["courseProgress"] == 0
 
 
 @pytest.mark.asyncio
@@ -228,18 +287,63 @@ async def test_roleplay_audio(roleplay_context) -> None:
         learning_session_service=roleplay_context["service"],
         speech_to_text_service=roleplay_context["speech"],
     )
-    assert response["data"]["userTranscript"] == "Hello dragon"
+    assert response["data"]["user"]["transcript"] == "Hello dragon"
+    assert response["data"]["character"] == {
+        "speaker": "DORI",
+        "text": "Thank you! I knew it!",
+    }
+    assert response["data"]["turn"] == 1
+    assert response["data"]["missionCompleted"] is False
+    assert response["data"]["courseProgress"] == 33
+    assert response["data"]["totalProgress"] == 83
+
+
+@pytest.mark.asyncio
+async def test_roleplay_turns_and_mission_complete(roleplay_context) -> None:
+    for expected_turn in [1, 2, 3]:
+        response = await create_roleplay_message(
+            128,
+            audio=FakeUploadFile(),
+            mission_id=401,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+            speech_to_text_service=roleplay_context["speech"],
+        )
+        assert response["data"]["turn"] == expected_turn
+
     assert response["data"]["missionCompleted"] is True
+    assert response["data"]["courseProgress"] == 100
+    assert response["data"]["totalProgress"] == 100
+    assert roleplay_context["store"].progress.progress == 100
 
 
 @pytest.mark.asyncio
 async def test_exit_complete_result_and_recomplete_block(roleplay_context) -> None:
+    for _ in range(3):
+        await create_roleplay_message(
+            128,
+            audio=FakeUploadFile(),
+            mission_id=401,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+            speech_to_text_service=roleplay_context["speech"],
+        )
+
     exit_response = await exit_learning_session(
         128,
         current_profile=roleplay_context["profile"],
         learning_session_service=roleplay_context["service"],
     )
     assert exit_response["data"]["status"] == "EXITED"
+    assert exit_response["data"]["saved"] is True
+    assert exit_response["data"]["currentCourse"] == "ROLEPLAY"
+
+    resume_response = await roleplay_context["service"].start_or_resume_session(
+        profile=roleplay_context["profile"],
+        book_id=1,
+    )
+    assert resume_response["isNew"] is False
+    assert resume_response["status"] == "IN_PROGRESS"
 
     complete_response = await complete_learning_session(
         128,
@@ -247,13 +351,23 @@ async def test_exit_complete_result_and_recomplete_block(roleplay_context) -> No
         learning_session_service=roleplay_context["service"],
     )
     assert complete_response["data"]["status"] == "COMPLETED"
+    assert complete_response["data"]["totalScore"] == 91
+    assert complete_response["data"]["stars"] == 3
+    assert complete_response["data"]["rewards"] == {"hearts": 10, "energy": 1}
+    assert roleplay_context["store"].progress.completed is True
+    assert roleplay_context["store"].progress.progress == 100
 
     result_response = await get_learning_session_result(
         128,
         current_profile=roleplay_context["profile"],
         learning_session_service=roleplay_context["service"],
     )
-    assert result_response["data"]["totalProgress"] == 100
+    assert result_response["data"]["profile"] == {"profileId": 101, "nickname": "은정"}
+    assert result_response["data"]["book"] == {
+        "bookId": 1,
+        "title": "The Dragon Story",
+    }
+    assert result_response["data"]["completed"] is True
 
     with pytest.raises(SessionAlreadyCompletedException):
         await complete_learning_session(
@@ -261,3 +375,55 @@ async def test_exit_complete_result_and_recomplete_block(roleplay_context) -> No
             current_profile=roleplay_context["profile"],
             learning_session_service=roleplay_context["service"],
         )
+
+
+@pytest.mark.asyncio
+async def test_complete_requires_all_scored_courses(roleplay_context) -> None:
+    with pytest.raises(Exception) as exc:
+        await complete_learning_session(
+            128,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+        )
+
+    assert exc.value.error_code == "RESULT_NOT_AVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_complete_requires_finished_roleplay_mission(roleplay_context) -> None:
+    await create_roleplay_message(
+        128,
+        audio=FakeUploadFile(),
+        mission_id=401,
+        current_profile=roleplay_context["profile"],
+        learning_session_service=roleplay_context["service"],
+        speech_to_text_service=roleplay_context["speech"],
+    )
+
+    with pytest.raises(Exception) as exc:
+        await complete_learning_session(
+            128,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+        )
+
+    assert exc.value.error_code == "RESULT_NOT_AVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_result_requires_completed_session(roleplay_context) -> None:
+    with pytest.raises(Exception) as exc:
+        await get_learning_session_result(
+            128,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+        )
+
+    assert exc.value.error_code == "RESULT_NOT_AVAILABLE"
+
+
+def test_final_score_stars() -> None:
+    assert FinalScoreService.stars(59) == 1
+    assert FinalScoreService.stars(60) == 2
+    assert FinalScoreService.stars(79) == 2
+    assert FinalScoreService.stars(80) == 3
