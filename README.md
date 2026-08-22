@@ -118,6 +118,7 @@ uvicorn app.main:app --reload
 - API: `http://localhost:8000`
 - Swagger: `http://localhost:8000/docs`
 - Health: `GET /health`
+- Readiness: `GET /ready`
 
 ## Kakao OAuth
 
@@ -183,6 +184,11 @@ pytest
 ```
 
 테스트에서는 Kakao, STT, Roleplay AI를 mock 처리합니다.
+
+## Deployment
+
+서버 배포 절차, Docker 없이 설치하는 방법, DB readiness 확인 방법은
+[DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요.
 
 ## End-to-End Local Flow
 

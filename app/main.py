@@ -1,14 +1,16 @@
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import http_exception_handler, validation_exception_handler
+from app.db.session import database_is_ready
 
 OPENAPI_TAGS = [
     {"name": "Auth", "description": "Kakao parent login, refresh, logout."},
@@ -55,6 +57,15 @@ def create_app() -> FastAPI:
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/ready", tags=["health"])
+    async def readiness_check() -> JSONResponse:
+        if await database_is_ready():
+            return JSONResponse({"status": "ok", "database": "ok"})
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "unavailable", "database": "unavailable"},
+        )
 
     return app
 
