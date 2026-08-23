@@ -1,0 +1,40 @@
+{
+  "book_id": "book1",
+  "start_episode": 1,
+  "level": 1,
+  "age": 7,
+  "protagonist": "Hana: a cheerful, bright-eyed 7-year-old with curly brown hair and a big smile",
+  "main_theme": "friendship, courage, and helping others",
+  "story_title": "Hana's Helping Hands",
+  "story_idea": "Hana, a young rabbit, discovers the joy of helping others and finds her courage when she decides to help her friends in need.",
+  "book_goal": "Hana wants to help her friends and family in the village by solving a problem that threatens their annual Harvest Festival.",
+  "memorable_object": "a small, intricately carved wooden bird perched on Hana's windowsill, given to her by her grandmother",
+  "recurring_characters": [
+    "Hana's best friend, a rabbit named Bori",
+    "Hana's wise grandmother, a rabbit named Meong"
+  ],
+  "recurring_locations": [
+    "Hana's cozy burrow",
+    "the village square",
+    "the Harvest Festival grounds"
+  ],
+  "min_score": 80,
+  "target_lessons": 10,
+  "quality_retries": 1,
+  "max_total_attempts_multiplier": 3,
+  "generate_images": false,
+  "generate_tts": false,
+  "output_path": "qwen_judged_lessons.json",
+  "episode_beats": [
+    "Lesson 1 beginning: Hana notices her friends and family preparing for the Harvest Festival, but a strong wind is destroying their decorations and food.",
+    "Lesson 2 development: Hana's grandmother, Meong, asks her to help repair the damaged decorations, but Hana is hesitant and makes a mistake, causing more damage.",
+    "Lesson 3: Hana's best friend, Bori, is hurt while trying to help with the repairs, and Hana must decide whether to help her friend or continue fixing the decorations.",
+    "Lesson 4: Hana and Bori come up with a plan to rebuild the damaged decorations, but they realize they need more materials, which are in short supply.",
+    "Lesson 5: Hana discovers a hidden stash of materials in an old, abandoned burrow, but she must navigate through a narrow tunnel to reach it.",
+    "Lesson 6: Hana and Bori encounter a group of mischievous raccoons who are causing trouble in the village, and Hana must use her quick thinking to distract them.",
+    "Lesson 7: Hana and Bori's rebuilt decorations are destroyed by a sudden rainstorm, and they must come up with a new plan to save the festival.",
+    "Lesson 8: Hana's grandmother, Meong, shares a secret about the village's history and the true meaning of the Harvest Festival, inspiring Hana to find a new solution.",
+    "Lesson 9: Hana and Bori come up with a creative idea to use the rain to their advantage and create a beautiful, unique decoration that will be the highlight of the festival.",
+    "Lesson 10 ending: The Harvest Festival is a huge success, and Hana's friends and family are amazed by her creativity and determination. Hana's grandmother is proud of her, and Hana realizes that helping others is the greatest joy of all."
+  ]
+}

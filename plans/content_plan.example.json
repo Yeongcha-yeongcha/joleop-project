@@ -5,13 +5,22 @@
   "age": 7,
   "protagonist": "a cute yellow lion cub",
   "min_score": 80,
+  "target_lessons": 10,
+  "quality_retries": 1,
+  "max_total_attempts_multiplier": 3,
   "generate_images": false,
   "generate_tts": false,
-  "save_to_database": true,
-  "output_path": "outputs/generated_lessons.json",
-  "themes": [
-    "friendship",
-    "courage",
-    "helping others"
+  "output_path": "qwen_judged_lessons.json",
+  "episode_beats": [
+    "Lesson 1 beginning: Leo meets a worried rabbit beside an unlit yellow lantern and promises to help find its missing light.",
+    "Lesson 2 development: Leo and the rabbit follow glowing pawprints from the lantern into the friendly forest.",
+    "Lesson 3 development: They help a nervous blue bird and learn that the lantern light crossed the stream.",
+    "Lesson 4 development: The friends build a small bridge together and find a golden feather on the far bank.",
+    "Lesson 5 development: The golden feather leads them to a shy fox who found the lantern light but lost the path home.",
+    "Lesson 6 development: Leo, the rabbit, bird, and fox cross gentle rain while carefully protecting the lantern light.",
+    "Lesson 7 development: The friends shelter beneath a broad tree and keep the fading light warm through the night.",
+    "Lesson 8 development: At sunrise, the blue bird spots a familiar flower trail leading back toward the lantern clearing.",
+    "Lesson 9 development: The friends reach the clearing, prepare the yellow lantern, and help the shy fox find the homeward path.",
+    "Lesson 10 ending: They restore the yellow lantern, guide the fox home, and celebrate their completed journey together."
   ]
 }

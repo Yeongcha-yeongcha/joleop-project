@@ -9,6 +9,7 @@ the final image model is chosen.
 import os
 import random
 import time
+from typing import Optional
 
 import requests
 
@@ -29,8 +30,14 @@ from shared.settings import (
 from shared.models import StoryPage
 
 
-def build_image_path(book_id: str, episode: int, page_number: int) -> str:
-    return f"{IMAGE_OUTPUT_DIR}/{book_id}_ep{episode}_p{page_number}.png"
+def build_image_path(
+    book_id: str,
+    episode: int,
+    page_number: int,
+    output_dir: Optional[str] = None,
+) -> str:
+    directory = output_dir or IMAGE_OUTPUT_DIR
+    return str(os.path.join(directory, f"{book_id}_ep{episode}_p{page_number}.png"))
 
 
 def attach_planned_image_paths(
@@ -38,10 +45,11 @@ def attach_planned_image_paths(
     *,
     book_id: str,
     episode: int,
+    output_dir: Optional[str] = None,
 ) -> list[str]:
     paths = []
     for page in pages:
-        page.image_path = build_image_path(book_id, episode, page.page_number)
+        page.image_path = build_image_path(book_id, episode, page.page_number, output_dir)
         paths.append(page.image_path)
     return paths
 
@@ -51,6 +59,7 @@ def generate_story_images(
     *,
     book_id: str,
     episode: int,
+    output_dir: Optional[str] = None,
 ) -> list[str]:
     """
     Generate one image per story page.
@@ -59,13 +68,15 @@ def generate_story_images(
     final image backend is undecided. Once a provider is chosen, implement it
     here without touching the rest of the lesson pipeline.
     """
-    paths = attach_planned_image_paths(pages, book_id=book_id, episode=episode)
+    paths = attach_planned_image_paths(
+        pages, book_id=book_id, episode=episode, output_dir=output_dir
+    )
 
     if IMAGE_PROVIDER == "none":
         return paths
 
     if IMAGE_PROVIDER == "comfyui":
-        ensure_image_output_dir()
+        ensure_image_output_dir(output_dir)
         for page in pages:
             _generate_page_with_comfyui(page)
         return paths
@@ -94,8 +105,8 @@ Output:
 - No UI chrome, buttons, captions, watermarks, or text inside the image."""
 
 
-def ensure_image_output_dir() -> None:
-    os.makedirs(IMAGE_OUTPUT_DIR, exist_ok=True)
+def ensure_image_output_dir(output_dir: Optional[str] = None) -> None:
+    os.makedirs(output_dir or IMAGE_OUTPUT_DIR, exist_ok=True)
 
 
 def _generate_page_with_comfyui(page: StoryPage) -> None:

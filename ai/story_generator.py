@@ -3,12 +3,21 @@
 ① 로컬 Llama로 동화 생성
 ② Qwen judge로 품질 점수 평가
 ③ 후처리 검사 (문장 수, 어휘, 반복, 문법)
-④ 이미지 프롬프트/이미지 + 묘사 퀴즈 + 롤플레잉 시나리오 생성
+④ 이미지 프롬프트/이미지 + 롤플레잉 시나리오 생성
 """
 
 import re
 import json
-from typing import Optional
+import sys
+from pathlib import Path
+from typing import Callable, Optional
+
+# `python ai/story_generator.py`로 직접 실행해도 프로젝트 루트의
+# shared/, scripts/ 패키지를 찾을 수 있게 한다.
+if __package__ in {None, ""}:
+    project_root = Path(__file__).resolve().parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 from shared.settings import MODELS, LEVEL_CONFIGS, IMAGE_STYLE_GUIDE
 from ai.image_generator import attach_planned_image_paths, generate_story_images
@@ -18,7 +27,6 @@ from ai.prompts import (
     ROLEPLAY_MISSION_PROMPT,
     STORY_GENERATION_PROMPT,
     STORY_JUDGE_PROMPT,
-    STORY_REPAIR_PROMPT,
     STORY_SCORE_PROMPT,
 )
 from shared.models import (
@@ -26,14 +34,16 @@ from shared.models import (
     DescriptionType, RoleplayTopic, Lesson
 )
 
-
+# 동화 초안 텍스트 생성
 def call_local_story_model(prompt: str) -> str:
     """로컬 Llama 모델로 동화 초안 생성."""
     try:
         return generate_text(
             [{"role": "user", "content": prompt}],
             model=MODELS.story_model,
-            max_tokens=900,
+            # 10~14 pages 각각에 문장/번역/이미지 설명이 포함되므로
+            # 900 tokens에서는 JSON 끝부분이 자주 잘린다.
+            max_tokens=2600,
             temperature=0.45,
         )
     except Exception as e:
@@ -44,6 +54,7 @@ def call_local_story_model(prompt: str) -> str:
 # ─── 동화 생성 프롬프트 ───────────────────────────────────────
 
 def build_story_prompt(
+    book_id: str,
     age: int,
     level: int,
     theme: str,
@@ -53,9 +64,9 @@ def build_story_prompt(
     total_episodes: int = 1,
     continuity_context: str = "This is episode 1. Start the longer story gently.",
 ) -> str:
-    cfg = LEVEL_CONFIGS[level]
     max_words = max_words_for_level(level)
-    min_pages, max_pages = page_range_for_level(level)
+    min_pages, max_pages = page_range_for_book(book_id)
+    page_count = (min_pages + max_pages) // 2
     return STORY_GENERATION_PROMPT.format(
         age=age,
         level=level,
@@ -64,7 +75,7 @@ def build_story_prompt(
         episode=episode,
         total_episodes=total_episodes,
         continuity_context=continuity_context,
-        page_count=cfg.pages,
+        page_count=page_count,
         min_pages=min_pages,
         max_pages=max_pages,
         max_words=max_words,
@@ -72,96 +83,18 @@ def build_story_prompt(
 
 
 def max_words_for_level(level: int) -> int:
-    return {1: 12, 2: 16, 3: 20}[level]
+    return {1: 10, 2: 14, 3: 16}[level]
 
 
-def page_range_for_level(level: int) -> tuple[int, int]:
-    target = LEVEL_CONFIGS[level].pages
-    return max(3, target - 2), target + 2
-
-
-def repair_story_output(
-    draft: str,
-    *,
-    age: int,
-    level: int,
-    theme: str,
-    protagonist: str,
-    episode: int = 1,
-    total_episodes: int = 1,
-    continuity_context: str = "",
-) -> str:
-    cfg = LEVEL_CONFIGS[level]
-    min_pages, max_pages = page_range_for_level(level)
-    prompt = STORY_REPAIR_PROMPT.format(
-        draft=draft,
-        age=age,
-        level=level,
-        theme=theme,
-        protagonist=protagonist,
-        episode=episode,
-        total_episodes=total_episodes,
-        continuity_context=continuity_context or "Repair this episode while preserving the same longer story.",
-        page_count=cfg.pages,
-        min_pages=min_pages,
-        max_pages=max_pages,
-        max_words=max_words_for_level(level),
-    )
-    try:
-        return generate_text(
-            [{"role": "user", "content": prompt}],
-            model=MODELS.story_model,
-            max_tokens=900,
-            temperature=0.2,
-        )
-    except Exception as e:
-        print(f"[Local LLM] 동화 형식 수리 실패: {e}")
-        return draft
-
-
-# ─── 후처리 검사 ──────────────────────────────────────────────
-
-def post_process_check(text: str, level: int) -> tuple[bool, str, list[str]]:
-    """
-    Returns: (passed, cleaned_text, sentences)
-    """
-    cfg = LEVEL_CONFIGS[level]
-    max_words = max_words_for_level(level)
-    min_pages, max_pages = page_range_for_level(level)
-
-    # 문장 추출: 새 구조화 출력의 "Story sentence"를 우선 사용하고,
-    # 실패하면 예전 numbered-line 형식도 허용한다.
-    lines = extract_story_sentences(text)
-
-    # 1. 문장 수 검사
-    if not min_pages <= len(lines) <= max_pages:
-        return False, f"문장 수 불일치: {len(lines)} (허용: {min_pages}-{max_pages}, 목표: {cfg.pages})", lines
-
-    # 2. 문장 길이 검사
-    for i, sent in enumerate(lines):
-        wc = len(sent.split())
-        if wc > max_words:
-            return False, f"문장 {i+1} 너무 김: {wc}단어 (최대 {max_words})", lines
-
-    # 3. 반복 검사 (연속 동일 단어 3개 이상)
-    all_text = " ".join(lines).lower()
-    words = all_text.split()
-    for i in range(len(words) - 2):
-        if words[i] == words[i+1] == words[i+2]:
-            return False, f"단어 반복 감지: '{words[i]}'", lines
-
-    # 4. 빈 문장 검사
-    if any(len(s.strip()) < 5 for s in lines):
-        return False, "너무 짧은 문장 존재", lines
-
-    # 5. 따옴표 짝 검사
-    if any("'" in s for s in lines):
-        return False, "작은따옴표/축약형 사용 감지", lines
-    quote_count = sum(s.count('"') + s.count("“") + s.count("”") for s in lines)
-    if quote_count % 2 != 0:
-        return False, "대화 따옴표 짝이 맞지 않음", lines
-
-    return True, "ok", lines
+def page_range_for_book(book_id: str) -> tuple[int, int]:
+    """책별 허용 페이지(=문장) 수 범위."""
+    ranges = {
+        "book1": (10, 12),
+        "book2": (12, 14),
+    }
+    if book_id not in ranges:
+        raise ValueError(f"지원하지 않는 book_id: {book_id}")
+    return ranges[book_id]
 
 
 def extract_story_sentences(text: str) -> list[str]:
@@ -265,8 +198,21 @@ def parse_json_object(text: str) -> dict:
         return json.loads(match.group(0))
 
 
-def evaluate_story_score(story_text: str) -> dict:
-    prompt = STORY_SCORE_PROMPT.format(story=story_text)
+def evaluate_story_score(
+    story_text: str,
+    *,
+    episode: int = 1,
+    total_episodes: int = 1,
+    episode_beat: str = "",
+) -> dict:
+    serialized_context = (
+        f"This is Lesson {episode} of {total_episodes} in one continuous book. "
+        f"Required central event for this lesson: {episode_beat or 'not supplied'}. "
+        "Judge this text as its assigned part of the longer story. "
+        "A middle lesson should advance the plot without ending the whole book; "
+        "only the final lesson must resolve the overall story.\n\n"
+    )
+    prompt = STORY_SCORE_PROMPT.format(story=serialized_context + story_text)
     evaluations = []
 
     for judge_model in MODELS.story_judge_models:
@@ -386,7 +332,6 @@ def judge_story_quality(stories: list[tuple[str, str]]) -> int:
 
 
 # ─── 이미지 프롬프트 생성 ─────────────────────────────────────
-
 def generate_image_prompts(sentences: list[str], protagonist: str) -> list[str]:
     """각 문장에서 이미지 생성용 프롬프트 추출"""
     joined = "\n".join(f"{i+1}. {s}" for i, s in enumerate(sentences))
@@ -613,9 +558,9 @@ async def generate_lesson(
     theme: str,
     protagonist: str,
     generate_images: bool = False,
-    max_retries: int = 3,
     total_episodes: int = 1,
     continuity_context: str = "This is episode 1. Start the longer story gently.",
+    image_output_dir: Optional[str] = None,
 ) -> Optional[Lesson]:
     """
     전체 콘텐츠 제작 파이프라인 실행
@@ -624,6 +569,7 @@ async def generate_lesson(
     print(f"[콘텐츠 생성] book={book_id} ep={episode} level={level}")
 
     prompt = build_story_prompt(
+        book_id,
         age,
         level,
         theme,
@@ -648,34 +594,16 @@ async def generate_lesson(
     best_model, best_text = candidates[best_idx]
     print(f"  → 채택: {best_model}")
 
-    # ③ 후처리 검사 (최대 max_retries회 단일 모델 재시도)
-    print("  ③ 후처리 검사...")
-    passed = False
-    sentences = []
-    for attempt in range(max_retries):
-        ok, reason, sentences = post_process_check(best_text, level)
-        if ok:
-            passed = True
-            break
-        print(f"    재시도 {attempt+1}: {reason}")
-        best_text = repair_story_output(
-            best_text,
-            age=age,
-            level=level,
-            theme=theme,
-            protagonist=protagonist,
-            episode=episode,
-            total_episodes=total_episodes,
-            continuity_context=continuity_context,
+    # 후처리는 사람이 수행한다. 여기서는 구조를 검사하거나 자동 수리하지 않는다.
+    sentences = extract_story_sentences(best_text)
+    min_pages, max_pages = page_range_for_book(book_id)
+    if not sentences or not min_pages <= len(sentences) <= max_pages:
+        print(
+            f"  ✗ 동화 초안 페이지 수가 올바르지 않습니다: "
+            f"{len(sentences)}개 (필수: {min_pages}-{max_pages})"
         )
-        if not best_text:
-            break
-
-    if not passed:
-        print("  ✗ 후처리 검사 최종 실패")
         return None
-
-    print(f"  ✓ 동화 생성 완료 ({len(sentences)}문장)")
+    print(f"  ✓ 동화 초안 생성 완료 ({len(sentences)}문장 추출)")
 
     # ④ 이미지 프롬프트 생성
     print("  ④ 이미지 프롬프트 생성...")
@@ -690,22 +618,17 @@ async def generate_lesson(
         for i, s in enumerate(sentences)
     ]
     image_paths = (
-        generate_story_images(pages, book_id=book_id, episode=episode)
+        generate_story_images(
+            pages, book_id=book_id, episode=episode, output_dir=image_output_dir
+        )
         if generate_images
-        else attach_planned_image_paths(pages, book_id=book_id, episode=episode)
+        else attach_planned_image_paths(
+            pages, book_id=book_id, episode=episode, output_dir=image_output_dir
+        )
     )
 
-    # ⑤ 묘사 퀴즈 생성
-    print("  ⑤ 묘사 퀴즈 생성...")
-    desc_scenes = generate_description_scenes(
-        sentences,
-        level,
-        image_paths,
-        image_prompts=image_prompts,
-    )
-
-    # ⑥ 롤플레잉 시나리오 생성
-    print("  ⑥ 롤플레잉 시나리오 생성...")
+    # ⑤ 롤플레잉 시나리오 생성
+    print("  ⑤ 롤플레잉 시나리오 생성...")
     roleplay = generate_roleplay_scenarios(sentences, level, protagonist)
 
     lesson = Lesson(
@@ -714,7 +637,7 @@ async def generate_lesson(
         level=level,
         episode=episode,
         pages=pages,
-        description_scenes=desc_scenes,
+        description_scenes=[],
         roleplay_scenarios=roleplay,
     )
 
@@ -731,15 +654,17 @@ async def generate_lesson_if_quality_passes(
     protagonist: str,
     min_score: int = 80,
     generate_images: bool = False,
-    max_retries: int = 3,
     quality_retries: int = 3,
     total_episodes: int = 1,
     continuity_context: str = "This is episode 1. Start the longer story gently.",
+    image_output_dir: Optional[str] = None,
+    on_draft: Optional[Callable[[dict], None]] = None,
 ) -> tuple[Optional[Lesson], dict]:
     print(f"\n{'='*50}")
     print(f"[품질 필터 생성] theme={theme} ep={episode} min_score={min_score}")
 
     prompt = build_story_prompt(
+        book_id,
         age,
         level,
         theme,
@@ -756,50 +681,81 @@ async def generate_lesson_if_quality_passes(
     }
 
     for quality_attempt in range(1, quality_retries + 1):
-        best_text = ""
-        sentences = []
-        last_reason = "Story generation failed."
-
-        for attempt in range(1, max_retries + 1):
-            best_text = call_local_story_model(prompt)
-            if not best_text:
-                last_reason = "Story generation failed."
-                continue
-
-            ok, reason, sentences = post_process_check(best_text, level)
-            if ok:
-                break
-            last_reason = reason
-            print(f"  형식 재시도 {attempt}/{max_retries}: {reason}")
-            best_text = repair_story_output(
-                best_text,
-                age=age,
-                level=level,
-                theme=theme,
-                protagonist=protagonist,
-                episode=episode,
-                total_episodes=total_episodes,
-                continuity_context=continuity_context,
-            )
-            ok, reason, sentences = post_process_check(best_text, level)
-            if ok:
-                break
-            last_reason = reason
-            print(f"  수리 재시도 {attempt}/{max_retries}: {reason}")
-        else:
+        best_text = call_local_story_model(prompt)
+        if not best_text:
             best_failure = {
                 "theme": theme,
                 "accepted": False,
                 "score": 0,
-                "reason": f"Post-process failed: {last_reason}",
+                "reason": "Story generation failed.",
+            }
+            print(f"  초안 재생성 {quality_attempt}/{quality_retries}: 생성 실패")
+            continue
+
+        sentences = extract_story_sentences(best_text)
+        min_pages, max_pages = page_range_for_book(book_id)
+        page_count_valid = min_pages <= len(sentences) <= max_pages
+        if on_draft:
+            on_draft({
+                "book_id": book_id,
+                "episode": episode,
+                "level": level,
+                "theme": theme,
+                "quality_attempt": quality_attempt,
+                "story_model": MODELS.story_model,
+                "raw_story": best_text,
+                "extracted_sentences": sentences,
+                "parse_status": "valid" if sentences else "invalid",
+                "page_count": len(sentences),
+                "page_count_status": "valid" if page_count_valid else "invalid",
+                "required_page_count": min_pages if min_pages == max_pages else f"{min_pages}-{max_pages}",
+            })
+
+        if not sentences:
+            best_failure = {
+                "theme": theme,
+                "accepted": False,
+                "score": 0,
+                "reason": (
+                    "Draft JSON was incomplete or invalid; it was saved but was not "
+                    "sent to Qwen and will not be used as continuity context."
+                ),
+                "raw_story": best_text,
+                "extracted_sentences": [],
+            }
+            print(
+                f"  초안 재생성 {quality_attempt}/{quality_retries}: "
+                "JSON 파싱 실패 (Qwen 평가 생략)"
+            )
+            continue
+
+        if not page_count_valid:
+            best_failure = {
+                "theme": theme,
+                "accepted": False,
+                "score": 0,
+                "reason": (
+                    f"Draft has {len(sentences)} pages; this book requires "
+                    f"{min_pages if min_pages == max_pages else f'{min_pages}-{max_pages}'} pages. "
+                    "It was saved but was not sent to Qwen or continuity context."
+                ),
                 "raw_story": best_text,
                 "extracted_sentences": sentences,
             }
-            print(f"  품질 재생성 {quality_attempt}/{quality_retries}: {last_reason}")
+            print(
+                f"  초안 재생성 {quality_attempt}/{quality_retries}: "
+                f"페이지 수 {len(sentences)}개 (필수: {min_pages}-{max_pages})"
+            )
             continue
 
+        print("  → 초안 저장 완료, Qwen 품질 평가 시작")
         story_text = story_text_from_sentences(sentences)
-        evaluation = evaluate_story_score(story_text)
+        evaluation = evaluate_story_score(
+            story_text,
+            episode=episode,
+            total_episodes=total_episodes,
+            episode_beat=theme,
+        )
         score = int(evaluation.get("total_score", 0))
 
         passed = bool(evaluation.get("passed")) and story_evaluation_passed(evaluation, min_score)
@@ -830,15 +786,13 @@ async def generate_lesson_if_quality_passes(
         for i, s in enumerate(sentences)
     ]
     image_paths = (
-        generate_story_images(pages, book_id=book_id, episode=episode)
+        generate_story_images(
+            pages, book_id=book_id, episode=episode, output_dir=image_output_dir
+        )
         if generate_images
-        else attach_planned_image_paths(pages, book_id=book_id, episode=episode)
-    )
-    desc_scenes = generate_description_scenes(
-        sentences,
-        level,
-        image_paths,
-        image_prompts=image_prompts,
+        else attach_planned_image_paths(
+            pages, book_id=book_id, episode=episode, output_dir=image_output_dir
+        )
     )
     roleplay = generate_roleplay_scenarios(sentences, level, protagonist)
 
@@ -848,7 +802,7 @@ async def generate_lesson_if_quality_passes(
         level=level,
         episode=episode,
         pages=pages,
-        description_scenes=desc_scenes,
+        description_scenes=[],
         roleplay_scenarios=roleplay,
     )
 

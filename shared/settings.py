@@ -22,10 +22,7 @@
 - ElevenLabs API 사용 가능
 - 테스트/대안: edge-tts
 
-[Backend]
-- FastAPI: backend/main.py
-- PostgreSQL: DATABASE_URL 설정 시 사용
-- DATABASE_URL이 없으면 메모리 저장소 사용
+생성 파이프라인은 backend나 데이터베이스 없이 독립 실행된다.
 """
 
 from dataclasses import dataclass, field
@@ -38,11 +35,10 @@ try:
 except ImportError:
     pass
 
-# ─── 외부 API Key / DB URL ────────────────────────────────────
+# ─── 외부 API Key ─────────────────────────────────────────────
 ANTHROPIC_API_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
 ELEVENLABS_API_KEY  = os.getenv("ELEVENLABS_API_KEY", "")
 HF_TOKEN            = os.getenv("HF_TOKEN", "")          # STT HuggingFace fallback용
-DATABASE_URL        = os.getenv("DATABASE_URL", "")      # 예: postgresql+asyncpg://user:pass@localhost:5432/lion
 
 # ─── LLM Provider ────────────────────────────────────────────
 # - anthropic: Claude API 사용
@@ -89,21 +85,51 @@ class ModelConfig:
     # TTS voice id (ElevenLabs)
     elevenlabs_voice_id: str = "EXAVITQu4vr4xnSDxMaL"  # Rachel (영어 동화)
 
+# 나이대별 그룹 설정(분량 결정)
+@dataclass
+class AgeGroupConfig:
+    pages: int
+    repeat_sentences: int
 
-# ─── 난이도별 학습 설정 ───────────────────────────────────────
+
+AGE_GROUP_CONFIGS = {
+    "preschool": AgeGroupConfig(
+        pages=10,
+        repeat_sentences=10,
+    ),
+    "child": AgeGroupConfig(
+        pages=14,
+        repeat_sentences=14,
+    ),
+}
+
+# ─── 난이도별 학습 설정(난이도 결정) ───────────────────────────────────────
 @dataclass
 class LevelConfig:
     level: int
-    pages: int              # 페이지(=문장) 수
-    repeat_sentences: int   # 따라말하기 문장 수
     pronunciation_cutoff: int  # 발음 정확도 커트라인 (%)
     description_scenes: int    # 묘사 장면 수
     roleplay_count: int        # 롤플레잉 횟수
 
 LEVEL_CONFIGS = {
-    1: LevelConfig(level=1, pages=5,  repeat_sentences=5,  pronunciation_cutoff=50, description_scenes=2, roleplay_count=1),
-    2: LevelConfig(level=2, pages=7,  repeat_sentences=7,  pronunciation_cutoff=70, description_scenes=3, roleplay_count=1),
-    3: LevelConfig(level=3, pages=10, repeat_sentences=10, pronunciation_cutoff=80, description_scenes=3, roleplay_count=2),
+    1: LevelConfig(
+        level=1,
+        pronunciation_cutoff=50,
+        description_scenes=2,
+        roleplay_count=1,
+    ),
+    2: LevelConfig(
+        level=2,
+        pronunciation_cutoff=70,
+        description_scenes=3,
+        roleplay_count=1,
+    ),
+    3: LevelConfig(
+        level=3,
+        pronunciation_cutoff=80,
+        description_scenes=3,
+        roleplay_count=2,
+    ),
 }
 
 MODELS = ModelConfig()

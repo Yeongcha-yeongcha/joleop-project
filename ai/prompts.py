@@ -15,6 +15,12 @@ Each lesson is NOT a separate story.
 Each lesson is the next small part of the same longer story for the same level.
 Keep the same protagonist, world, emotional arc, and important objects across lessons.
 
+Character name consistency:
+- Use only the established cute, game-like character names from the book plan.
+- Never add Mr., Mrs., Ms., Miss, Sir, Lady, Doctor, or Professor.
+- Do not rename recurring characters.
+- If a new character is necessary, give it a short, cute fantasy name.
+
 The stories must feel:
 - warm
 - emotionally safe
@@ -36,6 +42,68 @@ Therefore:
 - every scene should be easy to illustrate
 - dialogue and emotional interactions should appear often
 - characters should frequently help, encourage, comfort, or persuade each other
+
+==================================================
+[CORE LESSON EVENT — REQUIRED]
+==================================================
+
+Every lesson must contain one distinct, memorable main event that children can
+clearly retell as: "In this lesson, the characters ..."
+
+The Current episode beat in the request is the required main event, not an
+optional theme. Turn it into an observable event that changes the story state.
+
+==================================================
+[EPISODE BEAT AS THE CENTRAL STORYLINE]
+==================================================
+
+Treat the Current episode beat as this lesson's central storyline. Expand that
+storyline into the required number of pages with a natural setup, development,
+character action, and local consequence. The beat is not a sentence-by-sentence
+script, but it must remain the lesson's unmistakable main event.
+
+- Preserve every essential event, named recurring character, problem, decision,
+  important object, and stated consequence contained in the episode beat.
+- The completed lesson must clearly answer: "What happened in this episode beat?"
+- Establish the beat's specific situation within the first two pages.
+- Use the middle pages to show the event happening through visible actions,
+  choices, dialogue, and cause-and-effect.
+- Use the final pages to show the beat's concrete local consequence and connect
+  it to the same continuing book plot.
+- If the beat contains a dilemma, mistake, discovery, obstacle, plan, or outcome,
+  show it on the page instead of replacing it with general friendship dialogue.
+- Do not invent a different central conflict, solution, location, or goal.
+- Do not pull a future episode beat forward or resolve events assigned to later lessons.
+- Add supporting actions, dialogue, emotions, and visual details to turn the beat
+  into a complete lesson of {page_count} story sentences.
+- When safety adaptation is necessary, soften how the event is shown without
+  deleting or changing its narrative function.
+
+Required event arc inside this lesson:
+1. Hook: within the first two pages, show something new, surprising, funny,
+   mysterious, or urgent enough to make a child ask what happens next.
+2. Development: introduce a concrete discovery, obstacle, choice, mistake,
+   arrival, transformation, or child-safe challenge unique to this lesson.
+3. Character action: the protagonist must make a meaningful choice or perform
+   a visible action. Conversation alone is not the main event.
+4. Consequence: by the end, something must be different from the start, such as
+   a clue gained, path opened, object changed, promise made, friend joined,
+   location reached, danger safely avoided, or plan revised.
+5. Connection: that consequence must causally advance the same book-wide goal
+   and naturally create the starting situation for the next lesson.
+
+Event continuity rules:
+- Preserve the established characters, world, important objects, and main goal.
+- Build on the previous accepted events; do not reset the characters or repeat
+  the same problem with only different wording.
+- Do not fill several lessons with the same cycle of walking, searching, asking,
+  helping, and continuing. Vary the kind of event and visible action.
+- A new event may add a clue, obstacle, location, choice, or consequence, but it
+  must belong to the existing plot rather than become a random side story.
+- Middle lessons need a satisfying local outcome, not a full ending. Only the
+  final lesson resolves the main book-wide problem.
+- Emotional dialogue and learning activities must grow out of the main event;
+  they must not replace the event.
 
 ==================================================
 [READING LEVEL RULES]
@@ -233,19 +301,12 @@ Illustration idea must include:
 - background details
 
 ==================================================
-[LEVEL SENTENCE COUNTS]
+[BOOK LESSON PAGE COUNTS]
 ==================================================
 
-LEVEL 1:
-about 5 sentences/pages (acceptable range: 3-7)
-
-LEVEL 2:
-about 7 sentences/pages (acceptable range: 5-9)
-
-LEVEL 3:
-about 10 sentences/pages (acceptable range: 8-12)
-
-One sentence per page.
+The book-specific page range supplied in the request is authoritative.
+Language level changes vocabulary and grammar difficulty, not the events.
+One story sentence per page.
 
 ==================================================
 [TITLE STYLE]
@@ -291,14 +352,24 @@ Before writing, design the story to pass this strict judge checklist:
 - Character growth: show a clear small change, such as worried -> comforted, shy -> brave, lost -> helped.
 - Repetition effectiveness: repeat one useful phrase exactly twice in natural places.
 - Dialogue naturalness: use at least two short, kind dialogue lines.
-- Story structure: beginning, small problem, helping action, warm resolution.
+- Lesson event: a strong hook, one unique central event, meaningful character action,
+  and a concrete consequence that advances the book-wide plot.
+- Story structure: the episode beat causes a visible change and leads naturally to the next lesson.
 - Memorability: include one concrete memorable object, such as a red ball, blue scarf, yellow lantern, tiny bell, or picnic basket.
 
 Serialized story rules:
+- All 10 lessons form one book, not 10 separate stories.
+- Level 1 is the canonical source story. Future Level 2 and Level 3 versions must preserve
+  the same characters, events, event order, locations, important objects, goal, and ending.
 - This lesson must continue from the series continuity context.
 - Do not restart the story as if the characters are meeting for the first time, unless this is episode 1.
 - Do not end the entire adventure too early unless this is the final episode.
 - Each lesson still needs a small local emotional payoff.
+- Each lesson must dramatize its Current episode beat as the central event.
+- Every essential action and consequence stated in the Current episode beat must appear.
+- Supporting dialogue, emotion, repetition, quizzes, and roleplay moments must serve
+  the episode beat rather than compete with it.
+- The lesson must end in a different concrete story state than it began.
 - Keep recurring characters, objects, and locations consistent.
 - If this is episode 1, gently introduce the protagonist and the first small problem.
 - If this is a middle episode, continue the journey and leave a warm reason to keep going.
@@ -306,6 +377,8 @@ Serialized story rules:
 
 Hard constraints:
 - The pages array must contain between {min_pages} and {max_pages} pages.
+- When {min_pages} and {max_pages} are the same number, the pages array must contain
+  exactly that number of pages, with no missing or extra page.
 - Prefer {page_count} pages when possible.
 - Each story_sentence must be {max_words} words or fewer.
 - Each story_sentence must end with a period, question mark, or exclamation mark.
@@ -316,6 +389,10 @@ Hard constraints:
 - Do not use contractions. Use "I am", "do not", "let us", and "can not" instead.
 - Show a clear emotional change: worried/sad/shy -> helped/brave/happy.
 - Make every sentence visually drawable with a place, action, or object.
+- Do not produce a lesson made mostly of travel, repeated searching, or conversation.
+- Do not repeat the previous lesson's central problem, solution, or event pattern.
+- Do not substitute a generic helping scene for the specific Current episode beat.
+- Do not finish the lesson if the required episode-beat consequence has not occurred.
 - Do not include numbered lists outside JSON.
 - Do not add extra pages.
 - Do not write multiple sentences inside one story_sentence.
@@ -596,12 +673,17 @@ You are acting as:
 Your task is to evaluate whether a generated story demonstrates award-level literary quality for children ages 5–9 learning English.
 
 Important context:
-- These are lesson-sized micro-stories, not full picture books.
-- Level 1 stories target about 5 sentences and may contain 3-7 sentences.
-- Level 2 stories target about 7 sentences and may contain 5-9 sentences.
-- Level 3 stories target about 10 sentences and may contain 8-12 sentences.
-- Do NOT penalize a story merely because it is short if it is complete for its required level.
-- Judge literary quality relative to the required sentence count and English learner level.
+- This text is one lesson in a continuous 10-lesson book, not a separate micro-story.
+- Lesson/page count is determined by the supplied book configuration, not by language level.
+- Level 1 uses simple vocabulary and grammar, with at most 14 words per story sentence.
+- Level 2 uses intermediate vocabulary and grammar, with at most 18 words per story sentence.
+- Level 3 uses slightly more complex vocabulary and grammar, with at most 22 words per story sentence.
+- Do NOT penalize a middle lesson for leaving the main book plot open.
+- Only Lesson 10 must resolve the overall book; Lessons 2-9 should advance it.
+- Judge literary quality relative to the supplied book page count and English learner level.
+- Every lesson must have one distinct child-engaging event that changes the concrete story state.
+- The event must advance the same book-wide plot without becoming an unrelated side story.
+- Similar walking, searching, helping, or talking repeated without a new consequence is not a main event.
 - A short Level 1 story can score 4 or 5 for structure, character growth, and award-like feeling if it has:
   - a visible setting
   - a small child-safe problem
@@ -667,6 +749,22 @@ Do not mark repetition_effectiveness below 3 if the story uses one clear repeate
 Do not mark dialogue_naturalness below 3 if at least two short child-friendly dialogue lines are natural.
 Do not mark story_structure_completeness below 3 if the story has a beginning, small problem, helping action, and resolution.
 Do not mark character_growth below 3 if any character visibly changes emotion or behavior by the end.
+
+Major-event enforcement:
+- If no distinct central event occurs, score story_structure_completeness,
+  creativity, and memorability at 2 or lower.
+- If characters only talk, walk, search, or repeat the prior situation without
+  a concrete discovery, choice, action, or consequence, the story must fail.
+- Score theme_consistency at 2 or lower if the event ignores the supplied episode
+  beat or introduces a disconnected subplot.
+- Score story_structure_completeness, memorability, and theme_consistency at 2 or
+  lower if the required episode beat is only mentioned, happens off-page, is
+  replaced by a different main event, or is not the unmistakable central storyline.
+- The judge must verify that the beat's essential characters, action or dilemma,
+  and concrete consequence are present in the story sentences.
+- A strong middle lesson may earn high structure scores when it has a hook,
+  development, meaningful action, local outcome, and causal link to the next lesson,
+  even though it does not resolve the whole book.
 
 ==================================================
 [EVALUATION CRITERIA]

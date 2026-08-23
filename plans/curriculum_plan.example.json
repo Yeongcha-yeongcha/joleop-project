@@ -5,7 +5,6 @@
   "min_score": 80,
   "generate_images": false,
   "generate_tts": false,
-  "save_to_database": true,
   "output_path": "outputs/curriculum_lessons.json",
   "max_total_attempts_multiplier": 3,
   "levels": [

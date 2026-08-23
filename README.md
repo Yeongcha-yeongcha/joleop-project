@@ -49,11 +49,13 @@ Level 1 long story
   - roleplay compatibility
 - emotional safety, readability, visual scene clarity가 `2점 이하`면 자동 탈락
 
-문장 수는 학습 설계상 목표값을 두되, 생성 안정성을 위해 `목표 ±2문장`까지 허용합니다.
+Lesson 분량은 레벨이 아니라 책에 따라 정합니다.
 
-- Level 1: 목표 5문장, 허용 3-7문장
-- Level 2: 목표 7문장, 허용 5-9문장
-- Level 3: 목표 10문장, 허용 8-12문장
+- Book 1: Lesson당 10~12문장/페이지
+- Book 2: Lesson당 12~14문장/페이지
+- Level 1: 쉬운 어휘·문법, 문장당 최대 14단어
+- Level 2: 중간 어휘·문법, 문장당 최대 18단어
+- Level 3: 조금 더 복잡한 어휘·문법, 문장당 최대 22단어
 
 ## 프로젝트 구조
 
@@ -199,6 +201,69 @@ python -m scripts.generate_lessons --plan plans/content_plan.example.json
 
 ```bash
 python -m ai.story_generator --plan plans/content_plan.example.json
+```
+
+실행 결과를 한 폴더에 모으고 기존 결과를 덮어쓰지 않으려면 실행 폴더명을
+`--run-name`으로 지정합니다.
+
+```bash
+python -m ai.story_generator \
+  --plan plans/content_plan.example.json \
+  --run-name my_fairy_tale_01
+```
+
+결과는 `outputs/my_fairy_tale_01/` 아래에 저장됩니다.
+
+```text
+outputs/my_fairy_tale_01/
+  llama_story_drafts.json
+  qwen_judged_lessons.json
+  qwen_judged_lessons_stories.md
+  images/
+  audio/
+```
+
+같은 이름의 폴더가 이미 있으면 실행을 중단하므로 이전 결과를 덮어쓰지
+않습니다. `--run-name`을 생략하면 현재 시각을 사용한 고유 이름을 자동으로
+만듭니다. 상위 폴더는 `--output-root`로 변경할 수 있습니다.
+
+생성 중에도 각 lesson의 통과 또는 거절이 끝날 때마다 결과 JSON이 갱신됩니다.
+`generation_status`는 `running`, `completed`, `interrupted`, `failed` 중 하나이며,
+실행을 중단해도 마지막으로 완료된 lesson까지의 결과를 확인할 수 있습니다.
+
+`llama_story_drafts.json`은 Llama 초안이 생성되는 즉시 저장되는 원본입니다.
+자동 후처리나 문장 수 검사는 수행하지 않으며 사람이 검토할 수 있도록 그대로
+보존합니다. 이후 Qwen LLM-as-Judge를 통과한 결과와 평가 내용은 별도의
+`qwen_judged_lessons.json`에 저장됩니다.
+
+묘사 퀴즈는 현재 생성 파이프라인에서 제외되어 최종 JSON의
+`description_scenes`는 빈 배열로 저장됩니다. 롤플레잉 시나리오는 계속 생성합니다.
+
+초안의 `parse_status`가 `invalid`이면 Llama JSON이 잘렸거나 형식이 깨진
+상태입니다. 원본 확인을 위해 초안 파일에는 보존하지만 Qwen 평가와 다음 Lesson의
+연속성 문맥에는 사용하지 않습니다. 같은 Lesson과 같은 episode beat로 다시 시도합니다.
+
+현재 단일 책 plan은 Level 1 원본 책만 생성하며 정확히 10개 Lesson으로 구성됩니다.
+Lesson 1은 시작, Lesson 2~9는 같은 이야기의 전개, Lesson 10은 결말입니다.
+Level 1은 문장당 최대 14단어를 생성 기준으로 사용합니다. 이후 Level 2와
+Level 3은 이 원본의 캐릭터·사건·사건 순서·결말을 유지하고 언어 난이도만
+각각 문장당 최대 18단어와 22단어로 바꾸는 재작성 대상으로 남겨둡니다.
+
+10개의 `episode_beats`를 직접 작성하지 않으려면 별도 plan 생성 스크립트를
+사용할 수 있습니다. 이 스크립트는 기존 파일을 덮어쓰지 않습니다.
+
+```bash
+python -m scripts.generate_content_plan \
+  --main-theme "friendship, courage, and helping others" \
+  --output plans/my_book_plan.json
+```
+
+생성된 plan으로 책을 실행합니다.
+
+```bash
+python ai/story_generator.py \
+  --plan plans/my_book_plan.json \
+  --run-name my_book_level1
 ```
 
 결과는 기본적으로 아래 파일에 저장됩니다.
