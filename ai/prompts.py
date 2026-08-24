@@ -375,6 +375,24 @@ Serialized story rules:
 - If this is a middle episode, continue the journey and leave a warm reason to keep going.
 - If this is the final episode, give the longer story a comforting resolution.
 
+==================================================
+[CONTINUITY CONTEXT USAGE — DO NOT COPY]
+==================================================
+
+The "Series continuity context" lines above are PAST events, provided only so
+you remember who the characters are and what already happened. They are not
+material to reuse.
+
+- Do not copy, quote, or closely paraphrase any sentence from the continuity
+  context. Every story_sentence in THIS lesson must be new text you write for
+  the Current episode beat.
+- If a continuity sentence and a sentence you are about to write share the same
+  subject, verb, and object, rewrite your sentence around a different concrete
+  action instead.
+- The continuity context tells you what already happened, not what should
+  happen again. This lesson's event must be a new, unique event that has not
+  already occurred earlier in the book.
+
 Hard constraints:
 - The pages array must contain between {min_pages} and {max_pages} pages.
 - When {min_pages} and {max_pages} are the same number, the pages array must contain
@@ -393,6 +411,13 @@ Hard constraints:
 - Do not repeat the previous lesson's central problem, solution, or event pattern.
 - Do not substitute a generic helping scene for the specific Current episode beat.
 - Do not finish the lesson if the required episode-beat consequence has not occurred.
+- Do not reuse a sentence, or a close paraphrase of a sentence, from the Series
+  continuity context. Every story_sentence must be newly written for this lesson.
+- If this is a middle lesson (episode < total_episodes), do not use full-resolution
+  language such as "was saved", "was a huge success", "we did it", "the festival
+  was amazing", or "felt proud that it was finished". End on a local, partial
+  outcome that still leaves the book-wide goal open. Only the final episode may
+  use resolution language.
 - Do not include numbered lists outside JSON.
 - Do not add extra pages.
 - Do not write multiple sentences inside one story_sentence.
@@ -765,6 +790,18 @@ Major-event enforcement:
 - A strong middle lesson may earn high structure scores when it has a hook,
   development, meaningful action, local outcome, and causal link to the next lesson,
   even though it does not resolve the whole book.
+
+Duplicate-content enforcement:
+- The text below the story includes "Reference lines from earlier in the book"
+  when earlier lessons exist. Compare the story sentences against those lines.
+- If several story sentences closely match, or are near-paraphrases of, those
+  earlier reference lines instead of depicting this lesson's own episode beat,
+  score creativity, memorability, and theme_consistency at 2 or lower, and set
+  "passed" to false regardless of the total score.
+- A middle lesson (episode < total_episodes) that uses full-resolution language
+  ("was saved", "was a huge success", "we did it", "the festival was amazing")
+  is reusing an ending that belongs only to the final lesson. Score
+  story_structure_completeness and theme_consistency at 2 or lower in that case.
 
 ==================================================
 [EVALUATION CRITERIA]

@@ -287,6 +287,9 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             ),
             image_output_dir=plan.get("_image_output_dir"),
             on_draft=lambda draft: append_story_draft(plan, draft),
+            # 이전에 채택된 문장들을 넘겨서 (1) Qwen judge가 중복을 판단할 근거를
+            # 갖게 하고, (2) 생성 단계에서도 값싼 문자열 유사도 체크로 복붙을 거른다.
+            previous_sentences=accepted_sentences,
         )
 
         if not lesson:
@@ -499,6 +502,7 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             ),
             image_output_dir=plan.get("_image_output_dir"),
             on_draft=lambda draft: append_story_draft(plan, draft),
+            previous_sentences=accepted_sentences,
         )
 
         if not lesson:
@@ -579,6 +583,10 @@ async def run_rewrite_level_plan(
             f"{episode}/{target_lessons} theme={theme}"
         )
 
+        # 재작성(rewrite) 단계는 앞선 base 문장을 "그대로 재사용해도 되는"
+        # 유일한 경우다 (난이도만 바꿔 같은 사건을 다시 서술). 따라서 여기서는
+        # previous_sentences 중복 검사를 걸지 않는다 — 걸면 의도된 재사용까지
+        # 오탐(false positive)으로 막아버린다.
         lesson, quality = await generate_lesson_if_quality_passes(
             book_id=plan["book_id"],
             episode=episode,
@@ -761,7 +769,12 @@ def build_continuity_context(
         "Keep every recurring character, setting, important object, goal, and cause-and-effect "
         "relationship consistent. Do not restart the story or introduce a replacement plot. "
         "Later Level 2 and Level 3 rewrites must be able to preserve these exact events.\n"
-        "Story anchors and most recent accepted events:\n"
+        "The lines below are PAST events, listed only so you remember who the characters are "
+        "and what already happened. They are reference material, not text to reuse. Do NOT "
+        "copy, quote, or closely paraphrase any of these lines in this lesson — every "
+        "story_sentence you write now must be new text that dramatizes THIS lesson's own "
+        "Current episode beat, a distinct event that has not already happened in the lines below.\n"
+        "Story anchors and most recent accepted events (reference only, do not copy):\n"
         f"{previous_text}"
     )
 

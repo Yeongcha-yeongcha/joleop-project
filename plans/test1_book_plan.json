@@ -26,8 +26,8 @@
   "generate_tts": false,
   "output_path": "qwen_judged_lessons.json",
   "episode_beats": [
-    "Lesson 1 beginning: Hana notices her friends and family preparing for the Harvest Festival, but a strong wind is destroying their decorations and food.",
-    "Lesson 2 development: Hana's grandmother, Meong, asks her to help repair the damaged decorations, but Hana is hesitant and makes a mistake, causing more damage.",
+    "Lesson 1: Hana notices her friends and family preparing for the Harvest Festival, but a strong wind is destroying their decorations and food.",
+    "Lesson 2: Hana's grandmother, Meong, asks her to help repair the damaged decorations, but Hana is hesitant and makes a mistake, causing more damage.",
     "Lesson 3: Hana's best friend, Bori, is hurt while trying to help with the repairs, and Hana must decide whether to help her friend or continue fixing the decorations.",
     "Lesson 4: Hana and Bori come up with a plan to rebuild the damaged decorations, but they realize they need more materials, which are in short supply.",
     "Lesson 5: Hana discovers a hidden stash of materials in an old, abandoned burrow, but she must navigate through a narrow tunnel to reach it.",

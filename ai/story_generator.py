@@ -9,6 +9,7 @@
 import re
 import json
 import sys
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -187,6 +188,37 @@ def story_text_from_sentences(sentences: list[str]) -> str:
     return "\n".join(f"{i + 1}. {sentence}" for i, sentence in enumerate(sentences))
 
 
+def find_reused_sentences(
+    sentences: list[str],
+    previous_sentences: list[str],
+    *,
+    similarity_threshold: float = 0.88,
+) -> list[dict]:
+    """Return likely copies/near-copies of sentences from accepted lessons."""
+    reused = []
+    for sentence in sentences:
+        normalized = " ".join(re.findall(r"[a-z0-9']+", sentence.lower()))
+        if len(normalized.split()) < 4:
+            continue
+        for previous in previous_sentences:
+            normalized_previous = " ".join(
+                re.findall(r"[a-z0-9']+", previous.lower())
+            )
+            if not normalized_previous:
+                continue
+            similarity = SequenceMatcher(
+                None, normalized, normalized_previous
+            ).ratio()
+            if similarity >= similarity_threshold:
+                reused.append({
+                    "sentence": sentence,
+                    "previous_sentence": previous,
+                    "similarity": round(similarity, 3),
+                })
+                break
+    return reused
+
+
 def parse_json_object(text: str) -> dict:
     text = re.sub(r"```json|```", "", text).strip()
     try:
@@ -204,6 +236,7 @@ def evaluate_story_score(
     episode: int = 1,
     total_episodes: int = 1,
     episode_beat: str = "",
+    previous_sentences: Optional[list[str]] = None,
 ) -> dict:
     serialized_context = (
         f"This is Lesson {episode} of {total_episodes} in one continuous book. "
@@ -212,6 +245,13 @@ def evaluate_story_score(
         "A middle lesson should advance the plot without ending the whole book; "
         "only the final lesson must resolve the overall story.\n\n"
     )
+    if previous_sentences:
+        references = story_text_from_sentences(previous_sentences)
+        serialized_context += (
+            "Reference lines from earlier in the book (the submitted story must not "
+            "copy or closely paraphrase these):\n"
+            f"{references}\n\n"
+        )
     prompt = STORY_SCORE_PROMPT.format(story=serialized_context + story_text)
     evaluations = []
 
@@ -659,6 +699,7 @@ async def generate_lesson_if_quality_passes(
     continuity_context: str = "This is episode 1. Start the longer story gently.",
     image_output_dir: Optional[str] = None,
     on_draft: Optional[Callable[[dict], None]] = None,
+    previous_sentences: Optional[list[str]] = None,
 ) -> tuple[Optional[Lesson], dict]:
     print(f"\n{'='*50}")
     print(f"[품질 필터 생성] theme={theme} ep={episode} min_score={min_score}")
@@ -748,6 +789,24 @@ async def generate_lesson_if_quality_passes(
             )
             continue
 
+        reused_sentences = find_reused_sentences(
+            sentences, previous_sentences or []
+        )
+        if reused_sentences:
+            best_failure = {
+                "theme": theme,
+                "accepted": False,
+                "score": 0,
+                "reason": "Draft reused sentence text from an earlier accepted lesson.",
+                "reused_sentences": reused_sentences,
+                "story_sentences": sentences,
+            }
+            print(
+                f"  초안 재생성 {quality_attempt}/{quality_retries}: "
+                f"이전 문장과 유사한 문장 {len(reused_sentences)}개"
+            )
+            continue
+
         print("  → 초안 저장 완료, Qwen 품질 평가 시작")
         story_text = story_text_from_sentences(sentences)
         evaluation = evaluate_story_score(
@@ -755,6 +814,7 @@ async def generate_lesson_if_quality_passes(
             episode=episode,
             total_episodes=total_episodes,
             episode_beat=theme,
+            previous_sentences=previous_sentences,
         )
         score = int(evaluation.get("total_score", 0))
 
