@@ -10,6 +10,7 @@
 import json
 import re
 import time
+import difflib
 from typing import Optional, Generator
 
 from shared.settings import ANTHROPIC_API_KEY, MODELS
@@ -40,6 +41,7 @@ class RoleplaySession:
 Scene: {s.scene_description}
 The child's goal: {s.player_goal}
 Model answer the child should eventually say: "{s.model_answer}"
+Other acceptable examples: {s.similar_answers}
 
 Rules:
 - Stay in character as {s.character_name}
@@ -81,33 +83,93 @@ def get_character_response(session: RoleplaySession, user_input: str) -> str:
 
 # ─── 정답 판단 ───────────────────────────────────────────────
 
+ROLEPLAY_STOPWORDS = {
+    "a", "an", "and", "are", "am", "be", "i", "is", "it", "the", "to",
+    "we", "you", "your", "my", "of", "for", "with",
+}
+
+
+def _normalize_roleplay_text(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9']+", text.casefold()))
+
+
+def _lexically_similar_to_model_answer(model_answer: str, user_input: str) -> bool:
+    """LLM 장애 시 어순·군더더기 차이를 허용하는 보조 판정."""
+    reference = _normalize_roleplay_text(model_answer)
+    answer = _normalize_roleplay_text(user_input)
+    if not reference or not answer:
+        return False
+    if reference == answer:
+        return True
+    if difflib.SequenceMatcher(None, reference, answer).ratio() >= 0.72:
+        return True
+
+    reference_words = {
+        word for word in reference.split() if word not in ROLEPLAY_STOPWORDS
+    }
+    answer_words = {
+        word for word in answer.split() if word not in ROLEPLAY_STOPWORDS
+    }
+    if not reference_words:
+        reference_words = set(reference.split())
+    overlap = len(reference_words & answer_words) / len(reference_words)
+    return overlap >= 0.6
+
+
+def _parse_judge_result(text: str) -> dict:
+    cleaned = re.sub(r"```(?:json)?|```", "", text).strip()
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", cleaned):
+        try:
+            result, _ = decoder.raw_decode(cleaned[match.start():])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(result, dict) and "passed" in result:
+            return result
+    raise ValueError("Roleplay judge did not return a valid JSON result.")
+
 def judge_answer(scenario: RoleplayScenario, user_input: str) -> tuple[bool, str]:
     """
     LLM으로 사용자 발화가 목표 달성인지 판단
     정답이 완전히 동일하지 않아도 의미가 맞으면 패스
     """
+    reference_answers = [scenario.model_answer, *scenario.similar_answers]
+    if any(
+        _normalize_roleplay_text(reference) == _normalize_roleplay_text(user_input)
+        for reference in reference_answers
+    ):
+        return True, "모범 답안과 같은 의미로 잘 말했어요!"
+
     prompt = f"""You are judging a child's English roleplay response in a fairy tale learning game.
 
 Player's goal: {scenario.player_goal}
-Model answer: "{scenario.model_answer}"
+PRIMARY REFERENCE model answer: "{scenario.model_answer}"
+Three similar acceptable examples: {json.dumps(scenario.similar_answers, ensure_ascii=False)}
 Child said: "{user_input}"
 
-Does the child's response successfully achieve the goal?
-Be LENIENT — different words or simpler phrasing is fine as long as the intent matches.
+Decide whether the child's sentence has the same practical meaning or communicative
+intent as the model answer in this roleplay context.
+
+PASS when:
+- it is a paraphrase of the model answer;
+- it achieves the same intent with different words or word order;
+- it is shorter or has small beginner grammar mistakes but remains understandable;
+- it gives another natural response that successfully achieves the player's goal.
+
+FAIL only when the meaning is unrelated, contradictory, unsafe, or does not achieve
+the goal. Do not require exact wording or exact keyword overlap.
 
 Reply ONLY with JSON: {{"passed": true/false, "reason": "one sentence in Korean"}}"""
 
     try:
         text = generate_text([{"role": "user", "content": prompt}], max_tokens=150)
-        text = re.sub(r"```json|```", "", text).strip()
-        result = json.loads(text)
-        return result["passed"], result["reason"]
+        result = _parse_judge_result(text)
+        return bool(result["passed"]), str(result.get("reason", ""))
     except Exception:
-        # 간단한 키워드 fallback
-        key_words = scenario.model_answer.lower().split()
-        user_words = user_input.lower().split()
-        overlap = len(set(key_words) & set(user_words)) / max(len(key_words), 1)
-        passed = overlap >= 0.5
+        passed = any(
+            _lexically_similar_to_model_answer(reference, user_input)
+            for reference in reference_answers
+        )
         return passed, "잘했어요!" if passed else "조금 더 해볼까요?"
 
 

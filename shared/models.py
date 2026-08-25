@@ -48,6 +48,7 @@ class RoleplayScenario:
     character_name: str              # AI가 맡을 캐릭터
     player_goal: str                 # 플레이어가 달성해야 할 목표
     model_answer: str                # 모범 답안 (LLM 판단 기준)
+    similar_answers: list[str] = field(default_factory=list)  # 같은 의미의 허용 답안 3개
     hint_sequence: list[str] = field(default_factory=list)  # 3턴 후 순차 힌트
 
 

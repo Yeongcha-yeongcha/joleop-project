@@ -25,6 +25,8 @@ for English Level {level}. Infer the recurring characters from the story pages.
 
 Encourage empathy, helping, confidence, and natural speaking. Do not require an
 exact sentence, long conversation, abstract reasoning, or frightening conflict.
+For every mission, provide exactly three unique similar_answers. They must express
+the same intent as model_answer with natural but different wording.
 
 Return ONLY valid JSON:
 {{
@@ -34,7 +36,12 @@ Return ONLY valid JSON:
       "character_name": "...",
       "mission_goal": "...",
       "expected_intent": "...",
-      "example_correct_answers": ["..."],
+      "model_answer": "one clear model response",
+      "similar_answers": [
+        "same intent with different words 1",
+        "same intent with different words 2",
+        "same intent with different words 3"
+      ],
       "hint_1": "...",
       "hint_2": "...",
       "hint_3": "..."
@@ -76,8 +83,25 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
         for mission in missions[:count]:
             if not isinstance(mission, dict):
                 continue
-            answers = mission.get("example_correct_answers") or []
+            legacy_answers = mission.get("example_correct_answers") or []
             expected = mission.get("expected_intent") or ""
+            model_answer = str(
+                mission.get("model_answer")
+                or (legacy_answers[0] if legacy_answers else expected)
+            ).strip()
+            similar_answers = mission.get("similar_answers") or []
+            if not similar_answers:
+                similar_answers = (
+                    legacy_answers[1:]
+                    + (mission.get("acceptable_alternative_answers") or [])
+                )
+            similar_answers = list(dict.fromkeys(
+                str(answer).strip()
+                for answer in similar_answers
+                if str(answer).strip() and str(answer).strip() != model_answer
+            ))[:3]
+            if not model_answer or len(similar_answers) != 3:
+                continue
             hints = [mission.get(f"hint_{number}", "") for number in (1, 2, 3)]
             results.append({
                 "scenario_id": f"rp_{level}_{len(results) + 1}",
@@ -86,7 +110,8 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
                 "scene_description": mission.get("situation_summary", ""),
                 "character_name": mission.get("character_name", "a story character"),
                 "player_goal": mission.get("mission_goal", ""),
-                "model_answer": answers[0] if answers else expected,
+                "model_answer": model_answer,
+                "similar_answers": similar_answers,
                 "hint_sequence": [hint for hint in hints if hint],
             })
         if len(results) == count:
@@ -102,6 +127,11 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
         "character_name": "a friendly story character",
         "player_goal": "Say something kind and helpful.",
         "model_answer": "I can help you.",
+        "similar_answers": [
+            "Let me help you.",
+            "Can I help you?",
+            "I will help you.",
+        ],
         "hint_sequence": ["Say something kind.", "Offer help.", "Say, I can help you."],
     }]
 

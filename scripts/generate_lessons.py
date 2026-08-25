@@ -230,6 +230,7 @@ def lesson_to_dict(lesson) -> dict[str, Any]:
                 "character_name": scenario.character_name,
                 "player_goal": scenario.player_goal,
                 "model_answer": scenario.model_answer,
+                "similar_answers": scenario.similar_answers,
                 "hint_sequence": scenario.hint_sequence,
             }
             for scenario in lesson.roleplay_scenarios
