@@ -115,7 +115,7 @@ LEVEL_CONFIGS = {
     1: LevelConfig(
         level=1,
         pronunciation_cutoff=50,
-        description_scenes=2,
+        description_scenes=3,
         roleplay_count=1,
     ),
     2: LevelConfig(

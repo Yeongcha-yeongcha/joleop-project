@@ -211,6 +211,8 @@ def lesson_to_dict(lesson) -> dict[str, Any]:
         "description_scenes": [
             {
                 "scene_number": scene.scene_number,
+                "page_number": scene.page_number,
+                "text": scene.text,
                 "image_path": scene.image_path,
                 "desc_type": scene.desc_type.value,
                 "blank_word": scene.blank_word,
@@ -254,10 +256,12 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
     max_attempts = max(
         len(episode_beats),
-        target_lessons * int(plan.get("max_total_attempts_multiplier", 3)),
+        target_lessons * int(plan.get("max_total_attempts_multiplier", 10)),
     )
 
     attempt = 0
+    episode_avoid_sentences: list[str] = []
+    episode_quality_feedback: list[str] = []
 
     while len(accepted) < target_lessons and attempt < max_attempts:
         theme = episode_beats[(next_episode - start_episode) % len(episode_beats)]
@@ -276,9 +280,9 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
-            min_score=int(plan.get("min_score", 80)),
+            min_score=int(plan.get("min_score", 75)),
             generate_images=bool(plan.get("generate_images", False)),
-            quality_retries=int(plan.get("quality_retries", 3)),
+            quality_retries=int(plan.get("quality_retries", 5)),
             total_episodes=target_lessons,
             continuity_context=build_continuity_context(
                 accepted_sentences,
@@ -290,6 +294,8 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             # 이전에 채택된 문장들을 넘겨서 (1) Qwen judge가 중복을 판단할 근거를
             # 갖게 하고, (2) 생성 단계에서도 값싼 문자열 유사도 체크로 복붙을 거른다.
             previous_sentences=accepted_sentences,
+            avoid_sentences=episode_avoid_sentences,
+            quality_feedback=episode_quality_feedback,
         )
 
         if not lesson:
@@ -307,6 +313,8 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
         accepted.append(finalized["result_item"])
         accepted_sentences.extend(finalized["sentences"])
+        episode_avoid_sentences.clear()
+        episode_quality_feedback.clear()
 
         print(f"  PASS: {quality['score']}/100 -> {finalized['lesson_id']}")
         next_episode += 1
@@ -335,7 +343,7 @@ def build_level_result(
             "future_rewrites": [2, 3],
         },
         "target_lessons": target_lessons,
-        "min_score": int(plan.get("min_score", 80)),
+        "min_score": int(plan.get("min_score", 75)),
         "accepted_count": len(accepted),
         "rejected_count": len(rejected),
         "accepted": accepted,
@@ -433,7 +441,7 @@ def make_batch_plan(
         "age": batch.get("age", root_plan["age"]),
         "protagonist": batch.get("protagonist", root_plan["protagonist"]),
         "target_lessons": int(batch.get("target_lessons", target_lessons)),
-        "min_score": batch.get("min_score", root_plan.get("min_score", 80)),
+        "min_score": batch.get("min_score", root_plan.get("min_score", 75)),
         "generate_images": batch.get(
             "generate_images",
             root_plan.get("generate_images", False),
@@ -444,11 +452,11 @@ def make_batch_plan(
         ),
         "quality_retries": batch.get(
             "quality_retries",
-            root_plan.get("quality_retries", 3),
+            root_plan.get("quality_retries", 5),
         ),
         "max_total_attempts_multiplier": batch.get(
             "max_total_attempts_multiplier",
-            root_plan.get("max_total_attempts_multiplier", 3),
+            root_plan.get("max_total_attempts_multiplier", 10),
         ),
         "_image_output_dir": root_plan.get("_image_output_dir"),
         "_audio_output_dir": root_plan.get("_audio_output_dir"),
@@ -469,10 +477,12 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
     max_attempts = max(
         len(episode_beats),
-        target_lessons * int(plan.get("max_total_attempts_multiplier", 3)),
+        target_lessons * int(plan.get("max_total_attempts_multiplier", 10)),
     )
 
     attempt = 0
+    episode_avoid_sentences: list[str] = []
+    episode_quality_feedback: list[str] = []
 
     while len(accepted) < target_lessons and attempt < max_attempts:
         theme = episode_beats[(next_episode - start_episode) % len(episode_beats)]
@@ -491,9 +501,9 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
-            min_score=int(plan.get("min_score", 80)),
+            min_score=int(plan.get("min_score", 75)),
             generate_images=bool(plan.get("generate_images", False)),
-            quality_retries=int(plan.get("quality_retries", 3)),
+            quality_retries=int(plan.get("quality_retries", 5)),
             total_episodes=target_lessons,
             continuity_context=build_continuity_context(
                 accepted_sentences,
@@ -503,6 +513,8 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             image_output_dir=plan.get("_image_output_dir"),
             on_draft=lambda draft: append_story_draft(plan, draft),
             previous_sentences=accepted_sentences,
+            avoid_sentences=episode_avoid_sentences,
+            quality_feedback=episode_quality_feedback,
         )
 
         if not lesson:
@@ -524,6 +536,8 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
         accepted.append(finalized["result_item"])
         accepted_sentences.extend(finalized["sentences"])
+        episode_avoid_sentences.clear()
+        episode_quality_feedback.clear()
 
         print(f"  PASS: {quality['score']}/100 -> {finalized['lesson_id']}")
         next_episode += 1
@@ -594,9 +608,9 @@ async def run_rewrite_level_plan(
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
-            min_score=int(plan.get("min_score", 80)),
+            min_score=int(plan.get("min_score", 75)),
             generate_images=bool(plan.get("generate_images", False)),
-            quality_retries=int(plan.get("quality_retries", 3)),
+            quality_retries=int(plan.get("quality_retries", 5)),
             total_episodes=target_lessons,
             continuity_context=rewrite_context,
             image_output_dir=plan.get("_image_output_dir"),
@@ -794,6 +808,57 @@ def write_output(result: dict[str, Any], output_path: Path) -> None:
         json.dump(result, file, ensure_ascii=False, indent=2)
 
 
+def write_accepted_text_output(result: dict[str, Any], output_path: Path) -> Path:
+    """accepted lesson에서 level, lesson 번호, theme, 본문 문장을 저장한다."""
+    accepted_text_path = output_path.with_name(
+        f"{output_path.stem}_accepted_text.json"
+    )
+    accepted_text_path.parent.mkdir(parents=True, exist_ok=True)
+
+    accepted_lessons = []
+    for item in result.get("accepted", []):
+        lesson = item.get("lesson", {})
+        level = int(
+            item.get("level")
+            or lesson.get("level")
+            or result.get("level")
+            or 0
+        )
+        lesson_number = int(lesson.get("episode", 0))
+        accepted_lessons.append((
+            level,
+            lesson_number,
+            {
+                "level": level,
+                "lesson_number": lesson_number,
+                "theme": item.get("theme") or lesson.get("theme", ""),
+                "lesson": [
+                    {
+                        f"page{page.get('page_number', 0)}": page.get("text", "")
+                    }
+                    for page in sorted(
+                        lesson.get("pages", []),
+                        key=lambda page: page.get("page_number", 0),
+                    )
+                    if page.get("text")
+                ],
+            },
+        ))
+
+    accepted_lessons.sort(key=lambda entry: (entry[0], entry[1]))
+    payload = [entry[2] for entry in accepted_lessons]
+
+    temporary_path = accepted_text_path.with_name(
+        f".{accepted_text_path.name}.tmp"
+    )
+    with temporary_path.open("w", encoding="utf-8") as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
+        file.flush()
+        os.fsync(file.fileno())
+    temporary_path.replace(accepted_text_path)
+    return accepted_text_path
+
+
 def write_story_text_output(result: dict[str, Any], output_path: Path) -> None:
     story_path = output_path.with_name(f"{output_path.stem}_stories.md")
     story_path.parent.mkdir(parents=True, exist_ok=True)
@@ -980,6 +1045,7 @@ async def async_main() -> None:
 
     write_checkpoint(plan, result, status="completed")
     set_draft_status(plan, "completed")
+    accepted_text_path = write_accepted_text_output(result, output_path)
 
     if not args.no_story_text:
         write_story_text_output(result, output_path)
@@ -988,6 +1054,7 @@ async def async_main() -> None:
     print(f"Accepted: {result['accepted_count']}")
     print(f"Rejected: {result['rejected_count']}")
     print(f"Output: {output_path}")
+    print(f"Accepted text JSON: {accepted_text_path}")
 
     if not args.no_story_text:
         print(

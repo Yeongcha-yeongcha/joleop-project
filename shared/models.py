@@ -30,6 +30,8 @@ class StoryPage:
 @dataclass
 class DescriptionScene:
     scene_number: int
+    page_number: int                  # 문제의 근거가 된 원본 story page 번호
+    text: str                         # 해당 원본 story page 문장
     image_path: str
     desc_type: DescriptionType
     blank_word: Optional[str] = None   # 1단계: 빈칸에 들어갈 단어

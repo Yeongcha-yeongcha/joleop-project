@@ -54,6 +54,17 @@ The Current episode beat in the request is the required main event, not an
 optional theme. Turn it into an observable event that changes the story state.
 
 ==================================================
+[EPISODE TRANSITION — REQUIRED]
+==================================================
+
+{episode_transition_instruction}
+
+The continuity context is a bridge into the CURRENT lesson, not text to imitate.
+Start from the concrete state left by the previous accepted lesson, then move
+forward immediately into the Current episode beat. Do not spend pages retelling
+what already happened.
+
+==================================================
 [EPISODE BEAT AS THE CENTRAL STORYLINE]
 ==================================================
 
@@ -355,7 +366,7 @@ Before writing, design the story to pass this strict judge checklist:
 - Lesson event: a strong hook, one unique central event, meaningful character action,
   and a concrete consequence that advances the book-wide plot.
 - Story structure: the episode beat causes a visible change and leads naturally to the next lesson.
-- Memorability: include one concrete memorable object, such as a red ball, blue scarf, yellow lantern, tiny bell, or picnic basket.
+- Memorability: feature one concrete memorable object. Prefer an object already established in the book or explicitly required by the Current episode beat; do not invent a random new object only to satisfy this checklist.
 
 Serialized story rules:
 - All 10 lessons form one book, not 10 separate stories.
@@ -376,22 +387,31 @@ Serialized story rules:
 - If this is the final episode, give the longer story a comforting resolution.
 
 ==================================================
-[CONTINUITY CONTEXT USAGE — DO NOT COPY]
+[CONTINUITY CONTEXT USAGE — CONTINUE, DO NOT REPLAY]
 ==================================================
 
-The "Series continuity context" lines above are PAST events, provided only so
-you remember who the characters are and what already happened. They are not
-material to reuse.
+The "Series continuity context" contains PAST events. Use it for two things only:
+1. preserve facts such as characters, objects, locations, promises, and the main goal;
+2. identify the exact story state from which THIS lesson must continue.
 
-- Do not copy, quote, or closely paraphrase any sentence from the continuity
-  context. Every story_sentence in THIS lesson must be new text you write for
-  the Current episode beat.
-- If a continuity sentence and a sentence you are about to write share the same
-  subject, verb, and object, rewrite your sentence around a different concrete
-  action instead.
-- The continuity context tells you what already happened, not what should
-  happen again. This lesson's event must be a new, unique event that has not
-  already occurred earlier in the book.
+Rules:
+- Continue from the most recent state in the continuity context. Do not restart,
+  summarize, or dramatize earlier events again.
+- Every story_sentence in this lesson must describe a NEW action, reaction,
+  discovery, decision, consequence, or final resolution belonging to the Current
+  episode beat.
+- Do not copy or closely paraphrase an earlier full sentence. Reusing character
+  names, locations, important objects, and necessary vocabulary is normal continuity.
+- Do not avoid continuity just to sound different. The new sentences must still
+  make clear why the current event follows from the previous accepted lesson.
+- The repeated child-friendly phrase for this lesson must be NEW for this lesson
+  when possible. Do not simply reuse a repeated phrase visible in the continuity
+  context.
+- For the penultimate lesson, create the concrete condition that the final lesson
+  can resolve, but do not announce the book-wide success yet.
+- For the final lesson, begin from the concrete result of the penultimate lesson
+  and resolve the book-wide goal. Earlier events and objects may be referenced as
+  facts, but write those references in new sentences instead of replaying old pages.
 
 Hard constraints:
 - The pages array must contain between {min_pages} and {max_pages} pages.
@@ -411,8 +431,9 @@ Hard constraints:
 - Do not repeat the previous lesson's central problem, solution, or event pattern.
 - Do not substitute a generic helping scene for the specific Current episode beat.
 - Do not finish the lesson if the required episode-beat consequence has not occurred.
-- Do not reuse a sentence, or a close paraphrase of a sentence, from the Series
-  continuity context. Every story_sentence must be newly written for this lesson.
+- Do not reuse a full sentence, or a close paraphrase of a full sentence, from the
+  Series continuity context. Use past information only to make the NEW current
+  actions causally understandable.
 - If this is a middle lesson (episode < total_episodes), do not use full-resolution
   language such as "was saved", "was a huge success", "we did it", "the festival
   was amazing", or "felt proud that it was finished". End on a local, partial
@@ -700,9 +721,9 @@ Your task is to evaluate whether a generated story demonstrates award-level lite
 Important context:
 - This text is one lesson in a continuous 10-lesson book, not a separate micro-story.
 - Lesson/page count is determined by the supplied book configuration, not by language level.
-- Level 1 uses simple vocabulary and grammar, with at most 14 words per story sentence.
-- Level 2 uses intermediate vocabulary and grammar, with at most 18 words per story sentence.
-- Level 3 uses slightly more complex vocabulary and grammar, with at most 22 words per story sentence.
+- Level 1 uses simple vocabulary and grammar, with at most 10 words per story sentence.
+- Level 2 uses intermediate vocabulary and grammar, with at most 14 words per story sentence.
+- Level 3 uses slightly more complex vocabulary and grammar, with at most 16 words per story sentence.
 - Do NOT penalize a middle lesson for leaving the main book plot open.
 - Only Lesson 10 must resolve the overall book; Lessons 2-9 should advance it.
 - Judge literary quality relative to the supplied book page count and English learner level.
@@ -752,7 +773,7 @@ Each criterion: 1-5 points.
 TOTAL: 100 points maximum.
 
 A story should PASS only if:
-1. Total score is 80 or higher
+1. Total score is {min_score} or higher
 2. Every individual criterion score is 3 or higher
 3. Critical criteria scores are 4 or higher:
    - emotional_safety
@@ -794,14 +815,28 @@ Major-event enforcement:
 Duplicate-content enforcement:
 - The text below the story includes "Reference lines from earlier in the book"
   when earlier lessons exist. Compare the story sentences against those lines.
-- If several story sentences closely match, or are near-paraphrases of, those
-  earlier reference lines instead of depicting this lesson's own episode beat,
-  score creativity, memorability, and theme_consistency at 2 or lower, and set
+- Only treat a story sentence as a duplicate when its wording is a near-verbatim
+  match (same subject, verb, object, and most of the same words) to a specific
+  earlier reference line. Naming the same recurring character, memorable
+  object, location, or the book's stated goal is normal continuity, not
+  duplication, and must not be penalized on its own.
+- Level 1 books are intentionally repetitive by design (short, predictable
+  sentence patterns is a required quality, not a flaw). A single sentence that
+  echoes earlier phrasing is not, by itself, grounds for failure.
+- Only if THREE OR MORE story sentences in this lesson are each a near-verbatim
+  match to an earlier reference line, treat this as bulk copying: score
+  creativity, memorability, and theme_consistency at 2 or lower, and set
   "passed" to false regardless of the total score.
+- The final lesson (episode == total_episodes) is expected to reference
+  earlier events, objects, and promises to make the ending feel earned. Do not
+  penalize the final lesson merely for naming things from earlier lessons; only
+  penalize it if it reuses earlier SENTENCES near-verbatim per the rule above.
 - A middle lesson (episode < total_episodes) that uses full-resolution language
   ("was saved", "was a huge success", "we did it", "the festival was amazing")
   is reusing an ending that belongs only to the final lesson. Score
   story_structure_completeness and theme_consistency at 2 or lower in that case.
+  This rule does not apply to the final lesson, which is supposed to resolve
+  the book.
 
 ==================================================
 [EVALUATION CRITERIA]
@@ -828,6 +863,10 @@ Score each from 1 to 5:
 18. theme_consistency
 19. educational_suitability
 20. award_level_literary_feeling
+
+You MUST return all 20 category score keys exactly once. Never shorten the schema,
+never omit later keys, and never replace omitted keys with commentary. Keep all text
+fields brief so there is enough output budget for the complete score object.
 
 Reply ONLY as valid JSON:
 {{
@@ -863,6 +902,35 @@ Reply ONLY as valid JSON:
 
 Story to evaluate:
 {story}
+"""
+
+
+DUPLICATE_SENTENCE_REWRITE_PROMPT = """
+You are revising only the duplicated pages in one children's story lesson.
+
+Lesson: {episode} of {total_episodes}
+English level: {level}
+Episode beat: {theme}
+Maximum words per replacement sentence: {max_words}
+
+Full current lesson:
+{current_lesson}
+
+Pages that overlap earlier lessons:
+{duplicate_pages}
+
+Write a genuinely new sentence for each listed page. Preserve the page's role in
+the current lesson, its characters, continuity, and cause-and-effect. Mentioning a
+recurring character, object, location, or earlier event is allowed, especially in
+the final lesson. Do not copy an earlier sentence's wording, subject-verb-object
+pattern, or action. Do not alter pages that are not listed.
+
+Return ONLY valid JSON:
+{{
+  "replacements": [
+    {{"page_number": 1, "story_sentence": "New sentence."}}
+  ]
+}}
 """
 
 
@@ -1001,6 +1069,9 @@ Generate exactly {quiz_count} quizzes.
 Story title: {story_title}
 AR level: {ar_level}
 Quiz level: {level}
+
+Target-level generation rules:
+{level_instruction}
 
 Story pages and illustration descriptions:
 {story_pages}

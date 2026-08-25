@@ -236,8 +236,17 @@ outputs/my_fairy_tale_01/
 보존합니다. 이후 Qwen LLM-as-Judge를 통과한 결과와 평가 내용은 별도의
 `qwen_judged_lessons.json`에 저장됩니다.
 
-묘사 퀴즈는 현재 생성 파이프라인에서 제외되어 최종 JSON의
-`description_scenes`는 빈 배열로 저장됩니다. 롤플레잉 시나리오는 계속 생성합니다.
+`final_duplicate_judge`는 기본 생성 파이프라인에서 실행되지 않습니다. 생성이
+끝난 뒤 `*_accepted_text.json`의 중복 문장을 별도로 검사하고 싶을 때만 다음
+명령으로 직접 실행합니다.
+
+```bash
+python -m scripts.final_duplicate_judge \
+  outputs/my_fairy_tale_01/qwen_judged_lessons_accepted_text.json
+```
+
+묘사 퀴즈는 모든 레벨에서 lesson마다 3개씩 생성되며 최종 JSON의
+`description_scenes`에 저장됩니다. 롤플레잉 시나리오도 계속 생성합니다.
 
 초안의 `parse_status`가 `invalid`이면 Llama JSON이 잘렸거나 형식이 깨진
 상태입니다. 원본 확인을 위해 초안 파일에는 보존하지만 Qwen 평가와 다음 Lesson의
