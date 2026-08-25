@@ -20,13 +20,11 @@ if __package__ in {None, ""}:
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-from shared.settings import MODELS, LEVEL_CONFIGS, IMAGE_STYLE_GUIDE
+from shared.settings import MODELS, IMAGE_STYLE_GUIDE
 from ai.image_generator import attach_planned_image_paths, generate_story_images
 from ai.llm_client import generate_text
 from ai.prompts import (
-    DESCRIPTION_QUIZ_PROMPT,
     DUPLICATE_SENTENCE_REWRITE_PROMPT,
-    ROLEPLAY_MISSION_PROMPT,
     STORY_GENERATION_PROMPT,
     STORY_JUDGE_PROMPT,
     STORY_SCORE_PROMPT,
@@ -54,10 +52,7 @@ STORY_SCORE_CRITERIA = [
     "educational_suitability",
     "award_level_literary_feeling",
 ]
-from shared.models import (
-    StoryPage, DescriptionScene, RoleplayScenario,
-    DescriptionType, RoleplayTopic, Lesson
-)
+from shared.models import StoryPage, Lesson
 
 # 동화 초안 텍스트 생성
 def call_local_story_model(prompt: str, *, temperature: float = 0.45) -> str:
@@ -731,204 +726,6 @@ Example: ["Bright 2D mobile children's storybook app illustration, same cute rab
         ]
 
 
-# ─── 묘사 퀴즈 자동 생성 ─────────────────────────────────────
-
-def generate_description_scenes(
-    sentences: list[str],
-    level: int,
-    image_paths: list[str],
-    image_prompts: Optional[list[str]] = None,
-    story_title: str = "",
-) -> list[DescriptionScene]:
-    cfg = LEVEL_CONFIGS[level]
-    n = cfg.description_scenes
-    desc_type = {1: DescriptionType.WORD_GUESS, 2: DescriptionType.SENTENCE, 3: DescriptionType.REASON}[level]
-    image_prompts = image_prompts or ["" for _ in sentences]
-
-    story_pages = "\n".join(
-        (
-            f"Page {i + 1}\n"
-            f"Story sentence: {sentence}\n"
-            f"Illustration description: {image_prompts[i] if i < len(image_prompts) else ''}"
-        )
-        for i, sentence in enumerate(sentences)
-    )
-    ar_level = {1: "0.1-0.9", 2: "0.9-1.8", 3: "1.8-2.5"}[level]
-    level_instruction = {
-        1: (
-            "Generate only Level 1 word-guess quizzes. Choose one concrete visible "
-            "noun or color from each selected page. Ask a very short question, make "
-            "expected_answer a complete beginner sentence, and put the exact target "
-            "word first in keywords_for_evaluation. Do not ask for reasons or abstract "
-            "feelings. Use three different source pages."
-        ),
-        2: "Generate Level 2 short-sentence scene description quizzes.",
-        3: "Generate Level 3 scene-and-reason description quizzes.",
-    }[level]
-    prompt = DESCRIPTION_QUIZ_PROMPT.format(
-        quiz_count=n,
-        story_title=story_title or "Untitled Story",
-        ar_level=ar_level,
-        level=level,
-        level_instruction=level_instruction,
-        story_pages=story_pages,
-    )
-
-    try:
-        text = generate_text(
-            [{"role": "user", "content": prompt}],
-            max_tokens=1400,
-            temperature=0.2,
-        )
-        data = parse_json_object(text)
-        scenes = []
-        for i, quiz in enumerate(data.get("quizzes", [])[:n]):
-            scene_number = int(quiz.get("scene_number") or i + 1)
-            scene_idx = max(0, min(len(sentences) - 1, scene_number - 1))
-            expected_answer = quiz.get("expected_answer") or sentences[scene_idx]
-            keywords = quiz.get("keywords_for_evaluation") or []
-            blank_word = keywords[0] if desc_type == DescriptionType.WORD_GUESS and keywords else None
-            scenes.append(DescriptionScene(
-                scene_number=i + 1,
-                page_number=scene_idx + 1,
-                text=sentences[scene_idx],
-                image_path=image_paths[scene_idx] if scene_idx < len(image_paths) else "",
-                desc_type=desc_type,
-                blank_word=blank_word,
-                answer_sentence=expected_answer,
-                guide_hint=quiz.get("hint_1") or expected_answer[:len(expected_answer)//2],
-            ))
-        if len(scenes) == n:
-            return scenes
-    except Exception as e:
-        print(f"묘사 퀴즈 생성 실패: {e}")
-
-    # fallback: 묘사에 적합한 장면 선택 (가운데 문장들 우선)
-    mid = len(sentences) // 2
-    indices = list(range(max(0, mid - n//2), min(len(sentences), mid - n//2 + n)))
-    selected = [(indices[i], sentences[indices[i]]) for i in range(len(indices))]
-
-    type_instruction = {
-        DescriptionType.WORD_GUESS: """Create a fill-in-the-blank exercise. Pick one key word (color, animal, or object) from the sentence.
-Return JSON: {"blank_word": "...", "answer_sentence": "The ___ is/has ...", "guide_hint": "The ___ is"}""",
-        DescriptionType.SENTENCE: """Create a one-sentence scene description task.
-Return JSON: {"answer_sentence": "The boy is running.", "guide_hint": "The boy is"}""",
-        DescriptionType.REASON: """Create a scene description + reason task.
-Return JSON: {"answer_sentence": "She looks happy because she found the treasure.", "guide_hint": "She looks happy because"}""",
-    }[desc_type]
-
-    scenes = []
-    for i, (idx, sentence) in enumerate(selected):
-        prompt = f"""Given this fairy tale sentence: "{sentence}"
-{type_instruction}
-Make it simple for young English learners."""
-
-        try:
-            text = generate_text([{"role": "user", "content": prompt}], max_tokens=300)
-            text = re.sub(r"```json|```", "", text).strip()
-            data = json.loads(text)
-            scenes.append(DescriptionScene(
-                scene_number=i + 1,
-                page_number=idx + 1,
-                text=sentence,
-                image_path=image_paths[idx] if idx < len(image_paths) else "",
-                desc_type=desc_type,
-                blank_word=data.get("blank_word"),
-                answer_sentence=data.get("answer_sentence", sentence),
-                guide_hint=data.get("guide_hint", ""),
-            ))
-        except Exception:
-            scenes.append(DescriptionScene(
-                scene_number=i + 1,
-                page_number=idx + 1,
-                text=sentence,
-                image_path=image_paths[idx] if idx < len(image_paths) else "",
-                desc_type=desc_type,
-                answer_sentence=sentence,
-                guide_hint=sentence[:len(sentence)//2],
-            ))
-    return scenes
-
-
-# ─── 롤플레잉 시나리오 생성 ──────────────────────────────────
-
-def generate_roleplay_scenarios(
-    sentences: list[str],
-    level: int,
-    protagonist: str,
-    story_title: str = "",
-) -> list[RoleplayScenario]:
-    cfg = LEVEL_CONFIGS[level]
-    topic_map = {1: RoleplayTopic.INTRO, 2: RoleplayTopic.DIRECTION, 3: RoleplayTopic.ESCAPE}
-    char_map  = {1: "a dwarf", 2: "a hunter", 3: "the ball host"}
-    story_pages = "\n".join(
-        f"Page {i + 1}: {sentence}" for i, sentence in enumerate(sentences)
-    )
-    prompt = ROLEPLAY_MISSION_PROMPT.format(
-        mission_count=cfg.roleplay_count,
-        story_title=story_title or "Untitled Story",
-        level=level,
-        protagonist=protagonist,
-        story_pages=story_pages,
-    )
-
-    try:
-        text = generate_text(
-            [{"role": "user", "content": prompt}],
-            max_tokens=1200,
-            temperature=0.2,
-        )
-        data = parse_json_object(text)
-        scenarios = []
-        for i, mission in enumerate(data.get("missions", [])[:cfg.roleplay_count]):
-            example_answers = mission.get("example_correct_answers") or []
-            alternative_answers = mission.get("acceptable_alternative_answers") or []
-            model_answer = (
-                example_answers[0]
-                if example_answers
-                else mission.get("expected_intent")
-                or mission.get("pass_condition")
-                or ""
-            )
-            hints = [
-                mission.get("hint_1", ""),
-                mission.get("hint_2", ""),
-                mission.get("hint_3", ""),
-            ]
-            scenarios.append(RoleplayScenario(
-                scenario_id=f"rp_{level}_{i+1}",
-                topic=topic_map[level],
-                level=level,
-                scene_description=mission.get("situation_summary", ""),
-                character_name=char_map[level],
-                player_goal=mission.get("mission_goal", ""),
-                model_answer=model_answer,
-                hint_sequence=[h for h in hints if h],
-            ))
-        if len(scenarios) == cfg.roleplay_count:
-            return scenarios
-    except Exception as e:
-        print(f"롤플레잉 생성 실패: {e}")
-
-    goal_map  = {
-        1: "Introduce yourself to the character in a kind way",
-        2: "Ask for help or directions politely",
-        3: "Help solve the story problem with a brave idea",
-    }
-    return [
-        RoleplayScenario(
-            scenario_id=f"rp_{level}_1",
-            topic=topic_map[level],
-            level=level,
-            scene_description="A friendly character needs kind words from the child.",
-            character_name=char_map[level],
-            player_goal=goal_map[level],
-            model_answer="I can help you.",
-            hint_sequence=["Try saying something kind.", "Offer help.", "Say, 'I can help you.'"],
-        )
-    ]
-
-
 # ─── 메인 파이프라인 ──────────────────────────────────────────
 
 async def generate_lesson(
@@ -1008,28 +805,14 @@ async def generate_lesson(
         )
     )
 
-    # ⑤ 묘사 퀴즈 생성
-    print("  ⑤ 묘사 퀴즈 생성...")
-    description_scenes = generate_description_scenes(
-        sentences=sentences,
-        level=level,
-        image_paths=image_paths,
-        image_prompts=image_prompts,
-        story_title=theme,
-    )
-
-    # ⑥ 롤플레잉 시나리오 생성
-    print("  ⑥ 롤플레잉 시나리오 생성...")
-    roleplay = generate_roleplay_scenarios(sentences, level, protagonist)
-
     lesson = Lesson(
         lesson_id=f"{book_id}_ep{episode}_lv{level}",
         book_id=book_id,
         level=level,
         episode=episode,
         pages=pages,
-        description_scenes=description_scenes,
-        roleplay_scenarios=roleplay,
+        description_scenes=[],
+        roleplay_scenarios=[],
     )
 
     print(f"  ✓ 강의 패키지 완성: {lesson.lesson_id}")
@@ -1252,24 +1035,14 @@ async def generate_lesson_if_quality_passes(
             pages, book_id=book_id, episode=episode, output_dir=image_output_dir
         )
     )
-    print("  → 묘사 퀴즈 생성...")
-    description_scenes = generate_description_scenes(
-        sentences=sentences,
-        level=level,
-        image_paths=image_paths,
-        image_prompts=image_prompts,
-        story_title=theme,
-    )
-    roleplay = generate_roleplay_scenarios(sentences, level, protagonist)
-
     lesson = Lesson(
         lesson_id=f"{book_id}_ep{episode}_lv{level}",
         book_id=book_id,
         level=level,
         episode=episode,
         pages=pages,
-        description_scenes=description_scenes,
-        roleplay_scenarios=roleplay,
+        description_scenes=[],
+        roleplay_scenarios=[],
     )
 
     return lesson, {

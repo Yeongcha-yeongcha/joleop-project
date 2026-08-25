@@ -245,8 +245,21 @@ python -m scripts.final_duplicate_judge \
   outputs/my_fairy_tale_01/qwen_judged_lessons_accepted_text.json
 ```
 
-묘사 퀴즈는 모든 레벨에서 lesson마다 3개씩 생성되며 최종 JSON의
-`description_scenes`에 저장됩니다. 롤플레잉 시나리오도 계속 생성합니다.
+기본 동화 생성 파이프라인은 동화 텍스트와 `*_accepted_text.json`까지만
+생성합니다. 묘사 문제와 롤플레이 문제는 accepted text 파일을 입력으로 받아
+각각 별도 실행합니다.
+
+```bash
+python -m scripts.generate_description_quizzes \
+  outputs/my_run/qwen_judged_lessons_accepted_text.json
+
+python -m scripts.generate_roleplay_quizzes \
+  outputs/my_run/qwen_judged_lessons_accepted_text.json
+```
+
+기본 출력 파일명은 각각 `*_accepted_text_descriptions.json`과
+`*_accepted_text_roleplays.json`입니다. `--output`으로 경로를 직접 지정할 수도
+있으며 원본 accepted text 파일은 변경하지 않습니다.
 
 초안의 `parse_status`가 `invalid`이면 Llama JSON이 잘렸거나 형식이 깨진
 상태입니다. 원본 확인을 위해 초안 파일에는 보존하지만 Qwen 평가와 다음 Lesson의

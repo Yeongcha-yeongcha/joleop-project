@@ -39,7 +39,7 @@ def check_sentence_completeness(answer_sentence: str, transcribed: str) -> tuple
 
 def score_level1(scene: DescriptionScene, transcribed: str) -> tuple[bool, str]:
     """
-    빈칸 단어(blank_word)가 발화에 포함되어 있는지 + 전체 문장 완성도 확인
+    빈칸 단어(blank_word)를 말했는지 확인한다. 전체 문장은 요구하지 않는다.
     """
     if not scene.blank_word:
         return False, "빈칸 단어 정보 없음"
@@ -55,11 +55,6 @@ def score_level1(scene: DescriptionScene, transcribed: str) -> tuple[bool, str]:
 
     if not word_found:
         return False, f"'{scene.blank_word}' 단어가 발화에 없습니다. 다시 말해보세요."
-
-    # 전체 문장 완성도
-    complete, ratio = check_sentence_completeness(scene.answer_sentence, transcribed)
-    if not complete:
-        return False, f"문장을 완전하게 말해주세요. (현재 {int(ratio*100)}% 완성)"
 
     return True, "정답입니다!"
 
@@ -162,7 +157,7 @@ def evaluate_description(
     scorer = scorers.get(scene.desc_type, score_level1)
     passed, feedback = scorer(scene, transcribed)
 
-    # 오답 시 모범답안 노출 (1단계) or 피드백 (2,3단계)
+    # 오답 시 정답 단어 노출 (1단계) or 피드백 (2,3단계)
     if not passed and scene.desc_type == DescriptionType.WORD_GUESS:
         feedback += f"\n모범답안: {scene.answer_sentence}"
 
