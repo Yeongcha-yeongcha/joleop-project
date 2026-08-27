@@ -1,0 +1,125 @@
+.page {
+  width: 100%;
+  min-height: 100dvh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Illustration ─────────────────────────────── */
+
+.illustration {
+  width: 100%;
+  aspect-ratio: 1 / 0.85;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+}
+
+/* ── Sentence ─────────────────────────────────── */
+
+.textArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+}
+
+.sentence {
+  font-size: 24px;
+  line-height: 1.5;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+/* reading: bold, dark */
+.sentence.reading    { font-weight: 800; color: #1a1a2e; }
+/* repeat idle: dim, waiting for user to speak */
+.sentence.repeatIdle { font-weight: 400; color: #AAAAAA; }
+/* repeat done: orange, confirmed correct */
+.sentence.repeatDone { font-weight: 800; color: #FF9600; }
+
+/* 단어별 STT 결과 하이라이트 */
+.wordCorrect { color: #FF9D00; font-weight: 800; }
+.wordWrong   { color: #FF4D4D; font-weight: 800; }
+
+/* ── Bottom Button Area ───────────────────────── */
+
+.bottomArea {
+  padding: 0 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgBtn:active { transform: scale(0.96); }
+
+.btnImg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+}
+
+/* pulse while recording */
+.btnImg.recording {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
+}
+
+/* ── Phase Transition (reading → repeat → quiz → roleplay) ── */
+
+/* Base layout shared by both enter/exit states */
+.phaseEnter,
+.phaseExit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.phaseEnter {
+  animation: phaseSlideIn 0.32s ease-out both;
+}
+
+.phaseExit {
+  animation: phaseSlideOut 0.22s ease-in both;
+  pointer-events: none;
+}
+
+/* ── Reading / Repeat scene wrapper ──────────────── */
+
+.sceneContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes phaseSlideIn {
+  from { opacity: 0; transform: translateX(56px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes phaseSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-56px); }
+}

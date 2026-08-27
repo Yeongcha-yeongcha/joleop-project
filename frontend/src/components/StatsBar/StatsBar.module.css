@@ -1,0 +1,62 @@
+.bar {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 10px 16px 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  height: 44px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  background: white;
+  border: 2px solid #EFF1F6;
+  box-shadow: 0px 8px 0px 0px #EFF1F6;
+}
+
+.streak {
+  color: #E05A2B;
+}
+
+.hearts {
+  color: #7B5EA7;
+}
+
+.xp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 44px;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #EFF1F6;
+  box-shadow: 0px 8px 0px 0px #EFF1F6;
+}
+
+.xpTrack {
+  width: 52px;
+  height: 8px;
+  background: #DCDCDC;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xpFill {
+  height: 100%;
+  background: var(--color-xp-bar);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.icon {
+  font-size: 16px;
+  line-height: 1;
+}
