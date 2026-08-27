@@ -9,21 +9,22 @@ export default function StatsBar({ stats }: Props) {
   return (
     <div className={styles.bar}>
       <div className={`${styles.badge} ${styles.streak}`}>
-        <span className={styles.icon}>🔥</span>
-        <span>+{stats.streak}</span>
+        <span className={styles.meta}>
+          <strong>{stats.streak}</strong>
+          <em>Streak</em>
+        </span>
       </div>
-      <div className={`${styles.badge} ${styles.hearts}`}>
-        <span className={styles.icon}>💜</span>
-        <span>{stats.hearts}</span>
+      <div className={`${styles.badge} ${styles.rewards}`}>
+        <span className={styles.meta}>
+          <strong>{stats.hearts}</strong>
+          <em>Points</em>
+        </span>
       </div>
-      <div className={styles.xp}>
-        <span className={styles.icon}>⚡</span>
-        <div className={styles.xpTrack}>
-          <div
-            className={styles.xpFill}
-            style={{ width: `${stats.xpPercent * 100}%` }}
-          />
-        </div>
+      <div className={`${styles.badge} ${styles.energy}`}>
+        <span className={styles.meta}>
+          <strong>{Math.round(stats.xpPercent * 5)}/5</strong>
+          <em>Energy</em>
+        </span>
       </div>
     </div>
   )

@@ -1,0 +1,126 @@
+.page {
+  min-height: 100dvh;
+  padding: 28px 20px 106px;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(255, 222, 120, 0.5) 0 18%, transparent 36%),
+    linear-gradient(180deg, #dff8ff 0%, #fff8df 54%, #ffe0a3 100%);
+  color: #3d2912;
+  box-sizing: border-box;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.header img {
+  width: 82px;
+  filter: drop-shadow(0 8px 10px rgba(81, 49, 10, 0.18));
+}
+
+.header h1 {
+  margin: 0;
+  color: #7a3d13;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #8b6a3e;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.summary {
+  margin-top: 26px;
+  min-height: 92px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  border: 4px solid #ff9700;
+  border-radius: 16px;
+  background: #fff7e7;
+  box-shadow: 0 6px 0 rgba(127, 63, 0, 0.22);
+}
+
+.summary span,
+.card span {
+  color: #d87700;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.summary strong {
+  color: #7a3d13;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.list {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  min-height: 72px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 3px solid #ffbd54;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.card div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card strong {
+  color: #3d2912;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.card em {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #e7f8d4;
+  color: #3a883f;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.startButton {
+  width: 100%;
+  height: 58px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 14px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 6px 0 #d87700;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+@media (min-width: 560px) {
+  .page {
+    max-width: 430px;
+    margin: 0 auto;
+  }
+}

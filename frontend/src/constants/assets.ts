@@ -5,7 +5,11 @@
 
 export const IMAGES = {
   // 홈 화면
-  startLion: '/images/StartLion.png',
+  startLion: '/images/onboarding/lion-flag.png',
+  homeBg: '/images/onboarding/bg-meadow-house.png',
+  libraryBg: '/images/onboarding/bg-castle-path.png',
+  lionReading: '/images/onboarding/lion-reading.png',
+  lionWave: '/images/onboarding/lion-wave.png',
   bookBtnUnselected: '/images/BookBtn_unselected.png',
   startBtnActive: '/images/StartBtn_active.png',
   startBtnInactive: '/images/StartBtn_Inactive.png',

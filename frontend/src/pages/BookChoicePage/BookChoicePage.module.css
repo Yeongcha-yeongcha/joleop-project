@@ -8,12 +8,34 @@
 }
 
 .whiteHeader {
-  height: 121px;
+  position: relative;
+  height: 74px;
   background: white;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 20px;
+  padding: 14px 20px 0;
+  box-sizing: border-box;
+  box-shadow: 0 2px 0 rgba(80, 40, 20, 0.08);
+}
+
+.closeButton {
+  position: absolute;
+  left: 18px;
+  bottom: 12px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f2f3f5;
+  color: #6b5b55;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.closeButton:active {
+  transform: scale(0.95);
 }
 
 .title {
@@ -28,7 +50,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px 14px;
-  padding: 28px 32px 40px;
+  padding: 24px 32px 40px;
   align-content: start;
   overflow-y: auto;
 }

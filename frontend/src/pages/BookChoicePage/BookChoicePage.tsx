@@ -32,8 +32,14 @@ export default function BookChoicePage() {
 
   return (
     <div className={styles.page}>
-
       <div className={styles.whiteHeader}>
+        <button
+          className={styles.closeButton}
+          onClick={() => navigate('/home')}
+          aria-label="책 선택 닫기"
+        >
+          ×
+        </button>
         <h1 className={styles.title}>My Library</h1>
       </div>
 

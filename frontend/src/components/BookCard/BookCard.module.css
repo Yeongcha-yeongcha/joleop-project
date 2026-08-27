@@ -30,7 +30,6 @@
   box-shadow: 0 3px 8px rgba(0,0,0,0.25);
 }
 
-
 .lockOverlay {
   position: absolute;
   inset: 0;
@@ -44,7 +43,6 @@
   font-size: 32px;
   opacity: 0.9;
 }
-
 
 .descCard {
   width: 100%;

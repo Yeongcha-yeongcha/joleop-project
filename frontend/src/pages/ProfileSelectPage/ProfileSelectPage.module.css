@@ -1,0 +1,81 @@
+.page {
+  min-height: 100dvh;
+  padding: 46px 22px 32px;
+  background: #181818;
+  color: white;
+}
+
+.header {
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.header p {
+  margin-top: 8px;
+  color: #bdbdbd;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.grid {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 18px;
+}
+
+.profile,
+.addProfile {
+  min-height: 178px;
+  color: white;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.avatar,
+.addProfile span {
+  width: 126px;
+  height: 126px;
+  border-radius: 14px;
+  background: #2c2c2c;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #ffd400;
+}
+
+.profile small {
+  color: #ffcc2e;
+  font-size: 13px;
+}
+
+.addProfile span {
+  border: 4px dashed #686868;
+  color: #bdbdbd;
+  font-size: 64px;
+  line-height: 1;
+}
+
+.addProfile strong {
+  font-size: 18px;
+}
+
+.loading {
+  grid-column: 1 / -1;
+  color: #aaa;
+  text-align: center;
+}

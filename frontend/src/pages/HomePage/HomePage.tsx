@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
-import { IMAGES } from '../../constants/assets'
 import StatsBar from '../../components/StatsBar/StatsBar'
+import BottomNav from '../../components/BottomNav/BottomNav'
 import styles from './HomePage.module.css'
 
 export default function HomePage() {
@@ -18,72 +18,71 @@ export default function HomePage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.scrim} />
+      <header className={styles.header}>
+        <StatsBar stats={userStats} />
+      </header>
 
-      {/* 학습 통계 바 */}
-      <StatsBar stats={userStats} />
-
-      {/* 캐릭터 + 책 버튼 */}
-      <div className={styles.bearArea}>
-        <div className={styles.lionContainer}>
-          <img src={IMAGES.startLion} alt="캐릭터" className={styles.lionImg} />
-
-          {/* 책 선택 버튼 — 선택 후엔 해당 책 커버로 교체 */}
+      <section className={styles.hero}>
+        <div className={styles.lionStage}>
+          <img
+            src="/images/HomeLionBook.png"
+            alt=""
+            className={styles.lionImg}
+            onError={(event) => {
+              event.currentTarget.src = '/images/StartLion.png'
+            }}
+          />
           <button
-            className={styles.bookBtn}
+            className={`${styles.heldBook} ${selectedBook?.coverImage ? styles.heldBookSelected : ''}`}
             onClick={() => navigate('/books')}
             aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
           >
-            <img
-              src={selectedBook?.coverImage ?? IMAGES.bookBtnUnselected}
-              alt={selectedBook ? selectedBook.title : '책 선택'}
-              className={styles.bookBtnImg}
-            />
-            {/* 모서리 장식 타원 */}
-            <span className={`${styles.corner} ${styles.cornerTL}`} />
-            <span className={`${styles.corner} ${styles.cornerTR}`} />
-            <span className={`${styles.corner} ${styles.cornerBL}`} />
-            <span className={`${styles.corner} ${styles.cornerBR}`} />
+            {selectedBook?.coverImage ? (
+              <img src={selectedBook.coverImage} alt="" />
+            ) : (
+              <span>?</span>
+            )}
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* 하단 영역 */}
-      <div className={styles.bottomArea}>
-
-        {/* 책 정보 카드 — 책 선택 시에만 노출 */}
-        {selectedBook && (
-          <div className={styles.bookInfoCard}>
-            <div className={styles.bookMeta}>
-              <span className={styles.bookTitle}>{selectedBook.title}</span>
-              <span className={styles.bookSubtitle}>Lesson {selectedBook.currentLesson}</span>
-              <span className={styles.bookSubtitle}>{selectedBook.currentText}</span>
-              <div className={styles.progressTrack}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${selectedBook.progress * 100}%` }}
-                >
-                  <div className={styles.progressHighlight} />
-                </div>
-              </div>
+      <section className={styles.panel}>
+        <button
+          className={`${styles.bookCard} ${!selectedBook ? styles.bookCardEmpty : ''}`}
+          onClick={() => navigate('/books')}
+          aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
+        >
+          {selectedBook?.coverImage ? (
+            <img src={selectedBook.coverImage} alt="" className={styles.bookCover} />
+          ) : (
+            <div className={styles.emptyCover}>
+              <span>+</span>
             </div>
+          )}
+          <div className={styles.bookMeta}>
+            <span className={styles.eyebrow}>{selectedBook ? 'Current Book' : 'Library'}</span>
+            <strong>{selectedBook?.title ?? 'Choose a Book'}</strong>
+            <span>{selectedBook ? `Lesson ${selectedBook.currentLesson} · ${selectedBook.currentText ?? 'Keep going!'}` : 'New stories are waiting.'}</span>
           </div>
-        )}
+        </button>
 
-        {/* 시작하기 버튼 */}
+        <div className={styles.progressTrack}>
+          <div
+            className={styles.progressFill}
+            style={{ width: `${selectedBook ? selectedBook.progress * 100 : 0}%` }}
+          />
+        </div>
+
         <button
           className={styles.startBtn}
           onClick={handleStart}
           disabled={!selectedBook}
-          aria-label={selectedBook ? '학습 시작하기' : '책을 먼저 선택해주세요'}
         >
-          <img
-            src={selectedBook ? IMAGES.startBtnActive : IMAGES.startBtnInactive}
-            alt="시작하기"
-            className={styles.startBtnImg}
-          />
+          {selectedBook ? 'Start Adventure' : 'Choose Book First'}
         </button>
-
-      </div>
+      </section>
+      <BottomNav />
     </div>
   )
 }

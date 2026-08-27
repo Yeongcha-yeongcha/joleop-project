@@ -1,0 +1,69 @@
+.page {
+  min-height: 100dvh;
+  padding: 34px 22px 110px;
+  background: #fff8df;
+  color: #2c2115;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.backButton {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: white;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.page h1 {
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.page p {
+  margin-top: 8px;
+  color: #7b5a22;
+  font-weight: 900;
+}
+
+.currentAvatar {
+  width: 170px;
+  height: 170px;
+  margin: 28px auto;
+  border-radius: 22px;
+  background: #ffd400;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: 0 8px 0 rgba(180, 128, 0, 0.25);
+}
+
+.currentAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.avatarGrid button {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 4px 0 #ead596;
+}
+
+.avatarGrid img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

@@ -30,7 +30,7 @@ export default function BookCard({ book, onSelect }: Props) {
         </div>
         <div className={styles.descCard}>
           <span className={styles.descTitle}>{book.title}</span>
-          <span className={`${styles.chip} ${styles.chipLocked}`}>🔒 Locked</span>
+          <span className={`${styles.chip} ${styles.chipLocked}`}>Locked</span>
         </div>
       </div>
     )
