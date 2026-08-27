@@ -60,10 +60,15 @@ description_question_type_enum = Enum(
 
 class Parent(UpdatedTimestampMixin, Base):
     __tablename__ = "parents"
-    __table_args__ = (UniqueConstraint("kakao_id", name="uq_parents_kakao_id"),)
+    __table_args__ = (
+        UniqueConstraint("kakao_id", name="uq_parents_kakao_id"),
+        UniqueConstraint("username", name="uq_parents_username"),
+    )
 
     parent_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
     kakao_id: Mapped[str] = mapped_column(String, nullable=False)
+    username: Mapped[str | None] = mapped_column(String)
+    password_hash: Mapped[str | None] = mapped_column(String)
     nickname: Mapped[str | None] = mapped_column(String)
     provider: Mapped[str] = mapped_column(
         String,

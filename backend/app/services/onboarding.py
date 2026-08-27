@@ -46,7 +46,15 @@ class OnboardingService:
 
     @staticmethod
     def calculate_score(request: OnboardingSubmitRequest) -> int:
-        return sum(2 for _ in request.answers)
+        answers = {
+            answer.question_id: answer.answer.strip().lower()
+            for answer in request.answers
+        }
+        if answers.get(3) != "apple":
+            return 6
+        if answers.get(4) not in {"rain", "raining", "it is raining"}:
+            return 8
+        return 14
 
     @staticmethod
     def resolve_difficulty(score: int) -> Difficulty:

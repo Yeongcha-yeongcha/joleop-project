@@ -5,7 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
     AccessTokenExpiredException,
+    InvalidParentCredentialsException,
     InvalidRefreshTokenException,
+    ParentUsernameAlreadyExistsException,
     ParentNotFoundException,
     UnauthorizedException,
 )
@@ -15,7 +17,9 @@ from app.core.security import (
     create_parent_access_token,
     create_refresh_token,
     decode_token,
+    hash_password,
     hash_token,
+    verify_password,
 )
 from app.models import AuthTokenType, ChildProfile, Parent, RefreshToken
 from app.services.kakao import KakaoService
@@ -30,6 +34,44 @@ class AuthService:
     ) -> None:
         self.session = session
         self.kakao_service = kakao_service or KakaoService()
+
+    async def password_signup(
+        self,
+        *,
+        username: str,
+        password: str,
+        nickname: str | None = None,
+    ) -> dict:
+        normalized_username = username.strip().lower()
+        existing = await self.session.execute(
+            select(Parent).where(Parent.username == normalized_username)
+        )
+        if existing.scalar_one_or_none() is not None:
+            raise ParentUsernameAlreadyExistsException()
+
+        parent = Parent(
+            kakao_id=f"LOCAL:{normalized_username}",
+            username=normalized_username,
+            password_hash=hash_password(password),
+            nickname=nickname,
+            provider="LOCAL",
+        )
+        self.session.add(parent)
+        await self.session.flush()
+        return await self._issue_login_tokens(parent=parent, is_new_parent=True)
+
+    async def password_login(self, *, username: str, password: str) -> dict:
+        normalized_username = username.strip().lower()
+        result = await self.session.execute(
+            select(Parent).where(Parent.username == normalized_username)
+        )
+        parent = result.scalar_one_or_none()
+        if parent is None or parent.password_hash is None:
+            raise InvalidParentCredentialsException()
+        if not verify_password(password, parent.password_hash):
+            raise InvalidParentCredentialsException()
+
+        return await self._issue_login_tokens(parent=parent, is_new_parent=False)
 
     async def kakao_login(
         self,
@@ -57,6 +99,9 @@ class AuthService:
         elif nickname and not parent.nickname:
             parent.nickname = nickname
 
+        return await self._issue_login_tokens(parent=parent, is_new_parent=is_new_parent)
+
+    async def _issue_login_tokens(self, *, parent: Parent, is_new_parent: bool) -> dict:
         refresh_token = create_refresh_token(parent.parent_id)
         self.session.add(
             RefreshToken(

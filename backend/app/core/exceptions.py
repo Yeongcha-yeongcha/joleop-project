@@ -86,6 +86,21 @@ class InvalidRefreshTokenException(UnauthorizedException):
         self.error_code = "INVALID_REFRESH_TOKEN"
 
 
+class InvalidParentCredentialsException(UnauthorizedException):
+    def __init__(self) -> None:
+        super().__init__("아이디 또는 비밀번호가 올바르지 않습니다.")
+        self.error_code = "INVALID_PARENT_CREDENTIALS"
+
+
+class ParentUsernameAlreadyExistsException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 사용 중인 아이디입니다.",
+            code="PARENT_USERNAME_ALREADY_EXISTS",
+        )
+
+
 class ParentNotFoundException(AppException):
     def __init__(self) -> None:
         super().__init__(

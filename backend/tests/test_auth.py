@@ -130,6 +130,26 @@ async def run_kakao_login(auth_service: AuthService) -> dict:
     return response["data"]
 
 
+def test_kakao_login_request_accepts_camel_case_aliases() -> None:
+    request = KakaoLoginRequest(
+        authorizationCode="code",
+        redirectUri="https://example.com/oauth/kakao/callback",
+    )
+
+    assert request.authorization_code == "code"
+    assert request.redirect_uri == "https://example.com/oauth/kakao/callback"
+
+
+def test_kakao_login_request_accepts_python_field_names() -> None:
+    request = KakaoLoginRequest(
+        authorization_code="code",
+        redirect_uri="https://example.com/oauth/kakao/callback",
+    )
+
+    assert request.authorization_code == "code"
+    assert request.redirect_uri == "https://example.com/oauth/kakao/callback"
+
+
 @pytest.mark.asyncio
 async def test_new_kakao_parent_is_created(auth_service: AuthService) -> None:
     data = await run_kakao_login(auth_service)

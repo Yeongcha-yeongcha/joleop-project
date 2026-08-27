@@ -1,11 +1,42 @@
 from fastapi import APIRouter, Depends
 
 from app.api.deps import get_auth_service
-from app.schemas.auth import KakaoLoginRequest, LogoutRequest, RefreshTokenRequest
+from app.schemas.auth import (
+    KakaoLoginRequest,
+    LogoutRequest,
+    ParentPasswordLoginRequest,
+    ParentPasswordSignupRequest,
+    RefreshTokenRequest,
+)
 from app.schemas.common import success_response
 from app.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+@router.post("/signup")
+async def password_signup(
+    request: ParentPasswordSignupRequest,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> dict:
+    data = await auth_service.password_signup(
+        username=request.username,
+        password=request.password,
+        nickname=request.nickname,
+    )
+    return success_response(data)
+
+
+@router.post("/login")
+async def password_login(
+    request: ParentPasswordLoginRequest,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> dict:
+    data = await auth_service.password_login(
+        username=request.username,
+        password=request.password,
+    )
+    return success_response(data)
 
 
 @router.post("/kakao")

@@ -110,12 +110,13 @@ class BookService:
 
     @staticmethod
     def book_list_item(book: Book, progress: UserBookProgress | None) -> dict:
+        is_default_unlocked = progress is None and book.display_order == 1
         return {
             "bookId": book.book_id,
             "title": book.title,
             "coverImageUrl": book.cover_image_url,
             "difficulty": book.difficulty.value if book.difficulty else None,
-            "locked": True if progress is None else not progress.unlocked,
+            "locked": False if is_default_unlocked else True if progress is None else not progress.unlocked,
             "completed": False if progress is None else progress.completed,
             "progress": 0 if progress is None else progress.progress,
         }

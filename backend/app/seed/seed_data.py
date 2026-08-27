@@ -14,7 +14,81 @@ from app.models import (
     RoleplayMission,
 )
 
-PLACEHOLDER_IMAGE = "https://placehold.co/600x400?text=Dragon+Story"
+DEFAULT_BOOKS = [
+    {
+        "title": "The Dragon Story",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.BEGINNER,
+        "cover_image_url": "/images/BookSample_A.png",
+        "display_order": 1,
+    },
+    {
+        "title": "Fresh Lemonade!",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.BEGINNER,
+        "cover_image_url": "/images/BookSample_B.png",
+        "display_order": 2,
+    },
+    {
+        "title": "The Snack Museum",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.BEGINNER,
+        "cover_image_url": "/images/BookSample_C.png",
+        "display_order": 3,
+    },
+    {
+        "title": "Magic Forest",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.INTERMEDIATE,
+        "cover_image_url": "/images/onboarding/bg-tree-house.png",
+        "display_order": 4,
+    },
+    {
+        "title": "Cloud Castle",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.INTERMEDIATE,
+        "cover_image_url": "/images/onboarding/bg-castle-path.png",
+        "display_order": 5,
+    },
+    {
+        "title": "Sunny Picnic",
+        "lesson_name": "Lesson 1",
+        "difficulty": Difficulty.ADVANCED,
+        "cover_image_url": "/images/onboarding/bg-meadow-house.png",
+        "display_order": 6,
+    },
+]
+
+
+async def ensure_default_books(session: AsyncSession) -> tuple[Book, int]:
+    created = 0
+    dragon_book: Book | None = None
+
+    for item in DEFAULT_BOOKS:
+        result = await session.execute(
+            select(Book).where(
+                Book.title == item["title"],
+                Book.lesson_name == item["lesson_name"],
+                Book.difficulty == item["difficulty"],
+            )
+        )
+        book = result.scalar_one_or_none()
+        if book is None:
+            book = Book(**item)
+            session.add(book)
+            await session.flush()
+            created += 1
+        else:
+            book.cover_image_url = item["cover_image_url"]
+            book.display_order = item["display_order"]
+            book.lesson_name = item["lesson_name"]
+
+        if item["title"] == "The Dragon Story":
+            dragon_book = book
+
+    if dragon_book is None:
+        raise RuntimeError("Default Dragon Story seed book was not created.")
+    return dragon_book, created
 
 
 async def get_or_create_book(session: AsyncSession) -> tuple[Book, bool]:
@@ -33,7 +107,7 @@ async def get_or_create_book(session: AsyncSession) -> tuple[Book, bool]:
         title="The Dragon Story",
         lesson_name="Lesson 1",
         difficulty=Difficulty.BEGINNER,
-        cover_image_url=PLACEHOLDER_IMAGE,
+        cover_image_url="/images/BookSample_A.png",
         display_order=1,
     )
     session.add(book)
@@ -173,9 +247,9 @@ async def ensure_roleplay_missions(session: AsyncSession, book: Book) -> int:
 
 async def seed() -> dict[str, int]:
     async with AsyncSessionLocal() as session:
-        book, book_created = await get_or_create_book(session)
+        book, books_created = await ensure_default_books(session)
         result = {
-            "books": int(book_created),
+            "books": books_created,
             "reading_chunks": await ensure_reading_chunks(session, book),
             "repeat_questions": await ensure_repeat_questions(session, book),
             "description_questions": await ensure_description_questions(session, book),
