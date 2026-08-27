@@ -25,7 +25,7 @@
   margin-top: 28px;
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form input {
@@ -52,13 +52,41 @@
   border-color: #ff9700;
 }
 
+.keypad {
+  width: min(100%, 292px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.keypad button {
+  width: 100%;
+  height: 58px;
+  border-radius: 16px;
+  background: white;
+  color: #2c2115;
+  box-shadow: 0 5px 0 #ead596;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.keypad button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #ead596;
+}
+
+.keypad .utilityKey {
+  color: #9c6a25;
+  background: #fff0c7;
+}
+
 .form p {
   color: #c8321d;
   font-size: 14px;
   font-weight: 800;
 }
 
-.form button {
+.form > button {
   width: 100%;
   height: 56px;
   border-radius: 13px;
@@ -69,6 +97,6 @@
   box-shadow: 0 5px 0 #d87900;
 }
 
-.form button:disabled {
+.form > button:disabled {
   opacity: 0.55;
 }

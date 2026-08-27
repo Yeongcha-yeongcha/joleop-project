@@ -1,27 +1,93 @@
 .page {
+  position: relative;
   min-height: 100dvh;
   padding: 46px 22px 32px;
-  background: #181818;
-  color: white;
+  background:
+    radial-gradient(circle at 18% 9%, rgba(255, 216, 89, 0.58) 0 11%, transparent 26%),
+    radial-gradient(circle at 82% 21%, rgba(123, 219, 255, 0.48) 0 10%, transparent 25%),
+    linear-gradient(180deg, #6bd0ff 0%, #dff7ff 38%, #fff6d8 100%);
+  color: #2c2115;
+  overflow: hidden;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.page::before {
+  left: -38px;
+  right: -38px;
+  bottom: -72px;
+  height: 190px;
+  border-radius: 50% 50% 0 0;
+  background: #7bd454;
+  box-shadow: inset 0 16px 0 rgba(255, 255, 255, 0.22);
+}
+
+.page::after {
+  top: 118px;
+  left: 24px;
+  width: 86px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow:
+    40px -16px 0 8px rgba(255, 255, 255, 0.66),
+    306px 42px 0 -1px rgba(255, 255, 255, 0.62);
+}
+
+.settingsButton {
+  position: absolute;
+  z-index: 2;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #7b5a22;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 5px 0 rgba(126, 77, 8, 0.16), 0 10px 18px rgba(60, 137, 170, 0.14);
+}
+
+.settingsButton svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .header {
+  position: relative;
+  z-index: 1;
   text-align: center;
 }
 
 .header h1 {
+  color: white;
   font-size: 30px;
   font-weight: 900;
+  text-shadow: 0 3px 0 rgba(43, 113, 145, 0.18);
 }
 
 .header p {
   margin-top: 8px;
-  color: #bdbdbd;
+  color: #fff8df;
   font-size: 16px;
   font-weight: 800;
+  text-shadow: 0 2px 0 rgba(43, 113, 145, 0.14);
 }
 
 .grid {
+  position: relative;
+  z-index: 1;
   margin-top: 44px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -31,7 +97,7 @@
 .profile,
 .addProfile {
   min-height: 178px;
-  color: white;
+  color: #3a2612;
   display: grid;
   justify-items: center;
   align-content: start;
@@ -45,27 +111,23 @@
   width: 126px;
   height: 126px;
   border-radius: 14px;
-  background: #2c2c2c;
+  background: rgba(255, 255, 255, 0.9);
   display: grid;
   place-items: center;
   overflow: hidden;
+  box-shadow: 0 8px 0 rgba(234, 213, 150, 0.82), 0 14px 22px rgba(61, 126, 64, 0.12);
 }
 
 .avatar img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #ffd400;
-}
-
-.profile small {
-  color: #ffcc2e;
-  font-size: 13px;
+  background: #ffd84d;
 }
 
 .addProfile span {
-  border: 4px dashed #686868;
-  color: #bdbdbd;
+  border: 4px dashed rgba(123, 90, 34, 0.36);
+  color: #7b5a22;
   font-size: 64px;
   line-height: 1;
 }
@@ -76,6 +138,84 @@
 
 .loading {
   grid-column: 1 / -1;
-  color: #aaa;
+  color: #6c4d1b;
   text-align: center;
+}
+
+.settingsBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.settingsPanel {
+  position: relative;
+  width: min(100%, 386px);
+  padding: 22px 16px 18px;
+  border-radius: 12px;
+  background: #fff8df;
+  color: #2c2115;
+  box-shadow: 0 8px 0 rgba(126, 77, 8, 0.22);
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: white;
+  color: #7b5a22;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.settingsPanel h2 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.settingCard {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 0 #ead596;
+}
+
+.settingCard + .settingCard {
+  margin-top: 12px;
+}
+
+.settingCard strong {
+  color: #3a2612;
+  font-size: 15px;
+}
+
+.settingCard span {
+  color: #7b5a22;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.settingCard button {
+  min-height: 44px;
+  border-radius: 10px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 4px 0 #d87900;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.settingCard .dangerButton {
+  background: #e5533d;
+  box-shadow: 0 4px 0 #ad321f;
 }

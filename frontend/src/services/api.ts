@@ -122,6 +122,14 @@ async function patch<T>(path: string, body: unknown, token?: string | null): Pro
   return handleResponse(res, 'PATCH', path)
 }
 
+async function del<T>(path: string, token?: string | null): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  })
+  return handleResponse(res, 'DELETE', path)
+}
+
 export function getParentToken(): string | null {
   return window.localStorage.getItem(PARENT_TOKEN_KEY)
 }
@@ -174,9 +182,52 @@ export async function fetchUserStats(): Promise<UserStats> {
 export async function fetchBooks(): Promise<Book[]> {
   if (BASE_URL && getProfileToken()) {
     const data = await get<BackendBookListData>('/books', getProfileToken())
-    return data.books.map(toFrontendBook)
+    return mergeBooksWithLocalSamples(data.books.map(toFrontendBook))
   }
   return BOOKS
+}
+
+function normalizeBookTitle(title: string): string {
+  return title.toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]/g, '')
+}
+
+function localBookFor(book: Book): Book | undefined {
+  const normalizedTitle = normalizeBookTitle(book.title)
+  return BOOKS.find((localBook) => (
+    localBook.id === book.id ||
+    normalizeBookTitle(localBook.title) === normalizedTitle
+  ))
+}
+
+function mergeBooksWithLocalSamples(backendBooks: Book[]): Book[] {
+  const hydratedBooks = backendBooks.map((book) => {
+    const localBook = localBookFor(book)
+    if (!localBook) return book
+    return {
+      ...localBook,
+      ...book,
+      title: localBook.title,
+      coverColor: localBook.coverColor,
+      coverImage: book.coverImage ?? localBook.coverImage,
+      totalLessons: localBook.totalLessons,
+      currentText: book.currentText ?? localBook.currentText,
+    }
+  })
+
+  const hydratedKeys = new Set(hydratedBooks.map((book) => normalizeBookTitle(book.title)))
+  return [
+    ...hydratedBooks,
+    ...BOOKS.filter((book) => !hydratedKeys.has(normalizeBookTitle(book.title))),
+  ]
+}
+
+function publicCoverImageUrl(url?: string | null): string | undefined {
+  if (!url) return undefined
+  const publicImagesIndex = url.indexOf("/frontend/public/images/")
+  if (publicImagesIndex >= 0) {
+    return `/images/${url.slice(publicImagesIndex + "/frontend/public/images/".length)}`
+  }
+  return url
 }
 
 function toFrontendBook(book: BackendBook): Book {
@@ -190,7 +241,7 @@ function toFrontendBook(book: BackendBook): Book {
     id: String(book.bookId),
     title: book.title,
     coverColor: '#ffbd54',
-    coverImage: book.coverImageUrl ?? undefined,
+    coverImage: publicCoverImageUrl(book.coverImageUrl),
     level: book.difficulty ? levelByDifficulty[book.difficulty] : 1,
     totalLessons: 4,
     currentLesson: Math.max(1, Math.min(4, Math.floor(progress * 4) + 1)),
@@ -370,6 +421,53 @@ export async function updateProfile(profileId: number, input: Partial<Pick<Child
   return next.find((profile) => profile.profileId === profileId) as ChildProfile
 }
 
+export async function updateProfilePassword(profileId: number, newPassword: string): Promise<void> {
+  if (BASE_URL) {
+    await patch(`/profiles/${profileId}/password`, { newPassword }, getParentToken())
+    return
+  }
+  const profiles = mockProfiles() as Array<ChildProfile & { profilePassword?: string }>
+  saveMockProfiles(profiles.map((profile) => (
+    profile.profileId === profileId
+      ? { ...profile, profilePassword: newPassword, passwordEnabled: true }
+      : profile
+  )))
+}
+
+export async function deleteProfile(profileId: number): Promise<void> {
+  if (BASE_URL) {
+    await del(`/profiles/${profileId}`, getParentToken())
+  } else {
+    saveMockProfiles(mockProfiles().filter((profile) => profile.profileId !== profileId))
+  }
+
+  const activeProfile = JSON.parse(window.localStorage.getItem('yeongcha:active-profile') || 'null') as ChildProfile | null
+  if (activeProfile?.profileId === profileId) {
+    clearProfileSession()
+  }
+}
+
+export function clearProfileSession() {
+  window.localStorage.removeItem(PROFILE_TOKEN_KEY)
+  window.localStorage.removeItem('yeongcha:active-profile')
+}
+
+export async function logoutProfile(): Promise<void> {
+  if (BASE_URL && getProfileToken()) {
+    try {
+      const res = await fetch(`${BASE_URL}/profile-auth/logout`, {
+        method: 'POST',
+        headers: authHeaders(getProfileToken()),
+      })
+      if (!res.ok) await handleResponse(res, 'POST', '/profile-auth/logout')
+    } finally {
+      clearProfileSession()
+    }
+    return
+  }
+  clearProfileSession()
+}
+
 export async function loginProfile(profileId: number, profilePassword: string): Promise<ProfileLoginData> {
   if (BASE_URL) {
     const data = await post<ProfileLoginData>(`/profiles/${profileId}/login`, { profilePassword }, getParentToken())
@@ -381,6 +479,28 @@ export async function loginProfile(profileId: number, profilePassword: string): 
   const data = { profileAccessToken: `mock-profile-token-${profileId}`, profile }
   saveProfileSession(data)
   return data
+}
+
+export async function logoutParent(): Promise<void> {
+  const refreshToken = window.localStorage.getItem('yeongcha:refresh-token')
+  if (BASE_URL && refreshToken) {
+    try {
+      await post('/auth/logout', { refreshToken })
+    } finally {
+      clearParentSession()
+    }
+    return
+  }
+  clearParentSession()
+}
+
+function clearParentSession() {
+  window.localStorage.removeItem(PARENT_TOKEN_KEY)
+  window.localStorage.removeItem(PROFILE_TOKEN_KEY)
+  window.localStorage.removeItem('yeongcha:refresh-token')
+  window.localStorage.removeItem('yeongcha:active-profile')
+  window.localStorage.removeItem('yeongcha:onboarding-completed')
+  window.localStorage.removeItem('yeongcha:placement-level')
 }
 
 // ─── 온보딩 제출  POST /profiles/me/onboarding ───────────

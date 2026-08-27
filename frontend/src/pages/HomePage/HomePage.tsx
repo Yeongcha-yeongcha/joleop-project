@@ -3,13 +3,25 @@ import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import StatsBar from '../../components/StatsBar/StatsBar'
 import BottomNav from '../../components/BottomNav/BottomNav'
+import { BOOKS } from '../../data/books'
 import styles from './HomePage.module.css'
+
+function normalizeBookTitle(title: string): string {
+  return title.toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]/g, '')
+}
+
+function fallbackCoverImage(title?: string): string | undefined {
+  if (!title) return undefined
+  return BOOKS.find((book) => normalizeBookTitle(book.title) === normalizeBookTitle(title))?.coverImage
+}
 
 export default function HomePage() {
   const navigate = useNavigate()
   const { selectedBook, userStats, loadUserStats } = useAppStore()
 
   useEffect(() => { loadUserStats() }, [loadUserStats])
+
+  const selectedBookCover = selectedBook?.coverImage ?? fallbackCoverImage(selectedBook?.title)
 
   const handleStart = () => {
     if (!selectedBook) return
@@ -26,22 +38,22 @@ export default function HomePage() {
       <section className={styles.hero}>
         <div className={styles.lionStage}>
           <img
-            src="/images/HomeLionBook.png"
+            src="/images/HomeBearHands.png"
             alt=""
             className={styles.lionImg}
             onError={(event) => {
-              event.currentTarget.src = '/images/StartLion.png'
+              event.currentTarget.src = '/images/HomeLionBook.png'
             }}
           />
           <button
-            className={`${styles.heldBook} ${selectedBook?.coverImage ? styles.heldBookSelected : ''}`}
+            className={`${styles.heldBook} ${selectedBookCover ? styles.heldBookSelected : ''}`}
             onClick={() => navigate('/books')}
             aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
           >
-            {selectedBook?.coverImage ? (
-              <img src={selectedBook.coverImage} alt="" />
+            {selectedBookCover ? (
+              <img src={selectedBookCover} alt="" />
             ) : (
-              <span>?</span>
+              <img src="/images/BookBtn_unselected.png" alt="" />
             )}
           </button>
         </div>
@@ -53,12 +65,10 @@ export default function HomePage() {
           onClick={() => navigate('/books')}
           aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
         >
-          {selectedBook?.coverImage ? (
-            <img src={selectedBook.coverImage} alt="" className={styles.bookCover} />
+          {selectedBookCover ? (
+            <img src={selectedBookCover} alt="" className={styles.bookCover} />
           ) : (
-            <div className={styles.emptyCover}>
-              <span>+</span>
-            </div>
+            <img src="/images/BookBtn_unselected.png" alt="" className={styles.emptyCover} />
           )}
           <div className={styles.bookMeta}>
             <span className={styles.eyebrow}>{selectedBook ? 'Current Book' : 'Library'}</span>

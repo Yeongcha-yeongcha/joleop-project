@@ -1,45 +1,59 @@
 .page {
   min-height: 100dvh;
-  padding: 34px 22px 110px;
-  background: #fff8df;
+  padding: 28px 18px 124px;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(255, 203, 91, 0.46) 0 12%, transparent 29%),
+    linear-gradient(180deg, #ff9633 0 132px, #fff8df 132px 100%);
   color: #2c2115;
-  text-align: center;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .backButton {
   position: absolute;
   top: 18px;
   left: 18px;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
-  background: white;
-  font-size: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #a45012;
+  box-shadow: 0 4px 0 rgba(126, 77, 8, 0.16);
+  font-size: 22px;
   font-weight: 900;
 }
 
-.page h1 {
-  font-size: 34px;
-  font-weight: 900;
+.header {
+  margin-top: 34px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
 }
 
-.page p {
-  margin-top: 8px;
-  color: #7b5a22;
+.header h1 {
+  color: white;
+  font-size: 27px;
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(142, 75, 4, 0.16);
+}
+
+.header p {
+  color: #fff5d6;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .currentAvatar {
-  width: 170px;
-  height: 170px;
-  margin: 28px auto;
-  border-radius: 22px;
+  width: 104px;
+  height: 104px;
+  border: 5px solid white;
+  border-radius: 50%;
   background: #ffd400;
   display: grid;
   place-items: center;
   overflow: hidden;
-  box-shadow: 0 8px 0 rgba(180, 128, 0, 0.25);
+  box-shadow: 0 8px 0 rgba(143, 76, 6, 0.22), 0 12px 22px rgba(89, 50, 8, 0.18);
 }
 
 .currentAvatar img {
@@ -48,22 +62,279 @@
   object-fit: contain;
 }
 
+.card {
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 6px 0 #ead596, 0 10px 18px rgba(93, 57, 11, 0.1);
+}
+
+.sectionTitle {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle span {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff0c7;
+  color: #6f5730;
+}
+
+.sectionTitle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sectionTitle strong {
+  flex: 1;
+  color: #3a2612;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.sectionTitle em {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ff9700;
+  color: white;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #6c4d1b;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 74px;
+  gap: 9px;
+}
+
+.inputRow input {
+  min-width: 0;
+  height: 46px;
+  padding: 0 13px;
+  border: 3px solid #f0d28b;
+  border-radius: 11px;
+  background: #fffdf7;
+  color: #2c2115;
+  font: inherit;
+  font-weight: 900;
+  outline: none;
+}
+
+.inputRow input:focus {
+  border-color: #ff9700;
+}
+
+.inputRow button,
+.safePanel button,
+.accountPanel button {
+  min-height: 46px;
+  border-radius: 11px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 5px 0 #d87900;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.inputRow button:disabled,
+.avatarGrid button:disabled,
+.safePanel button:disabled,
+.accountPanel button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .avatarGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 .avatarGrid button {
-  aspect-ratio: 1;
-  border-radius: 14px;
-  background: white;
+  min-width: 0;
+  aspect-ratio: 0.88;
+  padding: 7px 6px 8px;
+  border-radius: 8px;
+  background: #fff8df;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 5px;
   overflow: hidden;
   box-shadow: 0 4px 0 #ead596;
+}
+
+.avatarGrid .selectedAvatar {
+  box-shadow: 0 0 0 4px #ff9700, 0 4px 0 #c77900;
 }
 
 .avatarGrid img {
   width: 100%;
   height: 100%;
+  min-height: 0;
   object-fit: contain;
+}
+
+.avatarGrid span {
+  min-height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: white;
+  color: #9c6a25;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.message {
+  min-height: 20px;
+  margin-top: 12px;
+  color: #3f7b24;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.safePanel {
+  position: relative;
+  margin-top: 28px;
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.safePanel .sectionTitle {
+  margin-bottom: 2px;
+}
+
+.guardianSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.guardianSummary div,
+.reportGrid div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff8df;
+  box-shadow: inset 0 0 0 2px #f0d28b;
+}
+
+.guardianSummary span,
+.reportGrid span {
+  display: block;
+  color: #7b5a22;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.guardianSummary strong,
+.reportGrid strong {
+  display: block;
+  margin-top: 5px;
+  color: #3a2612;
+  font-size: 17px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.reportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.safePanel button,
+.accountPanel button {
+  width: 100%;
+}
+
+.safePanel button:active,
+.accountPanel button:active,
+.inputRow button:active,
+.avatarGrid button:active {
+  transform: translateY(3px);
+}
+
+.safePanel .dangerButton {
+  background: #e5533d;
+  box-shadow: 0 5px 0 #ad321f;
+}
+
+.guardianOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  border: 0;
+  background: rgba(255, 248, 223, 0.72);
+  color: #5f4720;
+  backdrop-filter: blur(10px) saturate(0.82);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.52),
+    inset 0 -120px 160px rgba(255, 151, 0, 0.12);
+}
+
+.guardianOverlay span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: inset 0 -4px 0 rgba(126, 77, 8, 0.1), 0 6px 14px rgba(74, 48, 13, 0.16);
+}
+
+.guardianOverlay svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.guardianOverlay strong {
+  color: #4b3518;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.guardianOverlay em {
+  color: #7b5a22;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
 }

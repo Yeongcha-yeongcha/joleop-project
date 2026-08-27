@@ -9,14 +9,37 @@
 .badge {
   min-width: 0;
   height: 48px;
-  padding: 6px 8px;
-  display: grid;
-  place-items: center;
+  padding: 6px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   border: 2px solid rgba(255, 255, 255, 0.82);
   border-radius: 15px;
   background: rgba(255, 248, 223, 0.94);
   box-shadow: 0 5px 0 rgba(126, 77, 8, 0.17);
   box-sizing: border-box;
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: white;
+  box-shadow: inset 0 -3px 0 rgba(126, 77, 8, 0.12);
+  color: #5b4120;
+}
+
+.icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .meta {

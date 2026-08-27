@@ -81,8 +81,24 @@
   left: 50%;
   bottom: 214px;
   transform: translateX(-50%);
-  border: 5px solid #12a5ff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), 0 10px 14px rgba(78, 50, 18, 0.2);
+  filter:
+    drop-shadow(0 18px 16px rgba(72, 45, 11, 0.28))
+    drop-shadow(0 0 20px rgba(255, 255, 255, 0.78));
+}
+
+.step3::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 198px;
+  width: 184px;
+  height: 142px;
+  border-radius: 48% 48% 44% 44%;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.66) 0 34%, rgba(255, 255, 255, 0.3) 52%, rgba(255, 255, 255, 0) 72%);
+  box-shadow: 0 22px 18px rgba(70, 45, 14, 0.16);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .cardRow {

@@ -87,6 +87,40 @@ export default function OnboardingPage() {
     next()
   }
 
+  const handleRepeatSpeech = () => {
+    if (isListening) return
+    const SpeechRecognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      addAnswer(5, "Let's go")
+      next()
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim()
+      addAnswer(5, transcript || "Let's go")
+      next()
+    }
+    recognition.onerror = () => {
+      setIsListening(false)
+      addAnswer(5, "Let's go")
+      next()
+    }
+    recognition.onend = () => setIsListening(false)
+    setIsListening(true)
+    try {
+      recognition.start()
+    } catch {
+      setIsListening(false)
+      addAnswer(5, "Let's go")
+      next()
+    }
+  }
+
   const handleSpeechInput = (field: 'name' | 'age') => {
     if (isListening) return
     const SpeechRecognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
@@ -109,7 +143,12 @@ export default function OnboardingPage() {
     }
     recognition.onend = () => setIsListening(false)
     setIsListening(true)
-    recognition.start()
+    try {
+      recognition.start()
+    } catch {
+      setIsListening(false)
+      handleSpeechFallback(field)
+    }
   }
 
   const submitOnboarding = async () => {
@@ -265,7 +304,7 @@ export default function OnboardingPage() {
             <>
               Great!
               <br />
-              Level {placementLevel} is ready for {name || 'you'}.
+              Your story is ready for {name || 'you'}.
               <br />
               Let’s start your story!
             </>
@@ -316,13 +355,11 @@ export default function OnboardingPage() {
         {step === 5 && (
           <button
             className={styles.primaryButton}
-            onClick={() => {
-              addAnswer(5, "Let's go")
-              next()
-            }}
+            onClick={handleRepeatSpeech}
+            disabled={isListening}
           >
             <span className={styles.micIcon}>●</span>
-            Tap to speak
+            {isListening ? 'Listening...' : 'Tap to speak'}
           </button>
         )}
 
