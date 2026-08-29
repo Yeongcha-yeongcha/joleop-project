@@ -55,6 +55,7 @@ def test_enums_match_service_contract() -> None:
         "COMPLETED",
     ]
     assert [item.value for item in DescriptionQuestionType] == [
+        "WORD_GUESS",
         "FILL_BLANK",
         "DESCRIPTION",
         "WHY_QUESTION",

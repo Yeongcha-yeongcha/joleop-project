@@ -21,6 +21,7 @@ class LearningSessionStatus(StrEnum):
 
 
 class DescriptionQuestionType(StrEnum):
+    WORD_GUESS = "WORD_GUESS"
     FILL_BLANK = "FILL_BLANK"
     DESCRIPTION = "DESCRIPTION"
     WHY_QUESTION = "WHY_QUESTION"

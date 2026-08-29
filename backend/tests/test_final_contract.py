@@ -290,7 +290,7 @@ async def test_roleplay_audio(roleplay_context) -> None:
     assert response["data"]["user"]["transcript"] == "Hello dragon"
     assert response["data"]["character"] == {
         "speaker": "DORI",
-        "text": "Thank you! I knew it!",
+        "text": "Thank you! That helps a lot.",
     }
     assert response["data"]["turn"] == 1
     assert response["data"]["missionCompleted"] is False

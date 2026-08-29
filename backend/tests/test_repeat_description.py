@@ -97,10 +97,15 @@ class FakeCourseStore:
                 question_id=300 + step,
                 book_id=1,
                 step=step,
-                question_type=DescriptionQuestionType.FILL_BLANK,
+                question_type=DescriptionQuestionType.WORD_GUESS,
                 instruction="여왕의 옷 색깔은 무엇일까요?",
                 sentence="The color of the queen's clothes is ____.",
                 image_url=f"https://cdn.example.com/description/{step}.png",
+                page_number=step,
+                source_text="The queen is wearing red.",
+                blank_word="red",
+                answer_sentence="red",
+                guide_hint="Look at the queen's clothes.",
             )
             for step in range(1, 5)
         ]
@@ -326,7 +331,11 @@ async def test_description_lookup(course_context) -> None:
 
     assert response["data"]["courseType"] == "DESCRIPTION"
     assert response["data"]["content"]["questionId"] == 301
-    assert response["data"]["content"]["questionType"] == "FILL_BLANK"
+    assert response["data"]["content"]["questionType"] == "WORD_GUESS"
+    assert response["data"]["content"]["pageNumber"] == 1
+    assert response["data"]["content"]["blankWord"] == "red"
+    assert response["data"]["content"]["answerSentence"] == "red"
+    assert response["data"]["content"]["guideHint"] == "Look at the queen's clothes."
 
 
 @pytest.mark.asyncio
@@ -345,9 +354,11 @@ async def test_description_attempt(course_context) -> None:
     )
 
     assert response["data"]["attemptId"] == 1001
-    assert response["data"]["score"] == 88
+    assert response["data"]["score"] == 100
     assert response["data"]["passed"] is True
-    assert response["data"]["feedback"] == "Great! The queen is wearing red."
+    assert response["data"]["feedback"] == "Great!"
+    assert response["data"]["modelAnswer"] == "red"
+    assert response["data"]["guideHint"] == "Look at the queen's clothes."
 
 
 @pytest.mark.asyncio

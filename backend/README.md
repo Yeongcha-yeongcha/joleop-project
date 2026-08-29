@@ -115,6 +115,21 @@ Seed는 idempotent 방식입니다. 여러 번 실행해도 동일한 개발용 
 uvicorn app.main:app --reload
 ```
 
+## Import AI-generated content
+
+AI 생성 파이프라인에서 검수된 동화 문장 JSON을 만든 뒤 운영 DB 콘텐츠로 가져올 수 있습니다.
+
+```bash
+python -m app.seed.import_ai_content \
+  outputs/my_run/qwen_judged_lessons_accepted_text.json \
+  --description-file outputs/my_run/description_quizzes.json \
+  --roleplay-file outputs/my_run/roleplay_quizzes.json \
+  --title "Hana and the Starlight Garden" \
+  --difficulty BEGINNER
+```
+
+기존 책의 콘텐츠를 교체하려면 `--book-id`를 함께 넘기면 됩니다.
+
 - API: `http://localhost:8000`
 - Swagger: `http://localhost:8000/docs`
 - Health: `GET /health`

@@ -40,11 +40,17 @@ class KakaoService:
             response = await client.post(settings.KAKAO_TOKEN_URL, data=data)
 
         if response.status_code >= 400:
-            self._log_kakao_error(
+            error = self._log_kakao_error(
                 stage="token exchange",
                 response=response,
             )
-            raise UnauthorizedException("카카오 인증에 실패했습니다.")
+            detail = "카카오 인증에 실패했습니다."
+            if error["code"] or error["description"]:
+                detail = (
+                    f"{detail} "
+                    f"({error['code'] or 'unknown'}: {error['description'] or 'no detail'})"
+                )
+            raise UnauthorizedException(detail)
 
         access_token = response.json().get("access_token")
         if not access_token:
@@ -57,11 +63,17 @@ class KakaoService:
             response = await client.get(settings.KAKAO_USER_INFO_URL, headers=headers)
 
         if response.status_code >= 400:
-            self._log_kakao_error(
+            error = self._log_kakao_error(
                 stage="user info fetch",
                 response=response,
             )
-            raise UnauthorizedException("카카오 사용자 정보를 가져오지 못했습니다.")
+            detail = "카카오 사용자 정보를 가져오지 못했습니다."
+            if error["code"] or error["description"]:
+                detail = (
+                    f"{detail} "
+                    f"({error['code'] or 'unknown'}: {error['description'] or 'no detail'})"
+                )
+            raise UnauthorizedException(detail)
         return response.json()
 
     async def get_parent_identity(
@@ -103,7 +115,7 @@ class KakaoService:
         return data
 
     @staticmethod
-    def _log_kakao_error(*, stage: str, response: httpx.Response) -> None:
+    def _log_kakao_error(*, stage: str, response: httpx.Response) -> dict[str, str | None]:
         error_code: str | None = None
         error_description: str | None = None
         try:
@@ -126,3 +138,4 @@ class KakaoService:
             error_code,
             error_description,
         )
+        return {"code": error_code, "description": error_description}

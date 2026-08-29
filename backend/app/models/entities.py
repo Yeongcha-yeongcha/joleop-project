@@ -257,6 +257,11 @@ class DescriptionQuestion(Base):
     instruction: Mapped[str] = mapped_column(Text, nullable=False)
     sentence: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(String)
+    page_number: Mapped[int | None] = mapped_column(Integer)
+    source_text: Mapped[str | None] = mapped_column(Text)
+    blank_word: Mapped[str | None] = mapped_column(String)
+    answer_sentence: Mapped[str | None] = mapped_column(Text)
+    guide_hint: Mapped[str | None] = mapped_column(Text)
 
     book: Mapped[Book] = relationship(back_populates="description_questions")
 
@@ -276,6 +281,10 @@ class RoleplayMission(Base):
     character_name: Mapped[str] = mapped_column(String, nullable=False)
     character_image_url: Mapped[str | None] = mapped_column(String)
     opening_message: Mapped[str] = mapped_column(Text, nullable=False)
+    player_goal: Mapped[str | None] = mapped_column(Text)
+    model_answer: Mapped[str | None] = mapped_column(Text)
+    similar_answers: Mapped[list[str] | None] = mapped_column(JSONB)
+    hint_sequence: Mapped[list[str] | None] = mapped_column(JSONB)
     required_turns: Mapped[int] = mapped_column(
         Integer,
         server_default=text("3"),

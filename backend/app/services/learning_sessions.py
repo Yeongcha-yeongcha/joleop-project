@@ -320,6 +320,11 @@ class LearningSessionService:
                 "instruction": question.instruction,
                 "imageUrl": question.image_url,
                 "sentence": question.sentence,
+                "pageNumber": question.page_number,
+                "sourceText": question.source_text,
+                "blankWord": question.blank_word,
+                "answerSentence": question.answer_sentence,
+                "guideHint": question.guide_hint,
             },
         }
 
@@ -341,6 +346,8 @@ class LearningSessionService:
             instruction=question.instruction,
             sentence=question.sentence,
             transcript=transcript,
+            answer_sentence=question.answer_sentence,
+            blank_word=question.blank_word,
         )
         attempt = LearningAttempt(
             session_id=learning_session.session_id,
@@ -361,6 +368,8 @@ class LearningSessionService:
             "score": attempt.score,
             "passed": attempt.passed,
             "feedback": attempt.feedback,
+            "modelAnswer": question.answer_sentence or question.sentence,
+            "guideHint": question.guide_hint,
             "courseProgress": self.progress_service.course_progress(
                 current_step=learning_session.current_step,
                 total_steps=len(await self._description_questions(learning_session.book_id)),
@@ -420,6 +429,9 @@ class LearningSessionService:
                 "missionId": mission.mission_id,
                 "title": mission.title,
                 "description": mission.description,
+                "playerGoal": mission.player_goal,
+                "hints": mission.hint_sequence or [],
+                "requiredTurns": mission.required_turns,
             },
             "character": {
                 "name": mission.character_name,
