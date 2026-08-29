@@ -441,6 +441,12 @@ Hard constraints:
 - Do not include numbered lists outside JSON.
 - Do not add extra pages.
 - Do not write multiple sentences inside one story_sentence.
+- When dialogue quotation marks appear inside a story_sentence, escape them as
+  \\\"like this\\\" so the JSON remains valid.
+- Do not use trailing commas.
+- Finish the complete JSON object with the closing pages bracket and object brace.
+- Before responding, silently verify that the JSON parses and that the pages array
+  contains between {min_pages} and {max_pages} items.
 
 Return ONLY the JSON object requested above.
 """
@@ -721,7 +727,7 @@ Important context:
 - This text is one lesson in a continuous 10-lesson book, not a separate micro-story.
 - Lesson/page count is determined by the supplied book configuration, not by language level.
 - Level 1 uses simple vocabulary and grammar, with at most 10 words per story sentence.
-- Level 2 uses intermediate vocabulary and grammar, with at most 14 words per story sentence.
+- Level 2 uses intermediate vocabulary and grammar, with at most 15 words per story sentence.
 - Level 3 uses slightly more complex vocabulary and grammar, with at most 16 words per story sentence.
 - Do NOT penalize a middle lesson for leaving the main book plot open.
 - Only Lesson 10 must resolve the overall book; Lessons 2-9 should advance it.

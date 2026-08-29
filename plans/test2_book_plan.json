@@ -1,0 +1,41 @@
+{
+  "book_id": "book1",
+  "start_episode": 1,
+  "level": 1,
+  "age": 7,
+  "protagonist": "{'name': 'Blossom', 'visual_description': 'a small, kind-hearted rabbit with soft pink fur and bright green eyes'}",
+  "main_theme": "love and growth",
+  "story_title": "Blossom's Garden of Love",
+  "story_idea": "Blossom, a young rabbit, learns the value of love and growth as she tends to her family's garden and helps her community come together.",
+  "book_goal": "Blossom wants to grow the most beautiful flower in the garden for the annual Harvest Festival, but it needs extra care and attention from her and the community.",
+  "memorable_object": "a delicate, hand-painted watering can",
+  "recurring_characters": [
+    "Mama Rabbit",
+    "Papa Rabbit",
+    "Mrs. Hedgehog"
+  ],
+  "recurring_locations": [
+    "Blossom's Garden",
+    "The Village Market",
+    "The Community Center"
+  ],
+  "min_score": 80,
+  "target_lessons": 10,
+  "quality_retries": 1,
+  "max_total_attempts_multiplier": 3,
+  "generate_images": false,
+  "generate_tts": false,
+  "output_path": "qwen_judged_lessons.json",
+  "episode_beats": [
+    "Lesson 1 beginning: Blossom receives the hand-painted watering can from her parents and decides to use it to help grow a special flower for the Harvest Festival.",
+    "Lesson 2 development: While watering the flower, Blossom notices that some of the other plants in the garden are struggling due to lack of water. She chooses to share her watering can with them, but this means her own flower might not get enough water.",
+    "Lesson 3 turning point: The community comes together to help Blossom's family and others build a new irrigation system for the garden, making it easier for everyone to care for their plants.",
+    "Lesson 4 rising action: As the plants start to thrive, Mrs. Hedgehog offers to teach Blossom about composting to make the soil even healthier for the flowers.",
+    "Lesson 5 climax: A sudden rainstorm threatens to damage the garden and wash away all their hard work. Blossom must decide whether to save her own flower or help protect the entire garden.",
+    "Lesson 6 falling action: With the help of Papa Rabbit, they build a makeshift shelter for the plants using materials from the village market.",
+    "Lesson 7 resolution: The storm passes, and the garden is safe. However, Blossom realizes that she must be more patient and let her flower grow at its own pace rather than forcing it to bloom too quickly.",
+    "Lesson 8 setback: A group of mischievous squirrels starts to dig up some of the plants in the garden, causing chaos and destruction. Blossom must come up with a plan to protect the garden without scaring away the squirrels.",
+    "Lesson 9 new insight: Mrs. Hedgehog shares her knowledge about the importance of pollinators like bees and butterflies for plant growth. Blossom decides to create a bee hotel in the garden to attract these helpful creatures.",
+    "Lesson 10 ending: The Harvest Festival arrives, and Blossom's flower has bloomed into a stunning beauty. As she receives praise from the community, she realizes that love and growth are not just about individual achievements but also about the connections and care we share with others."
+  ]
+}

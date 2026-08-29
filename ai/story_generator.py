@@ -211,7 +211,7 @@ def evaluation_feedback(evaluation: dict) -> list[str]:
 
 
 def max_words_for_level(level: int) -> int:
-    return {1: 10, 2: 14, 3: 16}[level]
+    return {1: 10, 2: 15, 3: 16}[level]
 
 
 def page_range_for_book(book_id: str) -> tuple[int, int]:
@@ -219,6 +219,7 @@ def page_range_for_book(book_id: str) -> tuple[int, int]:
     ranges = {
         "book1": (10, 12),
         "book2": (12, 14),
+        "book3": (14, 16),
     }
     if book_id not in ranges:
         raise ValueError(f"지원하지 않는 book_id: {book_id}")

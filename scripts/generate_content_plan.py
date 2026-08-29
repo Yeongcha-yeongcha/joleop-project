@@ -1,7 +1,7 @@
 """main_theme 하나로 Level 1용 10-Lesson content plan을 생성한다.
 
 Usage:
-    python -m scripts.generate_content_plan \
+    python3 -m scripts.generate_content_plan \
         --main-theme "friendship and courage" \
         --output plans/my_book_plan.json
 """
