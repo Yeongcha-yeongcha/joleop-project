@@ -38,6 +38,30 @@ interface BackendBookListData {
   books: BackendBook[]
 }
 
+interface BackendHomeData {
+  profile: {
+    profileId: number
+    nickname: string
+    difficulty?: Difficulty | null
+  }
+  status: {
+    streakDays: number
+    hearts: number
+    energy: number
+    maxEnergy: number
+  }
+  currentBook?: BackendCurrentBook | null
+}
+
+interface BackendCurrentBook {
+  bookId: number
+  title: string
+  coverImageUrl?: string | null
+  lessonName?: string | null
+  progress: number
+  canResume: boolean
+}
+
 interface BackendBook {
   bookId: number
   title: string
@@ -177,6 +201,22 @@ export async function fetchUserStats(): Promise<UserStats> {
   return { streak: 15, hearts: 210, xpPercent: 0.7 }
 }
 
+export async function fetchHome(): Promise<{ currentBook: Book | null; stats: UserStats }> {
+  if (BASE_URL && getProfileToken()) {
+    const data = await get<BackendHomeData>('/home', getProfileToken())
+    const maxEnergy = data.status.maxEnergy || 1
+    return {
+      currentBook: data.currentBook ? toFrontendCurrentBook(data.currentBook) : null,
+      stats: {
+        streak: data.status.streakDays,
+        hearts: data.status.hearts,
+        xpPercent: data.status.energy / maxEnergy,
+      },
+    }
+  }
+  return { currentBook: BOOKS.find((book) => book.status === 'reading') ?? null, stats: await fetchUserStats() }
+}
+
 // ─── 책 목록  GET /books ────────────────────────────────
 
 export async function fetchBooks(): Promise<Book[]> {
@@ -251,19 +291,43 @@ function toFrontendBook(book: BackendBook): Book {
   }
 }
 
-// ─── 레슨 콘텐츠  GET /books/:bookId/lessons/:lessonId ──
+function toFrontendCurrentBook(book: BackendCurrentBook): Book {
+  const progress = Math.max(0, Math.min(1, book.progress / 100))
+  const localBook = localBookFor({
+    id: String(book.bookId),
+    title: book.title,
+    coverColor: '#ffbd54',
+    level: 1,
+    totalLessons: 4,
+    currentLesson: 1,
+    progress,
+    status: 'reading',
+  })
+  return {
+    id: String(book.bookId),
+    title: localBook?.title ?? book.title,
+    coverColor: localBook?.coverColor ?? '#ffbd54',
+    coverImage: publicCoverImageUrl(book.coverImageUrl) ?? localBook?.coverImage,
+    level: localBook?.level ?? 1,
+    totalLessons: localBook?.totalLessons ?? 4,
+    currentLesson: Math.max(1, Math.min(4, Math.floor(progress * 4) + 1)),
+    progress,
+    status: progress >= 1 ? 'done' : progress > 0 ? 'reading' : 'available',
+    currentText: book.lessonName ?? localBook?.currentText ?? 'Keep reading',
+  }
+}
+
+// ─── 로컬 목업 레슨 콘텐츠 ───────────────────────────────
 
 export async function fetchLesson(bookId: string, lessonId: string): Promise<Lesson | undefined> {
-  if (BASE_URL) return get(`/books/${bookId}/lessons/${lessonId}`)
   return LESSONS.find((l) => l.bookId === bookId && l.id === lessonId)
 }
 
-// ─── 학습 진도 저장  POST /users/me/progress ────────────
+// ─── 로컬 목업 학습 진도 저장 ────────────────────────────
 
 export async function postProgress(bookId: string, lessonId: string): Promise<void> {
-  if (BASE_URL) {
-    await post('/users/me/progress', { bookId, lessonId, completedAt: new Date().toISOString() }, getProfileToken())
-  }
+  void bookId
+  void lessonId
 }
 
 // ─── 보호자 계정 / 프로필 ────────────────────────────────
@@ -284,6 +348,7 @@ export interface ChildProfile {
   nickname: string
   age: number
   profileImageUrl: string | null
+  profileColor?: string
   passwordEnabled: boolean
   onboardingCompleted: boolean
   difficulty: Difficulty | null
@@ -390,6 +455,7 @@ export async function createProfile(input: {
   age: number
   profilePassword: string
   profileImageId?: number
+  profileColor?: string
 }): Promise<ChildProfile> {
   if (BASE_URL) {
     return post('/profiles', input, getParentToken())
@@ -399,7 +465,8 @@ export async function createProfile(input: {
     profileId: Date.now(),
     nickname: input.nickname,
     age: input.age,
-    profileImageUrl: profileImageUrl(input.profileImageId),
+    profileImageUrl: input.profileImageId ? profileImageUrl(input.profileImageId) : null,
+    profileColor: input.profileColor,
     passwordEnabled: true,
     onboardingCompleted: false,
     difficulty: null,
@@ -547,13 +614,239 @@ export interface SpeechResult {
 }
 
 export async function postSpeechRecognize(audio: Blob, expected: string): Promise<SpeechResult> {
-  if (BASE_URL) {
-    const form = new FormData()
-    form.append('audio', audio, 'recording.webm')
-    form.append('expected', expected)
-    const res = await fetch(`${BASE_URL}/speech/recognize`, { method: 'POST', body: form })
-    return res.json()
-  }
+  void audio
   await new Promise((resolve) => setTimeout(resolve, 1500))
   return { recognized: expected, correct: true, score: 1.0 }
+}
+
+// ─── 학습 세션 API  /learning-sessions ───────────────────
+
+export type CourseType = 'READING' | 'REPEAT' | 'DESCRIPTION' | 'ROLEPLAY'
+
+export function usesBackendApi(): boolean {
+  return Boolean(BASE_URL && getProfileToken())
+}
+
+export interface LearningSessionData {
+  sessionId: number
+  bookId: number
+  isNew?: boolean
+  status: 'IN_PROGRESS' | 'EXITED' | 'COMPLETED'
+  currentCourse: CourseType
+  currentCourseNumber: number
+  currentStep: number
+  totalProgress: number
+}
+
+export interface ReadingData {
+  courseType: 'READING'
+  courseNumber: number
+  currentStep: number
+  totalSteps: number
+  courseProgress: number
+  totalProgress: number
+  content: {
+    chunkId: number
+    text: string
+    imageUrl?: string | null
+  }
+}
+
+export interface ReadingProgressData {
+  currentStep?: number
+  totalSteps?: number
+  courseProgress: number
+  totalProgress: number
+  courseCompleted: boolean
+  nextCourse?: CourseType
+  content?: ReadingData['content']
+}
+
+export interface RepeatData {
+  courseType: 'REPEAT'
+  courseNumber: number
+  currentStep: number
+  totalSteps: number
+  courseProgress: number
+  totalProgress: number
+  content: {
+    questionId: number
+    targetText: string
+    imageUrl?: string | null
+  }
+}
+
+export interface AttemptData {
+  attemptId: number
+  questionId: number
+  targetText?: string
+  transcript: string
+  score: number
+  passed: boolean
+  feedback?: string
+  modelAnswer?: string | null
+  guideHint?: string | null
+  courseProgress: number
+  totalProgress: number
+}
+
+export interface QuestionProgressData {
+  currentStep?: number
+  totalSteps?: number
+  courseProgress: number
+  totalProgress: number
+  courseCompleted: boolean
+  nextCourse?: CourseType
+}
+
+export interface DescriptionData {
+  courseType: 'DESCRIPTION'
+  courseNumber: number
+  currentStep: number
+  totalSteps: number
+  courseProgress: number
+  totalProgress: number
+  content: {
+    questionId: number
+    questionType: 'WORD_GUESS' | 'FILL_BLANK' | 'DESCRIPTION' | 'WHY_QUESTION'
+    instruction: string
+    imageUrl?: string | null
+    sentence?: string | null
+    pageNumber?: number | null
+    sourceText?: string | null
+    blankWord?: string | null
+    answerSentence?: string | null
+    guideHint?: string | null
+  }
+}
+
+export interface RoleplayData {
+  courseType: 'ROLEPLAY'
+  courseNumber: number
+  courseProgress: number
+  totalProgress: number
+  mission: {
+    missionId: number
+    title: string
+    description: string
+    playerGoal?: string | null
+    hints?: string[]
+    requiredTurns?: number
+  }
+  character: {
+    name: string
+    imageUrl?: string | null
+  }
+  openingMessage: {
+    speaker: string
+    text: string
+  }
+}
+
+export interface RoleplayMessageData {
+  messageId: number
+  turn: number
+  user: {
+    transcript: string
+  }
+  character: {
+    speaker: string
+    text: string
+  }
+  score: number
+  missionCompleted: boolean
+  courseProgress: number
+  totalProgress: number
+}
+
+export interface CompletionData {
+  sessionId: number
+  status: 'COMPLETED'
+  bookId: number
+  totalScore: number
+  stars: number
+  completedAt: string
+  rewards: unknown
+}
+
+async function postForm<T>(path: string, form: FormData, token?: string | null): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: form,
+  })
+  return handleResponse(res, 'POST', path)
+}
+
+export async function startOrResumeLearningSession(bookId: string): Promise<LearningSessionData> {
+  return post<LearningSessionData>(`/books/${bookId}/sessions`, {}, getProfileToken())
+}
+
+export async function fetchLearningSession(sessionId: number): Promise<LearningSessionData> {
+  return get<LearningSessionData>(`/learning-sessions/${sessionId}`, getProfileToken())
+}
+
+export async function fetchReadingCourse(sessionId: number): Promise<ReadingData> {
+  return get<ReadingData>(`/learning-sessions/${sessionId}/reading`, getProfileToken())
+}
+
+export async function updateReadingCourse(sessionId: number, currentStep: number): Promise<ReadingProgressData> {
+  return patch<ReadingProgressData>(
+    `/learning-sessions/${sessionId}/reading/progress`,
+    { currentStep },
+    getProfileToken(),
+  )
+}
+
+export async function fetchRepeatCourse(sessionId: number): Promise<RepeatData> {
+  return get<RepeatData>(`/learning-sessions/${sessionId}/repeat`, getProfileToken())
+}
+
+export async function createRepeatAttempt(sessionId: number, questionId: number, audio: Blob): Promise<AttemptData> {
+  const form = new FormData()
+  form.append('audio', audio, 'recording.webm')
+  form.append('questionId', String(questionId))
+  return postForm<AttemptData>(`/learning-sessions/${sessionId}/repeat/attempts`, form, getProfileToken())
+}
+
+export async function updateRepeatCourse(sessionId: number, questionId: number): Promise<QuestionProgressData> {
+  return patch<QuestionProgressData>(
+    `/learning-sessions/${sessionId}/repeat/progress`,
+    { questionId },
+    getProfileToken(),
+  )
+}
+
+export async function fetchDescriptionCourse(sessionId: number): Promise<DescriptionData> {
+  return get<DescriptionData>(`/learning-sessions/${sessionId}/description`, getProfileToken())
+}
+
+export async function createDescriptionAttempt(sessionId: number, questionId: number, audio: Blob): Promise<AttemptData> {
+  const form = new FormData()
+  form.append('audio', audio, 'recording.webm')
+  form.append('questionId', String(questionId))
+  return postForm<AttemptData>(`/learning-sessions/${sessionId}/description/attempts`, form, getProfileToken())
+}
+
+export async function updateDescriptionCourse(sessionId: number, questionId: number): Promise<QuestionProgressData> {
+  return patch<QuestionProgressData>(
+    `/learning-sessions/${sessionId}/description/progress`,
+    { questionId },
+    getProfileToken(),
+  )
+}
+
+export async function fetchRoleplayCourse(sessionId: number): Promise<RoleplayData> {
+  return get<RoleplayData>(`/learning-sessions/${sessionId}/roleplay`, getProfileToken())
+}
+
+export async function createRoleplayMessage(sessionId: number, missionId: number, audio: Blob): Promise<RoleplayMessageData> {
+  const form = new FormData()
+  form.append('audio', audio, 'recording.webm')
+  form.append('missionId', String(missionId))
+  return postForm<RoleplayMessageData>(`/learning-sessions/${sessionId}/roleplay/messages`, form, getProfileToken())
+}
+
+export async function completeLearningSession(sessionId: number): Promise<CompletionData> {
+  return post<CompletionData>(`/learning-sessions/${sessionId}/complete`, {}, getProfileToken())
 }

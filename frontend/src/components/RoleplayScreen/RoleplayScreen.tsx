@@ -1,13 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import lottie from 'lottie-web'
 import type { RoleplayMission } from '../../types'
+import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 import { IMAGES } from '../../constants/assets'
 import styles from './RoleplayScreen.module.css'
 
 function TrophyAnimation({ className, onComplete }: { className?: string; onComplete?: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const onCompleteRef = useRef(onComplete)
-  onCompleteRef.current = onComplete
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
 
   useEffect(() => {
     if (!ref.current) return
@@ -40,17 +44,24 @@ interface Props {
   roleplay: RoleplayMission
   onProgressChange: (v: number) => void
   onFinish: () => void
+  onRecord?: (audio: Blob) => Promise<{
+    userTranscript: string
+    characterText: string
+    missionCompleted: boolean
+  }>
 }
 
-export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }: Props) {
+export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, onRecord }: Props) {
   const [view, setView] = useState<RoleplayView>('intro')
   const [userAnswers, setUserAnswers] = useState<string[]>([])
+  const [npcReplies, setNpcReplies] = useState<string[]>(roleplay.turns.map((turn) => turn.npc))
   const [recordState, setRecordState] = useState<RecordState>('idle')
   const [showFinalNpc, setShowFinalNpc] = useState(false)
   const [showCompletion, setShowCompletion] = useState(false)
   const [showText, setShowText] = useState(false)
   const [showButton, setShowButton] = useState(false)
   const chatBottomRef = useRef<HTMLDivElement>(null)
+  const recorder = useAudioRecorder()
 
   useEffect(() => {
     const progress = view === 'intro'
@@ -65,18 +76,36 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
 
   const isDone = userAnswers.length >= roleplay.turns.length
 
-  const handleRecord = () => {
+  const handleRecord = async () => {
     if (recordState !== 'idle' || isDone) return
     const currentIdx = userAnswers.length
     setRecordState('recording')
-    setTimeout(() => {
-      setUserAnswers(prev => [...prev, roleplay.turns[currentIdx].user])
-      setRecordState('idle')
-      if (currentIdx + 1 >= roleplay.turns.length) {
-        setShowFinalNpc(true)
-        setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
+    try {
+      if (onRecord) {
+        const blob = await recorder.record()
+        const result = await onRecord(blob)
+        setUserAnswers(prev => [...prev, result.userTranscript])
+        setNpcReplies(prev => {
+          const next = [...prev]
+          next[currentIdx + 1] = result.characterText
+          return next
+        })
+        if (result.missionCompleted || currentIdx + 1 >= roleplay.turns.length) {
+          setShowFinalNpc(true)
+          setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
+        }
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, MOCK_RECORD_MS))
+        setUserAnswers(prev => [...prev, roleplay.turns[currentIdx].user])
+        if (currentIdx + 1 >= roleplay.turns.length) {
+          setShowFinalNpc(true)
+          setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
+        }
       }
-    }, MOCK_RECORD_MS)
+      setRecordState('idle')
+    } catch {
+      setRecordState('idle')
+    }
   }
 
   if (view === 'intro') {
@@ -119,7 +148,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
         {roleplay.turns.map((turn, i) => (
           <div key={i} className={styles.turnGroup}>
             {userAnswers.length >= i && (
-              <div className={styles.npcBubble}>{turn.npc}</div>
+              <div className={styles.npcBubble}>{npcReplies[i] ?? turn.npc}</div>
             )}
             {userAnswers.length > i && (
               <div className={styles.userBubble}>{userAnswers[i]}</div>
@@ -127,7 +156,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish }:
           </div>
         ))}
         {showFinalNpc && (
-          <div className={styles.npcBubble}>{roleplay.finalNpc}</div>
+          <div className={styles.npcBubble}>{npcReplies[userAnswers.length] ?? roleplay.finalNpc}</div>
         )}
         <div ref={chatBottomRef} />
       </div>

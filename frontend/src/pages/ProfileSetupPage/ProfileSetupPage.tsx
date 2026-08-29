@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { randomProfileColor } from '../../utils/profileAvatar'
 import styles from './ProfileSetupPage.module.css'
 
 export default function ProfileSetupPage() {
@@ -11,9 +12,10 @@ export default function ProfileSetupPage() {
     if (pin.length !== 4) return
     window.localStorage.setItem('yeongcha:pending-profile', JSON.stringify({
       profilePassword: pin,
-      profileImageId: Math.floor(Math.random() * 6) + 1,
+      profileColor: randomProfileColor(),
     }))
-    navigate('/onboarding')
+    window.localStorage.removeItem('yeongcha:service-intro-completed')
+    navigate('/intro')
   }
 
   return (

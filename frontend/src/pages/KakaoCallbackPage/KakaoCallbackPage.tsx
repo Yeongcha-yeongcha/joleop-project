@@ -32,6 +32,9 @@ export default function KakaoCallbackPage() {
     if (processingCodes.has(code)) {
       return
     }
+    if (processedState === 'processing') {
+      return
+    }
     if (processedState === 'done') {
       navigate('/profiles')
       return

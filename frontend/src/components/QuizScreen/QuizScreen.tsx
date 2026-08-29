@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { QuizQuestion } from '../../types'
+import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 import { IMAGES } from '../../constants/assets'
 import styles from './QuizScreen.module.css'
 
@@ -10,17 +11,31 @@ type QuizState = 'idle' | 'recording' | 'done'
 interface Props {
   quiz: QuizQuestion
   onNext: () => void
+  onRecord?: (audio: Blob) => Promise<void>
 }
 
-export default function QuizScreen({ quiz, onNext }: Props) {
+export default function QuizScreen({ quiz, onNext, onRecord }: Props) {
   const [state, setState] = useState<QuizState>('idle')
+  const recorder = useAudioRecorder()
 
-  const handleMicTap = () => {
+  const handleMicTap = async () => {
+    if (state === 'done') {
+      onNext()
+      return
+    }
     if (state === 'idle') {
       setState('recording')
-      setTimeout(() => setState('done'), MOCK_RECORD_MS)
-    } else if (state === 'done') {
-      onNext()
+      try {
+        if (onRecord) {
+          const blob = await recorder.record()
+          await onRecord(blob)
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, MOCK_RECORD_MS))
+        }
+        setState('done')
+      } catch {
+        setState('idle')
+      }
     }
   }
 

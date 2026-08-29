@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchProfiles, logoutParent, type ChildProfile } from '../../services/api'
+import { getProfileColor, getProfileImage } from '../../utils/profileAvatar'
 import styles from './ProfileSelectPage.module.css'
 
 function SettingsIcon() {
@@ -61,8 +62,11 @@ export default function ProfileSelectPage() {
         {isLoading && <p className={styles.loading}>불러오는 중...</p>}
         {profiles.map((profile) => (
           <button key={profile.profileId} className={styles.profile} onClick={() => navigate(`/profiles/${profile.profileId}/pin`)}>
-            <span className={styles.avatar}>
-              <img src={profile.profileImageUrl ?? '/images/onboarding/lion-wave.png'} alt="" />
+            <span
+              className={styles.avatar}
+              style={{ background: getProfileColor(profile) }}
+            >
+              {getProfileImage(profile) ? <img src={getProfileImage(profile) as string} alt="" /> : null}
             </span>
             <span>{profile.nickname}</span>
           </button>

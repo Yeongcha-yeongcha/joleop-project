@@ -11,9 +11,16 @@ import {
 } from '../../services/api'
 import BottomNav from '../../components/BottomNav/BottomNav'
 import type { UserStats } from '../../types'
+import {
+  getProfileColor,
+  getProfileImage,
+  saveProfileColor,
+  saveProfileImageOverride,
+} from '../../utils/profileAvatar'
 import styles from './MyPage.module.css'
 
 const avatars = [
+  '/images/HomeBearHands.png',
   '/images/onboarding/lion-wave.png',
   '/images/onboarding/lion-thinking.png',
   '/images/onboarding/lion-backpack.png',
@@ -77,7 +84,7 @@ export default function MyPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [isGuardianUnlocked, setIsGuardianUnlocked] = useState(false)
-  const currentAvatarIndex = Math.max(0, avatars.indexOf(initialProfile?.profileImageUrl ?? avatars[0]))
+  const currentAvatarIndex = Math.max(0, avatars.indexOf(getProfileImage(initialProfile) ?? avatars[0]))
   const [unlockedAvatars, setUnlockedAvatars] = useState(() => {
     const saved = readNumberSet(AVATAR_UNLOCKS_KEY)
     saved.add(currentAvatarIndex)
@@ -85,6 +92,8 @@ export default function MyPage() {
   })
   const [points, setPoints] = useState(0)
   const [stats, setStats] = useState<UserStats>({ streak: 0, hearts: 0, xpPercent: 0 })
+  const [avatarPreview, setAvatarPreview] = useState(() => getProfileImage(initialProfile))
+  const [avatarColor, setAvatarColor] = useState(() => getProfileColor(initialProfile))
 
   useEffect(() => {
     fetchUserStats().then((stats) => {
@@ -97,6 +106,8 @@ export default function MyPage() {
   const syncProfile = (nextProfile: ChildProfile) => {
     setProfile(nextProfile)
     setNickname(nextProfile.nickname)
+    setAvatarPreview(getProfileImage(nextProfile))
+    setAvatarColor(getProfileColor(nextProfile))
     window.localStorage.setItem('yeongcha:active-profile', JSON.stringify(nextProfile))
   }
 
@@ -141,11 +152,38 @@ export default function MyPage() {
         spendPoints(AVATAR_COST)
       }
       const updated = await updateProfile(profile.profileId, { profileImageId: index + 1 })
-      syncProfile({ ...profile, ...updated, profileImageUrl: avatars[index] })
+      const nextProfile = { ...profile, ...updated, profileImageUrl: avatars[index] }
+      saveProfileImageOverride(profile.profileId, avatars[index])
+      syncProfile(nextProfile)
       setMessage(isUnlocked ? '프로필 사진이 변경되었어요.' : '새 프로필 사진을 열었어요!')
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const useSolidAvatar = () => {
+    if (!profile) return
+    const color = getProfileColor(profile)
+    saveProfileColor(profile.profileId, color)
+    saveProfileImageOverride(profile.profileId, '')
+    setAvatarPreview(null)
+    setAvatarColor(color)
+    syncProfile({ ...profile, profileImageUrl: null })
+    setMessage('단색 프로필로 변경했어요.')
+  }
+
+  const uploadSelfie = (file: File | null) => {
+    if (!profile || !file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const imageUrl = String(reader.result || '')
+      if (!imageUrl) return
+      saveProfileImageOverride(profile.profileId, imageUrl)
+      setAvatarPreview(imageUrl)
+      syncProfile({ ...profile, profileImageUrl: imageUrl })
+      setMessage('셀카 프로필로 변경했어요.')
+    }
+    reader.readAsDataURL(file)
   }
 
   const saveNickname = async () => {
@@ -206,8 +244,8 @@ export default function MyPage() {
     <main className={styles.page}>
       <button className={styles.backButton} onClick={() => navigate('/home')}>←</button>
       <header className={styles.header}>
-        <div className={styles.currentAvatar}>
-          <img src={profile?.profileImageUrl ?? avatars[0]} alt="" />
+        <div className={styles.currentAvatar} style={{ background: avatarColor }}>
+          {avatarPreview ? <img src={avatarPreview} alt="" /> : null}
         </div>
         <div>
           <h1>My Page</h1>
@@ -241,9 +279,23 @@ export default function MyPage() {
           <strong>프로필 사진 상점</strong>
           <em>{points}P</em>
         </div>
+        <div className={styles.avatarTools}>
+          <button onClick={useSolidAvatar} disabled={!profile || isSaving}>
+            단색 기본
+          </button>
+          <label>
+            셀카 업로드
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => uploadSelfie(event.target.files?.[0] ?? null)}
+              disabled={!profile || isSaving}
+            />
+          </label>
+        </div>
         <section className={styles.avatarGrid}>
           {avatars.map((avatar, index) => {
-            const isSelected = profile?.profileImageUrl === avatar
+            const isSelected = avatarPreview === avatar
             const isUnlocked = unlockedAvatars.has(index)
             return (
               <button

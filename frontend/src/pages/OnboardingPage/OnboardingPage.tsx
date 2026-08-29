@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createProfile, loginProfile, postOnboarding, type OnboardingAnswer } from '../../services/api'
+import { saveProfileColor } from '../../utils/profileAvatar'
 import styles from './OnboardingPage.module.css'
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6
@@ -156,7 +157,7 @@ export default function OnboardingPage() {
     setIsSubmitting(true)
     const pendingProfile = JSON.parse(window.localStorage.getItem('yeongcha:pending-profile') || 'null') as {
       profilePassword?: string
-      profileImageId?: number
+      profileColor?: string
     } | null
     const payload = answers.length
       ? answers
@@ -171,8 +172,10 @@ export default function OnboardingPage() {
           nickname: name || '새 친구',
           age: Number.parseInt(age, 10) || 7,
           profilePassword: pendingProfile.profilePassword,
-          profileImageId: pendingProfile.profileImageId,
         })
+        if (pendingProfile.profileColor) {
+          saveProfileColor(profile.profileId, pendingProfile.profileColor)
+        }
         await loginProfile(profile.profileId, pendingProfile.profilePassword)
       }
       await postOnboarding(payload)
