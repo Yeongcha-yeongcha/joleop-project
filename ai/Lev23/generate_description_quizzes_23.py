@@ -14,7 +14,11 @@ from pathlib import Path
 from typing import Any
 
 from ai.llm_client import generate_text
-from scripts.generate_description_quizzes import extract_pages, parse_json_object
+from scripts.generate_description_quizzes import (
+    extract_pages,
+    fallback_blank_word,
+    parse_json_object,
+)
 from shared.models import DescriptionType
 
 
@@ -24,13 +28,17 @@ LEVEL_RULES = {
         "Create short-sentence situation-description quizzes. Ask what is "
         "happening in the scene. Each expected answer must be one simple, "
         "complete English sentence of 3-10 words, such as 'The boy is running.' "
-        "Describe a visible character and action. Do not ask why."
+        "Describe a visible character and action. Do not ask why. Put the most "
+        "important visible action word from the answer first in "
+        "keywords_for_evaluation."
     ),
     3: (
         "Create scene-description-and-reason quizzes. Ask the child to describe "
         "the visible scene and explain the character's feeling, choice, or action. "
         "Every expected answer must be one complete English sentence containing "
-        "'because', such as 'She looks happy because her friend came.'"
+        "'because', such as 'She looks happy because her friend came.' Put the "
+        "most important feeling, choice, or action word from the answer first in "
+        "keywords_for_evaluation."
     ),
 }
 
@@ -46,6 +54,8 @@ Requirements:
 - Use only facts visibly supported by each selected story sentence.
 - Keep questions and answers appropriate for the stated English level.
 - Do not introduce characters, actions, objects, or reasons absent from the text.
+- keywords_for_evaluation must contain at least one concrete word used in the
+  expected answer. Its first item becomes blank_word and must never be null.
 
 Return ONLY valid JSON:
 {{
@@ -83,6 +93,17 @@ def fallback_answer(text: str, level: int) -> str:
     if "because" in cleaned.casefold():
         return cleaned
     return f"{cleaned} because this action helps the story move forward."
+
+
+def quiz_blank_word(quiz: dict[str, Any], answer: str, source_text: str) -> str:
+    """공통 생성기와 같이 첫 평가 키워드를 빈칸 단어로 사용한다."""
+    keywords = quiz.get("keywords_for_evaluation") or []
+    if isinstance(keywords, list):
+        for keyword in keywords:
+            candidate = str(keyword or "").strip()
+            if candidate:
+                return candidate
+    return fallback_blank_word(answer) or fallback_blank_word(source_text) or answer
 
 
 def generate_description_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
@@ -124,6 +145,11 @@ def generate_description_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]
                 or not valid_answer(answer, level)
             ):
                 continue
+            blank_word = quiz_blank_word(
+                quiz,
+                answer,
+                page_text[page_number],
+            )
             results.append({
                 "scene_number": len(results) + 1,
                 "page_number": page_number,
@@ -134,7 +160,7 @@ def generate_description_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]
                     if level == 2
                     else DescriptionType.REASON.value
                 ),
-                "blank_word": None,
+                "blank_word": blank_word,
                 "answer_sentence": answer,
                 "guide_hint": str(quiz.get("hint_1") or answer).strip(),
             })
@@ -150,18 +176,29 @@ def generate_description_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]
         else DescriptionType.REASON.value
     )
     return [
-        {
-            "scene_number": index,
-            "page_number": page_number,
-            "text": text,
-            "image_path": "",
-            "desc_type": desc_type,
-            "blank_word": None,
-            "answer_sentence": fallback_answer(text, level),
-            "guide_hint": text[: max(1, len(text) // 2)],
-        }
+        _fallback_quiz(index, page_number, text, level, desc_type)
         for index, (page_number, text) in enumerate(pages[:QUIZ_COUNT], 1)
     ]
+
+
+def _fallback_quiz(
+    index: int,
+    page_number: int,
+    text: str,
+    level: int,
+    desc_type: str,
+) -> dict[str, Any]:
+    answer = fallback_answer(text, level)
+    return {
+        "scene_number": index,
+        "page_number": page_number,
+        "text": text,
+        "image_path": "",
+        "desc_type": desc_type,
+        "blank_word": fallback_blank_word(answer) or fallback_blank_word(text) or answer,
+        "answer_sentence": answer,
+        "guide_hint": text[: max(1, len(text) // 2)],
+    }
 
 
 def generate_file(input_path: Path, output_path: Path | None = None) -> Path:

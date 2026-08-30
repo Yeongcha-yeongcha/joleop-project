@@ -1,0 +1,262 @@
+[
+  {
+    "level": 2,
+    "lesson_number": 1,
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "You are playing in Sunflower Meadow with your friends when you need to ask for directions from a friendly hunter.",
+        "character_name": "Pipi the bird",
+        "player_goal": "Ask the friendly hunter for help finding a specific location.",
+        "model_answer": "Can you show me where the bush is?",
+        "similar_answers": [
+          "Where's the bush with the bird?",
+          "Can you tell me where we found the bird?",
+          "How do I get to the bush?"
+        ],
+        "hint_sequence": [
+          "You heard a faint chirping sound earlier.",
+          "Your friends are waiting for you near the bush.",
+          "The friendly hunter is standing nearby, smiling at you."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 2,
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Popo is helping a lost baby bird trapped in the bush. You need to ask for help.",
+        "character_name": "Pipi",
+        "player_goal": "Ask Popo for directions to get to the baby bird safely.",
+        "model_answer": "Popo, can you show me how to get to the little bird?",
+        "similar_answers": [
+          "Popo, can you help me find the way to the bird?",
+          "Popo, where's the best way to go to get to the baby bird?",
+          "Popo, can you show me a safe path to the little bird?"
+        ],
+        "hint_sequence": [
+          "You see Pipi pointing at the bush.",
+          "Pipi shouted 'Look, there it is!' on page 4.",
+          "The baby bird is trapped inside the bush with thorns all around."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 3,
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Popo's mane is tangled with thorns and he needs help to untangle it.",
+        "character_name": "Gigi",
+        "player_goal": "Ask Gigi for help to untangle Popo's mane gently.",
+        "model_answer": "Gigi, can you help me untangle my mane?",
+        "similar_answers": [
+          "Gigi, I need your help with my tangled mane!",
+          "Can you please help me get the thorns out of my mane?",
+          "I'm stuck, Gigi! Can you help me untangle?"
+        ],
+        "hint_sequence": [
+          "Popo is having trouble moving because his mane is tangled.",
+          "Gigi helped Popo on page 3. What did she do?",
+          "Remember how Popo felt when he was able to help the bird? He's feeling that way again, and you can help him!"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 4,
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Toto and her friends are on an adventure and they need to find their way through Sunflower Meadow.",
+        "character_name": "Toto",
+        "player_goal": "Ask a friendly hunter for directions to get out of the meadow.",
+        "model_answer": "I'm lost, can you show us the way?",
+        "similar_answers": [
+          "Can you help us find our way out?",
+          "We're stuck in Sunflower Meadow, can you guide us?",
+          "I don't know where we are, can you show us the path?"
+        ],
+        "hint_sequence": [
+          "Toto and her friends got lost in Sunflower Meadow.",
+          "They need to find a way out of the meadow to continue their adventure.",
+          "A friendly hunter is nearby, maybe they can help them."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 5,
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "You are on an adventure with your friends to lift Pipi out of the bush. You meet a friendly hunter who can help you.",
+        "character_name": "Friendly Hunter",
+        "player_goal": "Ask the friendly hunter for directions to find more vines and sticks to build the pulley system.",
+        "model_answer": "Can you show me where I can find some strong vines?",
+        "similar_answers": [
+          "Where are there some good vines we can use?",
+          "Can you tell me where to find some sticks and vines?",
+          "Do you know where we can get some more vines for our pulley?"
+        ],
+        "hint_sequence": [
+          "You're on an adventure with your friends!",
+          "Remember what Gigi did in the story? He found some sturdy vines.",
+          "The friendly hunter might have seen some vines near a tree or a river."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 6,
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Popo and friends are trying to reach the bird's nest, but strong winds make it hard.",
+        "character_name": "Toto",
+        "player_goal": "Ask a friendly hunter for directions to help find the way to the bird's nest.",
+        "model_answer": "Can you show me which vine is strong enough to hold us?",
+        "similar_answers": [
+          "Which vine can we use to stay steady?",
+          "Can you tell us where to find a good stick to tie around?",
+          "How do we keep from getting blown away?"
+        ],
+        "hint_sequence": [
+          "The friends are trying to reach the bird's nest, but it's hard because of the wind.",
+          "Toto is one of Popo's friends who helped with the pulley and tied a vine around a stick.",
+          "The friendly hunter might be able to help them find a way to hold onto their creation."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 7,
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Pipi and Gigi are working on building a pulley system near a big tree.",
+        "character_name": "Pipi",
+        "player_goal": "Ask a friendly hunter for directions to the nearby tree with sturdy branches.",
+        "model_answer": "Gigi, where is the tree with strong branches?",
+        "similar_answers": [
+          "Gigi, can you show me the big tree with tall branches?",
+          "Gigi, I need your help finding a good tree for our pulley system. Where is it?",
+          "Gigi, which tree do we use to tie our pulley?"
+        ],
+        "hint_sequence": [
+          "Look at Page 6 and 7 to remember what Pipi did.",
+          "Pipi asked Gigi to use his long neck on Page 7. What is he asking for now?",
+          "The friends are building a pulley system near a big tree with sturdy branches. Where do you think they need help finding?"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 8,
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "You are Momo, and you need help finding your way back to the bird's nest.",
+        "character_name": "Momo",
+        "player_goal": "Ask a friendly hunter for directions to get back to the bird's nest.",
+        "model_answer": "Can you show me where my friends are?",
+        "similar_answers": [
+          "Where is Popo and his friends?",
+          "I'm lost, can you help me find the bird's nest?",
+          "How do I get back to our cozy nest?"
+        ],
+        "hint_sequence": [
+          "You were digging a trench for the bird's nest.",
+          "Popo said 'I can help!' and got some leaves for bed.",
+          "You helped Pipi put soft leaves in the bird's nest."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 9,
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Popo and friends are taking care of the handmade wooden birdhouse.",
+        "character_name": "Popo",
+        "player_goal": "Ask a friendly hunter for directions to find some twigs for the birdhouse.",
+        "model_answer": "Can you show me where I can find some twigs?",
+        "similar_answers": [
+          "Where are there lots of twigs?",
+          "Can you help me find some sticks for our birdhouse?",
+          "Do you know where we can get some branches?"
+        ],
+        "hint_sequence": [
+          "The friends are taking care of the birdhouse.",
+          "They need something to decorate or fix it.",
+          "A friendly hunter might be able to help them find what they need."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 10,
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_2_1",
+        "topic": "direction",
+        "level": 2,
+        "scene_description": "Popo and friends are in Sunflower Meadow, admiring their new birdhouse.",
+        "character_name": "Toto",
+        "player_goal": "Ask a friendly hunter for directions to the birdhouse.",
+        "model_answer": "Where is our birdhouse?",
+        "similar_answers": [
+          "Can you show me where we built it?",
+          "Is that our new home over there?",
+          "How do I get to our special birdhouse?"
+        ],
+        "hint_sequence": [
+          "You see Popo and friends in Sunflower Meadow.",
+          "They just finished building a new birdhouse together.",
+          "Toto is excited about the birdhouse and wants to show it off."
+        ]
+      }
+    ]
+  }
+]
