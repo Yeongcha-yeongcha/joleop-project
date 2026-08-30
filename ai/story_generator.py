@@ -27,6 +27,7 @@ from ai.prompts import (
     DUPLICATE_SENTENCE_REWRITE_PROMPT,
     STORY_GENERATION_PROMPT,
     STORY_JUDGE_PROMPT,
+    STORY_REPAIR_PROMPT,
     STORY_SCORE_PROMPT,
 )
 
@@ -116,6 +117,7 @@ def build_story_prompt(
     theme: str,
     protagonist: str,
     *,
+    recurring_characters: Optional[list[str]] = None,
     episode: int = 1,
     total_episodes: int = 1,
     continuity_context: str = "This is episode 1. Start the longer story gently.",
@@ -123,11 +125,13 @@ def build_story_prompt(
     max_words = max_words_for_level(level)
     min_pages, max_pages = page_range_for_book(book_id)
     page_count = (min_pages + max_pages) // 2
+    allowed_characters = recurring_characters or [protagonist]
     return STORY_GENERATION_PROMPT.format(
         age=age,
         level=level,
         theme=theme,
         protagonist=protagonist,
+        recurring_characters=", ".join(allowed_characters),
         episode=episode,
         total_episodes=total_episodes,
         continuity_context=continuity_context,
@@ -428,6 +432,55 @@ def rewrite_reused_story_sentences(
     except Exception as error:
         print(f"  중복 페이지 부분 재작성 실패: {error}")
         return sentences
+
+
+def repair_invalid_story_json(
+    draft: str,
+    *,
+    book_id: str,
+    age: int,
+    level: int,
+    theme: str,
+    protagonist: str,
+    recurring_characters: Optional[list[str]],
+    episode: int,
+    total_episodes: int,
+    continuity_context: str,
+) -> list[str]:
+    """깨진 초안을 Level 2/3 파이프라인과 동일하게 한 번 자동 수리한다."""
+    min_pages, max_pages = page_range_for_book(book_id)
+    page_count = (min_pages + max_pages) // 2
+    allowed_cast = recurring_characters or [protagonist]
+    repair_context = (
+        f"{continuity_context}\n"
+        f"The complete allowed cast is: {', '.join(allowed_cast)}. "
+        "Do not add any other character."
+    )
+    repair_prompt = STORY_REPAIR_PROMPT.format(
+        page_count=page_count,
+        min_pages=min_pages,
+        max_pages=max_pages,
+        max_words=max_words_for_level(level),
+        protagonist=protagonist,
+        level=level,
+        age=age,
+        theme=theme,
+        episode=episode,
+        total_episodes=total_episodes,
+        continuity_context=repair_context,
+        draft=draft,
+    )
+    try:
+        repaired = generate_text(
+            [{"role": "user", "content": repair_prompt}],
+            model=MODELS.story_model,
+            max_tokens=2600,
+            temperature=0.1,
+        )
+        return extract_story_sentences(repaired)
+    except Exception as error:
+        print(f"  JSON 자동 수리 실패: {error}")
+        return []
 
 
 def parse_json_object(text: str) -> dict:
@@ -736,6 +789,7 @@ async def generate_lesson(
     age: int,
     theme: str,
     protagonist: str,
+    recurring_characters: Optional[list[str]] = None,
     generate_images: bool = False,
     total_episodes: int = 1,
     continuity_context: str = "This is episode 1. Start the longer story gently.",
@@ -753,6 +807,7 @@ async def generate_lesson(
         level,
         theme,
         protagonist,
+        recurring_characters=recurring_characters,
         episode=episode,
         total_episodes=total_episodes,
         continuity_context=continuity_context,
@@ -827,6 +882,7 @@ async def generate_lesson_if_quality_passes(
     age: int,
     theme: str,
     protagonist: str,
+    recurring_characters: Optional[list[str]] = None,
     min_score: int = 70,
     generate_images: bool = False,
     quality_retries: int = 3,
@@ -838,7 +894,6 @@ async def generate_lesson_if_quality_passes(
     avoid_sentences: Optional[list[str]] = None,
     quality_feedback: Optional[list[str]] = None,
 ) -> tuple[Optional[Lesson], dict]:
-    quality_retries = max(3, quality_retries)
     print(f"\n{'='*50}")
     print(f"[품질 필터 생성] theme={theme} ep={episode} min_score={min_score}")
 
@@ -848,6 +903,7 @@ async def generate_lesson_if_quality_passes(
         level,
         theme,
         protagonist,
+        recurring_characters=recurring_characters,
         episode=episode,
         total_episodes=total_episodes,
         continuity_context=continuity_context,
@@ -867,7 +923,11 @@ async def generate_lesson_if_quality_passes(
     if quality_feedback is None:
         quality_feedback = []
 
-    for quality_attempt in range(1, quality_retries + 1):
+    # Level 2/3 재작성 파이프라인과 동일하게, 고정 횟수에서 실패로
+    # 종료하지 않고 유효한 초안이 품질 검사를 통과할 때까지 재생성한다.
+    quality_attempt = 0
+    while True:
+        quality_attempt += 1
         prompt = (
             base_prompt
             + build_avoid_sentences_addendum(avoid_sentences)
@@ -884,7 +944,7 @@ async def generate_lesson_if_quality_passes(
                 "score": 0,
                 "reason": "Story generation failed.",
             }
-            print(f"  초안 재생성 {quality_attempt}/{quality_retries}: 생성 실패")
+            print(f"  초안 재생성 {quality_attempt}회차: 생성 실패")
             continue
 
         sentences = extract_story_sentences(best_text)
@@ -907,22 +967,38 @@ async def generate_lesson_if_quality_passes(
             })
 
         if not sentences:
-            best_failure = {
-                "theme": theme,
-                "accepted": False,
-                "score": 0,
-                "reason": (
-                    "Draft JSON was incomplete or invalid; it was saved but was not "
-                    "sent to Qwen and will not be used as continuity context."
-                ),
-                "raw_story": best_text,
-                "extracted_sentences": [],
-            }
-            print(
-                f"  초안 재생성 {quality_attempt}/{quality_retries}: "
-                "JSON 파싱 실패 (Qwen 평가 생략)"
+            print("  → JSON 파싱 실패, 같은 초안 자동 수리 시도")
+            sentences = repair_invalid_story_json(
+                best_text,
+                book_id=book_id,
+                age=age,
+                level=level,
+                theme=theme,
+                protagonist=protagonist,
+                recurring_characters=recurring_characters,
+                episode=episode,
+                total_episodes=total_episodes,
+                continuity_context=continuity_context,
             )
-            continue
+            if not sentences:
+                best_failure = {
+                    "theme": theme,
+                    "accepted": False,
+                    "score": 0,
+                    "reason": (
+                        "Draft JSON was incomplete or invalid and automatic repair "
+                        "failed; it was not sent to Qwen or continuity context."
+                    ),
+                    "raw_story": best_text,
+                    "extracted_sentences": [],
+                }
+                print(
+                    f"  초안 재생성 {quality_attempt}회차: "
+                    "JSON 자동 수리 실패 (Qwen 평가 생략)"
+                )
+                continue
+            page_count_valid = min_pages <= len(sentences) <= max_pages
+            print(f"  → JSON 자동 수리 완료 ({len(sentences)}문장 추출)")
 
         if not page_count_valid:
             best_failure = {
@@ -938,7 +1014,7 @@ async def generate_lesson_if_quality_passes(
                 "extracted_sentences": sentences,
             }
             print(
-                f"  초안 재생성 {quality_attempt}/{quality_retries}: "
+                f"  초안 재생성 {quality_attempt}회차: "
                 f"페이지 수 {len(sentences)}개 (필수: {min_pages}-{max_pages})"
             )
             continue
@@ -982,7 +1058,7 @@ async def generate_lesson_if_quality_passes(
                     "story_sentences": rewritten_sentences,
                 }
                 print(
-                    f"  초안 재생성 {quality_attempt}/{quality_retries}: "
+                    f"  초안 재생성 {quality_attempt}회차: "
                     f"부분 재작성 후에도 유사 문장 {len(remaining_reuse)}개"
                 )
                 continue
@@ -1012,9 +1088,7 @@ async def generate_lesson_if_quality_passes(
             "story_sentences": sentences,
         }
         quality_feedback.extend(evaluation_feedback(evaluation))
-        print(f"  품질 재생성 {quality_attempt}/{quality_retries}: {score}/{min_score}")
-    else:
-        return best_failure and (None, best_failure)
+        print(f"  품질 재생성 {quality_attempt}회차: {score}/{min_score}")
 
     print(f"  ✓ 품질 통과: {score}/{min_score}")
 

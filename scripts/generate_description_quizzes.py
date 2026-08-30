@@ -1,7 +1,7 @@
 """accepted text JSON에서 레벨별 묘사 문제를 생성한다.
 
 Usage:
-    python -m scripts.generate_description_quizzes path/to/*_accepted_text.json
+    python3 -m scripts.generate_description_quizzes path/to/*_accepted_text.json
 """
 
 from __future__ import annotations

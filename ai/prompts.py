@@ -15,10 +15,13 @@ Each lesson is the next small part of the same longer story for the same level.
 Keep the same protagonist, world, emotional arc, and important objects across lessons.
 
 Character name consistency:
-- Use only the established cute, game-like character names from the book plan.
+- The complete allowed cast is: {recurring_characters}.
+- Use only these characters. No other person, animal, creature, narrator acting
+  as a character, crowd, background character, or one-off helper may appear.
+- Do not turn an object, plant, weather event, or location into a character.
 - Never add Mr., Mrs., Ms., Miss, Sir, Lady, Doctor, or Professor.
 - Do not rename recurring characters.
-- If a new character is necessary, give it a short, cute fantasy name.
+- Never invent a new character, even when the plot would normally benefit from one.
 
 The stories must feel:
 - warm

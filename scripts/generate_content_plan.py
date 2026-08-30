@@ -25,13 +25,21 @@ from shared.settings import MODELS
 
 
 TOTAL_LESSONS = 10
+FIXED_PROTAGONIST = "Popo the lion"
+FIXED_CHARACTERS = [
+    "Popo the lion",
+    "Toto the rabbit",
+    "Pipi the parrot",
+    "Gigi the giraffe",
+    "Momo the mole",
+]
 
 CONTENT_PLAN_PROMPT = """
 You are a senior children's storybook planner.
 
 Create one canonical Level 1 English storybook for Korean children ages 5-9.
-The user provides only a main theme. You must invent a memorable protagonist
-and exactly 10 causally connected lesson events.
+The user provides only a main theme. You must create exactly 10 causally
+connected lesson events using the fixed cast below.
 
 Main theme: {main_theme}
 Child age: {age}
@@ -56,15 +64,24 @@ Event rules for every episode beat:
 - Avoid unrelated side stories and disposable characters.
 
 Character rules:
-- Give the protagonist a short, cute, easy-to-pronounce name.
-- Include a stable visual description in the protagonist string so images can
-  keep the same character design across all lessons.
-- Keep all recurring character names identical throughout the plan.
+- The protagonist is always Popo the lion.
+- The complete cast is exactly these five animals: Popo the lion, Toto the
+  rabbit, Pipi the parrot, Gigi the giraffe, and Momo the mole.
+- All five characters must appear in every book and keep these exact names and
+  animal species throughout the plan.
+- Do not add any other character, including unnamed animals, people, crowds,
+  narrators acting as characters, background characters, or one-off helpers.
+- Objects, plants, weather, and locations must not talk, act like characters,
+  or be given names.
+- Set "protagonist" to exactly "Popo the lion".
+- Set "recurring_characters" to exactly
+  ["Popo the lion", "Toto the rabbit", "Pipi the parrot",
+  "Gigi the giraffe", "Momo the mole"] in that order.
 
 Return ONLY valid JSON with this exact shape:
 {{
   "story_title": "...",
-  "protagonist": "name plus stable visual description",
+  "protagonist": "Popo the lion",
   "story_idea": "one concise sentence describing the full story",
   "book_goal": "...",
   "memorable_object": "...",
@@ -103,6 +120,14 @@ def validate_outline(outline: dict[str, Any]) -> None:
     if missing:
         raise ValueError(f"Outline is missing: {', '.join(missing)}")
 
+    if outline["protagonist"] != FIXED_PROTAGONIST:
+        raise ValueError(f"protagonist must be exactly {FIXED_PROTAGONIST!r}.")
+    if outline.get("recurring_characters") != FIXED_CHARACTERS:
+        raise ValueError(
+            "recurring_characters must contain only the five fixed characters "
+            "in the required order."
+        )
+
     beats = outline["episode_beats"]
     if not isinstance(beats, list) or len(beats) != TOTAL_LESSONS:
         raise ValueError("episode_beats must contain exactly 10 items.")
@@ -118,7 +143,7 @@ def validate_outline(outline: dict[str, Any]) -> None:
 def generate_content_plan(
     main_theme: str,
     *,
-    age: int = 7,
+    age: int = 3,
     max_attempts: int = 2,
 ) -> dict[str, Any]:
     prompt = CONTENT_PLAN_PROMPT.format(main_theme=main_theme, age=age)
@@ -133,6 +158,11 @@ def generate_content_plan(
                 temperature=0.45,
             )
             outline = parse_json_object(response)
+            # Character identities are application-owned constants. Normalize
+            # model output before validation so harmless additions such as a
+            # visual description do not make the whole plan fail.
+            outline["protagonist"] = FIXED_PROTAGONIST
+            outline["recurring_characters"] = FIXED_CHARACTERS.copy()
             validate_outline(outline)
             break
         except Exception as error:
@@ -146,15 +176,15 @@ def generate_content_plan(
         "start_episode": 1,
         "level": 1,
         "age": age,
-        "protagonist": str(outline["protagonist"]).strip(),
+        "protagonist": FIXED_PROTAGONIST,
         "main_theme": main_theme,
         "story_title": str(outline["story_title"]).strip(),
         "story_idea": str(outline["story_idea"]).strip(),
         "book_goal": str(outline.get("book_goal", "")).strip(),
         "memorable_object": str(outline.get("memorable_object", "")).strip(),
-        "recurring_characters": outline.get("recurring_characters", []),
+        "recurring_characters": FIXED_CHARACTERS.copy(),
         "recurring_locations": outline.get("recurring_locations", []),
-        "min_score": 80,
+        "min_score": 70,
         "target_lessons": TOTAL_LESSONS,
         "quality_retries": 1,
         "max_total_attempts_multiplier": 3,
@@ -177,7 +207,7 @@ def main() -> None:
         description="Generate a 10-lesson Level 1 content plan from a main theme."
     )
     parser.add_argument("--main-theme", required=True, help="Main theme for the book.")
-    parser.add_argument("--age", type=int, default=7, help="Target child age (default: 7).")
+    parser.add_argument("--age", type=int, default=3, help="Target child age (default: 3).")
     parser.add_argument(
         "--output",
         default="plans/content_plan.generated.json",

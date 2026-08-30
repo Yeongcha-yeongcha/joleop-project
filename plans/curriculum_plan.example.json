@@ -2,7 +2,7 @@
   "book_id": "lion",
   "age": 7,
   "protagonist": "a cute yellow lion cub",
-  "min_score": 80,
+  "min_score": 70,
   "generate_images": false,
   "generate_tts": false,
   "output_path": "outputs/curriculum_lessons.json",

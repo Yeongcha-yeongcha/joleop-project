@@ -1,0 +1,45 @@
+{
+  "book_id": "book1",
+  "start_episode": 1,
+  "level": 1,
+  "age": 3,
+  "protagonist": "Popo the lion",
+  "main_theme": "friendship and courage",
+  "story_title": "Popo's Brave Adventure",
+  "story_idea": "Popo and friends help a lost baby bird find its way back to its nest by facing their fears and working together.",
+  "book_goal": "Help the lost baby bird find its way home safely",
+  "memorable_object": "a small, handmade wooden birdhouse",
+  "recurring_characters": [
+    "Popo the lion",
+    "Toto the rabbit",
+    "Pipi the parrot",
+    "Gigi the giraffe",
+    "Momo the mole"
+  ],
+  "recurring_locations": [
+    "Sunflower Meadow",
+    "Rabbit's Burrow",
+    "Parrot's Tree",
+    "Giraffe's Hill",
+    "Mole's Tunnel"
+  ],
+  "min_score": 70,
+  "target_lessons": 10,
+  "quality_retries": 1,
+  "max_total_attempts_multiplier": 3,
+  "generate_images": false,
+  "generate_tts": false,
+  "output_path": "qwen_judged_lessons.json",
+  "episode_beats": [
+    "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery."
+  ]
+}

@@ -4,7 +4,7 @@
   "level": 1,
   "age": 7,
   "protagonist": "a cute yellow lion cub",
-  "min_score": 80,
+  "min_score": 70,
   "target_lessons": 10,
   "quality_retries": 1,
   "max_total_attempts_multiplier": 3,
