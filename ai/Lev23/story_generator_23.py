@@ -1,7 +1,7 @@
 """Generate Level 2 and Level 3 books from an accepted Level 1 book.
 
 Usage:
-	python -m ai.Lev23.story_generator_23 \
+	python3 -m ai.Lev23.story_generator_23 \
 		--accepted outputs/test15/qwen_judged_lessons_accepted_text.json \
 		--plan plans/test1_book_plan.json
 
@@ -37,9 +37,11 @@ from shared.settings import MODELS
 
 LEVELS = (2, 3)
 TARGET_LESSONS = 10
+MIN_PAGES = 10
+MAX_PAGES = 13
+TARGET_PAGES = 11
 MAX_WORDS = {2: 15, 3: 16}
 TARGET_WORDS = {2: 11, 3: 14}
-MAX_PARTIAL_WORD_REPAIRS = 3
 AR_LEVELS = {2: "0.9-1.8", 3: "1.8-2.5"}
 
 
@@ -57,6 +59,13 @@ def load_inputs(accepted_path: Path, plan_path: Path) -> tuple[list[dict[str, An
 		raise ValueError("book plan must contain a JSON object.")
 	if not plan.get("episode_beats"):
 		raise ValueError("book plan must define episode_beats.")
+	characters = plan.get("recurring_characters")
+	if not isinstance(characters, list) or not characters:
+		raise ValueError(
+			"book plan must define a non-empty recurring_characters list."
+		)
+	if any(not isinstance(character, str) or not character.strip() for character in characters):
+		raise ValueError("every recurring character must be a non-empty string.")
 	if len(accepted) != TARGET_LESSONS:
 		raise ValueError(
 			f"accepted text must contain exactly {TARGET_LESSONS} lessons; "
@@ -105,7 +114,7 @@ def build_rewrite_prompt(
 	episode_beat: str,
 	plan: dict[str, Any],
 ) -> str:
-	page_count = len(base_sentences)
+	page_count = TARGET_PAGES
 	reference = story_text_from_sentences(base_sentences)
 	if level == 2:
 		language_rules = """- Write each story_sentence in 8-11 words whenever possible.
@@ -124,6 +133,7 @@ def build_rewrite_prompt(
 		level=level,
 		theme=episode_beat,
 		protagonist=plan.get("protagonist", "the story protagonist"),
+		recurring_characters=", ".join(plan["recurring_characters"]),
 		episode=episode,
 		total_episodes=total_episodes,
 		continuity_context=(
@@ -136,8 +146,8 @@ def build_rewrite_prompt(
 			"ending. Do not add a new conflict or resolve a later episode."
 		),
 		page_count=page_count,
-		min_pages=page_count,
-		max_pages=page_count,
+		min_pages=MIN_PAGES,
+		max_pages=MAX_PAGES,
 		max_words=MAX_WORDS[level],
 	) + f"""
 
@@ -146,7 +156,8 @@ def build_rewrite_prompt(
 ==================================================
 
 Rewrite the reference lesson below for English Level {level}.
-- Keep exactly {page_count} story pages, in the same event order.
+- Write between {MIN_PAGES} and {MAX_PAGES} story pages, in the same event order.
+- The Level 1 page count does not need to be preserved.
 - Keep the same protagonist, recurring characters, locations, objects, emotions,
   problem, actions, consequence, and ending.
 - The required central event is: {episode_beat}
@@ -186,11 +197,10 @@ def repair_invalid_story_json(
 	plan: dict[str, Any],
 ) -> list[str]:
 	"""Repair an invalid draft once before spending another generation attempt."""
-	page_count = len(base_sentences)
 	repair_prompt = STORY_REPAIR_PROMPT.format(
-		page_count=page_count,
-		min_pages=page_count,
-		max_pages=page_count,
+		page_count=TARGET_PAGES,
+		min_pages=MIN_PAGES,
+		max_pages=MAX_PAGES,
 		max_words=MAX_WORDS[level],
 		protagonist=plan.get("protagonist", "the story protagonist"),
 		level=level,
@@ -200,7 +210,10 @@ def repair_invalid_story_json(
 		total_episodes=total_episodes,
 		continuity_context=(
 			"Preserve the reference Level 1 lesson's events and order. "
-			"Repair formatting without inventing a different episode.\n"
+			"Repair formatting without inventing a different episode. "
+			"The complete allowed cast is: "
+			+ ", ".join(plan["recurring_characters"])
+			+ ". Do not add any other character.\n"
 			+ story_text_from_sentences(base_sentences)
 		),
 		draft=draft,
@@ -377,32 +390,20 @@ async def rewrite_lesson(
 				continue
 			print(f"  → JSON 자동 수리 완료 ({len(sentences)}문장 추출)")
 
-		if len(sentences) != len(base_sentences):
-			last_reason = f"expected {len(base_sentences)} pages, got {len(sentences)}"
+		if not MIN_PAGES <= len(sentences) <= MAX_PAGES:
+			last_reason = (
+				f"expected {MIN_PAGES}-{MAX_PAGES} pages, got {len(sentences)}"
+			)
 			print(
 				f"  초안 재생성 {attempt}회차: "
-				f"페이지 수 {len(sentences)}개 (필수: {len(base_sentences)})"
+				f"페이지 수 {len(sentences)}개 "
+				f"(허용: {MIN_PAGES}-{MAX_PAGES})"
 			)
 			continue
 		overlong_count = sum(
 			len(sentence.split()) > MAX_WORDS[level] for sentence in sentences
 		)
 		if overlong_count:
-			if overlong_count > MAX_PARTIAL_WORD_REPAIRS:
-				last_reason = (
-					f"{overlong_count} sentences exceed the Level {level} word limit"
-				)
-				quality_feedback.append(
-					f"Too many sentences exceeded {MAX_WORDS[level]} words. "
-					f"Regenerate every sentence near {TARGET_WORDS[level]} words and "
-					"count the words before returning JSON."
-				)
-				print(
-					f"  초안 재생성 {attempt}회차: "
-					f"Level {level} 제한 초과 문장 {overlong_count}개 "
-					"(4개 이상이므로 부분 축약 생략)"
-				)
-				continue
 			shortened_sentences = shorten_overlong_sentences(
 				sentences,
 				level=level,
