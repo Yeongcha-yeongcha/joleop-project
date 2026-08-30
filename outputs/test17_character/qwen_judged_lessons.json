@@ -1,0 +1,1739 @@
+{
+  "generation_status": "completed",
+  "updated_at": "2026-08-30T16:27:32.892674+09:00",
+  "book_id": "book1",
+  "level": 1,
+  "book_structure": {
+    "source_level": 1,
+    "total_lessons": 10,
+    "lesson_roles": {
+      "1": "beginning",
+      "2-9": "development",
+      "10": "ending"
+    },
+    "future_rewrites": [
+      2,
+      3
+    ]
+  },
+  "target_lessons": 10,
+  "min_score": 70,
+  "accepted_count": 10,
+  "rejected_count": 0,
+  "accepted": [
+    {
+      "level": 1,
+      "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+      "episode_role": "beginning",
+      "score": 89,
+      "reason": "The story meets the criteria for a middle lesson, advancing the plot while maintaining readability and emotional warmth.",
+      "lesson": {
+        "lesson_id": "book1_ep1_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 1,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo the lion, Toto the rabbit, Pipi the parrot, Gigi the giraffe, and Momo the mole played together in Sunflower Meadow.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo the lion, Toto the rabbit, Pipi the parrot, Gigi the giraffe, and Momo the mole played together in Sunflower Meadow",
+            "image_path": "outputs/test17_character/images/book1_ep1_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "They heard a faint chirping sound coming from a nearby bush.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: They heard a faint chirping sound coming from a nearby bush.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Popo asked, 'What's that sound?",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo asked, 'What's that sound?",
+            "image_path": "outputs/test17_character/images/book1_ep1_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Toto replied, 'Let's go find out!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto replied, 'Let's go find out!",
+            "image_path": "outputs/test17_character/images/book1_ep1_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "They all walked towards the bush together.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: They all walked towards the bush together.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "When they reached the bush, they saw a tiny bird trapped inside.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: When they reached the bush, they saw a tiny bird trapped inside.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Popo carefully said, 'I can help. I'll get you out!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo carefully said, 'I can help. I'll get you out!",
+            "image_path": "outputs/test17_character/images/book1_ep1_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "Popo gently lifted the bush and freed the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo gently lifted the bush and freed the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "The bird thanked them with a sweet song.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The bird thanked them with a sweet song.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "The friends cheered and hugged each other.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends cheered and hugged each other.",
+            "image_path": "outputs/test17_character/images/book1_ep1_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Popo said, 'We make a great team! Let's help more birds!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'We make a great team! Let's help more birds!",
+            "image_path": "outputs/test17_character/images/book1_ep1_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+        "quality_score": 89,
+        "quality_reason": "The story meets the criteria for a middle lesson, advancing the plot while maintaining readability and emotional warmth."
+      },
+      "evaluation": {
+        "total_score": 89,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 3,
+          "child_emotional_relatability": 5,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 5,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 5,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 5,
+          "emotional_safety": 5,
+          "creativity": 4,
+          "memorability": 4,
+          "theme_consistency": 5,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression",
+          "Warm and relatable characters"
+        ],
+        "weaknesses": [
+          "Slightly repetitive sentences",
+          "Limited character growth"
+        ],
+        "reason": "The story meets the criteria for a middle lesson, advancing the plot while maintaining readability and emotional warmth.",
+        "final_judge_comments": "This lesson effectively introduces the main characters and sets up an engaging scenario. The dialogue is natural and the resolution is warm. However, there is room for more character development and creativity in sentence structure.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 89,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 3,
+              "child_emotional_relatability": 5,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 5,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 5,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 5,
+              "emotional_safety": 5,
+              "creativity": 4,
+              "memorability": 4,
+              "theme_consistency": 5,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression",
+              "Warm and relatable characters"
+            ],
+            "weaknesses": [
+              "Slightly repetitive sentences",
+              "Limited character growth"
+            ],
+            "reason": "The story meets the criteria for a middle lesson, advancing the plot while maintaining readability and emotional warmth.",
+            "final_judge_comments": "This lesson effectively introduces the main characters and sets up an engaging scenario. The dialogue is natural and the resolution is warm. However, there is room for more character development and creativity in sentence structure.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+      "episode_role": "development",
+      "score": 81,
+      "reason": "The story meets most criteria for award-level quality, with clear character growth and emotional warmth. However, it lacks some creativity and has a few repetitive sentences.",
+      "lesson": {
+        "lesson_id": "book1_ep2_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 2,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "The friends walked towards the bush, looking for the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends walked towards the bush, looking for the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "Popo carefully said, 'Let's be gentle. Maybe the thorns will hurt it.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo carefully said, 'Let's be gentle. Maybe the thorns will hurt it.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Toto replied, 'But we must help! It's a little bird in trouble!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto replied, 'But we must help! It's a little bird in trouble!",
+            "image_path": "outputs/test17_character/images/book1_ep2_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Pipi pointed to the bush and shouted, 'Look, there it is!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Pipi pointed to the bush and shouted, 'Look, there it is!",
+            "image_path": "outputs/test17_character/images/book1_ep2_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "The friends saw the tiny bird trapped inside, with thorns all around.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends saw the tiny bird trapped inside, with thorns all around.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Popo carefully removed some of the thorns so the bird could move a bit.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo carefully removed some of the thorns so the bird could move a bit.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Gigi said, 'I think I see how we can get it out safely!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi said, 'I think I see how we can get it out safely!",
+            "image_path": "outputs/test17_character/images/book1_ep2_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "Momo nodded and added, 'We can work together to help our new friend!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo nodded and added, 'We can work together to help our new friend!",
+            "image_path": "outputs/test17_character/images/book1_ep2_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "Popo gently lifted some more thorns, creating a pathway for the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo gently lifted some more thorns, creating a pathway for the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "The bird slowly emerged from its trap, looking relieved.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The bird slowly emerged from its trap, looking relieved.",
+            "image_path": "outputs/test17_character/images/book1_ep2_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Toto cheered and hugged Popo, 'You're so brave!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto cheered and hugged Popo, 'You're so brave!",
+            "image_path": "outputs/test17_character/images/book1_ep2_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+        "quality_score": 81,
+        "quality_reason": "The story meets most criteria for award-level quality, with clear character growth and emotional warmth. However, it lacks some creativity and has a few repetitive sentences."
+      },
+      "evaluation": {
+        "total_score": 81,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 4,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 4,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression",
+          "Warm and relatable characters"
+        ],
+        "weaknesses": [
+          "Limited creativity in the story structure",
+          "Slightly repetitive sentences"
+        ],
+        "reason": "The story meets most criteria for award-level quality, with clear character growth and emotional warmth. However, it lacks some creativity and has a few repetitive sentences.",
+        "final_judge_comments": "This lesson effectively advances the plot and maintains an engaging narrative suitable for young children learning English. The characters' actions are relatable and the story is emotionally satisfying.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 81,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 4,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 4,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression",
+              "Warm and relatable characters"
+            ],
+            "weaknesses": [
+              "Limited creativity in the story structure",
+              "Slightly repetitive sentences"
+            ],
+            "reason": "The story meets most criteria for award-level quality, with clear character growth and emotional warmth. However, it lacks some creativity and has a few repetitive sentences.",
+            "final_judge_comments": "This lesson effectively advances the plot and maintains an engaging narrative suitable for young children learning English. The characters' actions are relatable and the story is emotionally satisfying.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+      "episode_role": "development",
+      "score": 82,
+      "reason": "The story meets the criteria for a middle lesson, advancing the plot without ending it. It has clear emotional progression and warm dialogue but lacks significant character development.",
+      "lesson": {
+        "lesson_id": "book1_ep3_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 3,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo the lion tried to free the bird trapped in thorns.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo the lion tried to free the bird trapped in thorns.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "He realized that his mane was getting tangled with the thorns, making it harder to move.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: He realized that his mane was getting tangled with the thorns, making it harder to move.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Popo gently asked Gigi for help to untangle his mane.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo gently asked Gigi for help to untangle his mane.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Gigi carefully worked with Momo to untangle Popo's mane.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi carefully worked with Momo to untangle Popo's mane.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "With his mane freed, Popo was able to help the bird escape.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: With his mane freed, Popo was able to help the bird escape.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "The friends cheered and hugged each other, happy that they worked together to help the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends cheered and hugged each other, happy that they worked together to help the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Popo said, 'I can help! Let's work together to free the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I can help! Let's work together to free the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "We can do it! I'm not alone,' said Toto, smiling at his friends.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: We can do it! I'm not alone,' said Toto, smiling at his friends.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "The friends carefully removed the thorns, making sure not to hurt the bird.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends carefully removed the thorns, making sure not to hurt the bird.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "The bird was finally free, and it thanked its new friends for their help.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The bird was finally free, and it thanked its new friends for their help.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Popo smiled, feeling proud that he could help his friend in need.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo smiled, feeling proud that he could help his friend in need.",
+            "image_path": "outputs/test17_character/images/book1_ep3_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+        "quality_score": 82,
+        "quality_reason": "The story meets the criteria for a middle lesson, advancing the plot without ending it. It has clear emotional progression and warm dialogue but lacks significant character development."
+      },
+      "evaluation": {
+        "total_score": 82,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 4,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression",
+          "Warm and relatable dialogue"
+        ],
+        "weaknesses": [
+          "Limited character growth",
+          "Slightly repetitive sentences"
+        ],
+        "reason": "The story meets the criteria for a middle lesson, advancing the plot without ending it. It has clear emotional progression and warm dialogue but lacks significant character development.",
+        "final_judge_comments": "This story effectively advances the main plot while maintaining readability and emotional warmth. However, more focus on character growth could enhance its overall quality.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 82,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 4,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression",
+              "Warm and relatable dialogue"
+            ],
+            "weaknesses": [
+              "Limited character growth",
+              "Slightly repetitive sentences"
+            ],
+            "reason": "The story meets the criteria for a middle lesson, advancing the plot without ending it. It has clear emotional progression and warm dialogue but lacks significant character development.",
+            "final_judge_comments": "This story effectively advances the main plot while maintaining readability and emotional warmth. However, more focus on character growth could enhance its overall quality.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+      "episode_role": "development",
+      "score": 88,
+      "reason": "The story meets most criteria but could benefit from more creative elements.",
+      "lesson": {
+        "lesson_id": "book1_ep4_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 4,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo the lion was stuck in Sunflower Meadow.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo the lion was stuck in Sunflower Meadow.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "Toto the rabbit saw him and said, 'Let's help!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto the rabbit saw him and said, 'Let's help!",
+            "image_path": "outputs/test17_character/images/book1_ep4_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Gigi the giraffe and Momo the mole joined in.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi the giraffe and Momo the mole joined in.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Toto said, 'We need something sharp to cut the thorns.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto said, 'We need something sharp to cut the thorns.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Gigi found a nearby rock and said, 'This will do!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi found a nearby rock and said, 'This will do!",
+            "image_path": "outputs/test17_character/images/book1_ep4_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Toto carefully used the rock to cut Popo's mane.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto carefully used the rock to cut Popo's mane.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Popo was finally free and thanked his friends.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo was finally free and thanked his friends.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "Toto said, 'I can help! Let's work together.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto said, 'I can help! Let's work together.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "The friends cheered and hugged each other, happy that they worked together.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends cheered and hugged each other, happy that they worked together.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "Popo said, 'I'm proud that I can help my friends in need.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I'm proud that I can help my friends in need.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "The friends continued their adventure together, ready for the next challenge.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends continued their adventure together, ready for the next challenge.",
+            "image_path": "outputs/test17_character/images/book1_ep4_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+        "quality_score": 88,
+        "quality_reason": "The story meets most criteria but could benefit from more creative elements."
+      },
+      "evaluation": {
+        "total_score": 88,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 4,
+          "child_emotional_relatability": 5,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 3,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 5,
+          "description_quiz_compatibility": 4,
+          "roleplay_compatibility": 5,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 5,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression",
+          "Warm and relatable characters"
+        ],
+        "weaknesses": [
+          "Limited creativity in the story structure",
+          "Some repetition in dialogue"
+        ],
+        "reason": "The story meets most criteria but could benefit from more creative elements.",
+        "final_judge_comments": "The story effectively advances the plot with a clear event that resolves the immediate problem. Characters show growth and emotional warmth, making it suitable for young readers. However, the structure is somewhat repetitive, and creativity can be enhanced.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 88,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 4,
+              "child_emotional_relatability": 5,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 3,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 5,
+              "description_quiz_compatibility": 4,
+              "roleplay_compatibility": 5,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 5,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression",
+              "Warm and relatable characters"
+            ],
+            "weaknesses": [
+              "Limited creativity in the story structure",
+              "Some repetition in dialogue"
+            ],
+            "reason": "The story meets most criteria but could benefit from more creative elements.",
+            "final_judge_comments": "The story effectively advances the plot with a clear event that resolves the immediate problem. Characters show growth and emotional warmth, making it suitable for young readers. However, the structure is somewhat repetitive, and creativity can be enhanced.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+      "episode_role": "development",
+      "score": 77,
+      "reason": "The story meets the criteria for a middle lesson, advancing the plot without resolving it fully. It maintains an emotional tone suitable for young children.",
+      "lesson": {
+        "lesson_id": "book1_ep5_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 5,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo was finally free from the bush, thanks to his friends' help.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo was finally free from the bush, thanks to his friends' help.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "Toto said, 'I can help! Let's work together to lift Pipi out.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto said, 'I can help! Let's work together to lift Pipi out.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "We need something strong to pull with,\" Toto explained.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: We need something strong to pull with,\" Toto explained.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Gigi found some sturdy vines and suggested using them as a rope.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi found some sturdy vines and suggested using them as a rope.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Popo's mane was still tangled, but he didn't mind; he helped his friends instead.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo's mane was still tangled, but he didn't mind; he helped his friends instead.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "I can help,\" Popo said. \"Let's work together!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: I can help,\" Popo said. \"Let's work together!",
+            "image_path": "outputs/test17_character/images/book1_ep5_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "With the vines and sticks, they created a makeshift pulley system.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: With the vines and sticks, they created a makeshift pulley system.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "Pipi cheered as she was lifted out of the bush, safe and sound.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Pipi cheered as she was lifted out of the bush, safe and sound.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "The friends hugged each other, happy that they worked together.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends hugged each other, happy that they worked together.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "Popo said, 'I'm proud that we can help each other in need.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I'm proud that we can help each other in need.",
+            "image_path": "outputs/test17_character/images/book1_ep5_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Toto smiled and replied, 'We make a great team!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto smiled and replied, 'We make a great team!",
+            "image_path": "outputs/test17_character/images/book1_ep5_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+        "quality_score": 77,
+        "quality_reason": "The story meets the criteria for a middle lesson, advancing the plot without resolving it fully. It maintains an emotional tone suitable for young children."
+      },
+      "evaluation": {
+        "total_score": 77,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 4,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 5,
+          "readability": 4,
+          "sentence_simplicity": 4,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 4,
+          "dialogue_naturalness": 3,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 3,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Emotional warmth and relatability",
+          "Clear emotional progression"
+        ],
+        "weaknesses": [
+          "Character growth could be stronger",
+          "Dialogue naturalness needs improvement"
+        ],
+        "reason": "The story meets the criteria for a middle lesson, advancing the plot without resolving it fully. It maintains an emotional tone suitable for young children.",
+        "final_judge_comments": "This lesson effectively uses repetition and clear dialogue to engage young readers. The characters' teamwork is well-represented, but more emphasis on individual growth could enhance the story.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 77,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 4,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 5,
+              "readability": 4,
+              "sentence_simplicity": 4,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 4,
+              "dialogue_naturalness": 3,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 3,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Emotional warmth and relatability",
+              "Clear emotional progression"
+            ],
+            "weaknesses": [
+              "Character growth could be stronger",
+              "Dialogue naturalness needs improvement"
+            ],
+            "reason": "The story meets the criteria for a middle lesson, advancing the plot without resolving it fully. It maintains an emotional tone suitable for young children.",
+            "final_judge_comments": "This lesson effectively uses repetition and clear dialogue to engage young readers. The characters' teamwork is well-represented, but more emphasis on individual growth could enhance the story.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+      "episode_role": "development",
+      "score": 88,
+      "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it lacks significant creative elements and has some repetitive phrasing.",
+      "lesson": {
+        "lesson_id": "book1_ep6_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 6,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Strong winds blew through Sunflower Meadow, making it hard for Popo and friends to reach the bird's nest.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Strong winds blew through Sunflower Meadow, making it hard for Popo and friends to reach the bird's nest.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "Popo held onto a vine, but the wind pulled him back. 'I'm not giving up!' he shouted.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo held onto a vine, but the wind pulled him back. 'I'm not giving up!' he shouted.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Toto grabbed another vine and tied it around a sturdy stick. 'We can do this, Popo! We just need to work together!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto grabbed another vine and tied it around a sturdy stick. 'We can do this, Popo! We just need to work together!",
+            "image_path": "outputs/test17_character/images/book1_ep6_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Gigi used her long neck to hold the pulley system steady while Pipi cheered them on from below.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi used her long neck to hold the pulley system steady while Pipi cheered them on from below.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Momo held onto the nest as it swayed in the wind. 'Don't worry, friends! We've got this!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo held onto the nest as it swayed in the wind. 'Don't worry, friends! We've got this!",
+            "image_path": "outputs/test17_character/images/book1_ep6_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "The winds howled louder, but Popo and his friends refused to give up. They worked together, holding tight.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The winds howled louder, but Popo and his friends refused to give up. They worked together, holding tight.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Slowly but surely, they inched closer to the bird's nest. 'We did it! We're here!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Slowly but surely, they inched closer to the bird's nest. 'We did it! We're here!",
+            "image_path": "outputs/test17_character/images/book1_ep6_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "The friends hugged each other, relieved and proud of their teamwork. 'I'm so glad we worked together! We make a great team!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends hugged each other, relieved and proud of their teamwork. 'I'm so glad we worked together! We make a great te",
+            "image_path": "outputs/test17_character/images/book1_ep6_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "As they caught their breath, the winds died down, leaving behind a peaceful Sunflower Meadow.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: As they caught their breath, the winds died down, leaving behind a peaceful Sunflower Meadow.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "Popo smiled at his friends. 'Let's do it again sometime soon! Maybe we can even build a new pulley system!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo smiled at his friends. 'Let's do it again sometime soon! Maybe we can even build a new pulley system!",
+            "image_path": "outputs/test17_character/images/book1_ep6_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Toto grinned. 'I'd love that, Popo! But for now, let's just enjoy the feeling of helping each other out.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto grinned. 'I'd love that, Popo! But for now, let's just enjoy the feeling of helping each other out.",
+            "image_path": "outputs/test17_character/images/book1_ep6_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+        "quality_score": 88,
+        "quality_reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it lacks significant creative elements and has some repetitive phrasing."
+      },
+      "evaluation": {
+        "total_score": 88,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 4,
+          "child_emotional_relatability": 5,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 3,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 5,
+          "description_quiz_compatibility": 4,
+          "roleplay_compatibility": 5,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 5,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression",
+          "Warm and relatable dialogue",
+          "Readability for beginner readers"
+        ],
+        "weaknesses": [
+          "Limited creativity in the story structure",
+          "Repetitive phrasing in some sentences"
+        ],
+        "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it lacks significant creative elements and has some repetitive phrasing.",
+        "final_judge_comments": "This lesson successfully builds on previous events with clear dialogue and emotional growth. It could benefit from more unique storytelling elements to enhance its award-level literary feeling.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 88,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 4,
+              "child_emotional_relatability": 5,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 3,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 5,
+              "description_quiz_compatibility": 4,
+              "roleplay_compatibility": 5,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 5,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression",
+              "Warm and relatable dialogue",
+              "Readability for beginner readers"
+            ],
+            "weaknesses": [
+              "Limited creativity in the story structure",
+              "Repetitive phrasing in some sentences"
+            ],
+            "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it lacks significant creative elements and has some repetitive phrasing.",
+            "final_judge_comments": "This lesson successfully builds on previous events with clear dialogue and emotional growth. It could benefit from more unique storytelling elements to enhance its award-level literary feeling.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+      "episode_role": "development",
+      "score": 82,
+      "reason": "The story meets the criteria for readability, emotional safety, and emotional warmth. However, it lacks significant character growth and creativity.",
+      "lesson": {
+        "lesson_id": "book1_ep7_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 7,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo looked up at the big tree with its tall branches.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo looked up at the big tree with its tall branches.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "He said to his friends, 'Let's find something to use for a pulley system.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: He said to his friends, 'Let's find something to use for a pulley system.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Toto asked, \"What do you mean by a pulley system?",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto asked, \"What do you mean by a pulley system?",
+            "image_path": "outputs/test17_character/images/book1_ep7_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Gigi explained that they could use vines and sticks to create a system.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi explained that they could use vines and sticks to create a system.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Momo held up a long vine and said, \"This will be perfect for the pulley!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo held up a long vine and said, \"This will be perfect for the pulley!",
+            "image_path": "outputs/test17_character/images/book1_ep7_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Popo and his friends started to work together, using the vines and sticks.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo and his friends started to work together, using the vines and sticks.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "As they labored, Popo said, \"I can help!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: As they labored, Popo said, \"I can help!",
+            "image_path": "outputs/test17_character/images/book1_ep7_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "The winds started to howl, but the friends held tight and continued their work.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The winds started to howl, but the friends held tight and continued their work.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "Slowly but surely, they inched closer to their goal of creating a pulley system!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Slowly but surely, they inched closer to their goal of creating a pulley system!",
+            "image_path": "outputs/test17_character/images/book1_ep7_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "The friends cheered as they finally completed the pulley system.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends cheered as they finally completed the pulley system.",
+            "image_path": "outputs/test17_character/images/book1_ep7_p10.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+        "quality_score": 82,
+        "quality_reason": "The story meets the criteria for readability, emotional safety, and emotional warmth. However, it lacks significant character growth and creativity."
+      },
+      "evaluation": {
+        "total_score": 82,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 4,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Readability is good",
+          "Emotional warmth is present"
+        ],
+        "weaknesses": [
+          "Character growth could be stronger",
+          "Creativity and memorability are limited"
+        ],
+        "reason": "The story meets the criteria for readability, emotional safety, and emotional warmth. However, it lacks significant character growth and creativity.",
+        "final_judge_comments": "This lesson advances the plot while maintaining a child-friendly tone. The characters work together effectively, but more emphasis on individual growth would enhance the overall quality.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 82,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 4,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Readability is good",
+              "Emotional warmth is present"
+            ],
+            "weaknesses": [
+              "Character growth could be stronger",
+              "Creativity and memorability are limited"
+            ],
+            "reason": "The story meets the criteria for readability, emotional safety, and emotional warmth. However, it lacks significant character growth and creativity.",
+            "final_judge_comments": "This lesson advances the plot while maintaining a child-friendly tone. The characters work together effectively, but more emphasis on individual growth would enhance the overall quality.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+      "episode_role": "development",
+      "score": 78,
+      "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it could benefit from more varied sentence structures and deeper character development.",
+      "lesson": {
+        "lesson_id": "book1_ep8_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 8,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo the lion, Toto the rabbit, Pipi the parrot, Gigi the giraffe, and Momo the mole were working together to rescue a bird's nest.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo the lion, Toto the rabbit, Pipi the parrot, Gigi the giraffe, and Momo the mole were working together to rescue a b",
+            "image_path": "outputs/test17_character/images/book1_ep8_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "With the wind reduced, Momo used his digging skills to create a small trench beneath the bird's nest.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: With the wind reduced, Momo used his digging skills to create a small trench beneath the bird's nest.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "The friends carefully lowered the nest into the trench, making sure it was safe for the baby birds.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends carefully lowered the nest into the trench, making sure it was safe for the baby birds.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Popo said, 'I can help! Let's get some leaves to make a soft bed for the baby birds.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I can help! Let's get some leaves to make a soft bed for the baby birds.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Toto replied, 'That's a great idea, Popo! Let's work together to make it cozy for them.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto replied, 'That's a great idea, Popo! Let's work together to make it cozy for them.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Gigi used her long neck to gather soft leaves, while Pipi helped Momo place them in the nest.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi used her long neck to gather soft leaves, while Pipi helped Momo place them in the nest.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Momo said, 'Look! The nest is all set up. Let's carefully place the baby birds inside.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo said, 'Look! The nest is all set up. Let's carefully place the baby birds inside.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "Popo and his friends cheered as they finally completed the rescue, making sure the baby birds were safe and happy.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo and his friends cheered as they finally completed the rescue, making sure the baby birds were safe and happy.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "Momo said, 'I'm so glad we worked together to rescue the baby birds. We make a great team!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo said, 'I'm so glad we worked together to rescue the baby birds. We make a great team!",
+            "image_path": "outputs/test17_character/images/book1_ep8_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "The friends hugged each other, happy to have helped the baby birds.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends hugged each other, happy to have helped the baby birds.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p10.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 11,
+            "text": "Popo said, 'I can help! Let's take care of the baby birds until they grow up.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I can help! Let's take care of the baby birds until they grow up.",
+            "image_path": "outputs/test17_character/images/book1_ep8_p11.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+        "quality_score": 78,
+        "quality_reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it could benefit from more varied sentence structures and deeper character development."
+      },
+      "evaluation": {
+        "total_score": 78,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 4,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 5,
+          "readability": 4,
+          "sentence_simplicity": 4,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 4,
+          "dialogue_naturalness": 3,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Warm and relatable dialogue",
+          "Clear emotional progression"
+        ],
+        "weaknesses": [
+          "Limited character growth",
+          "Slightly repetitive sentences"
+        ],
+        "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it could benefit from more varied sentence structures and deeper character development.",
+        "final_judge_comments": "This lesson successfully contributes to the overall narrative by resolving a central event in a heartwarming way. The dialogue is natural and relatable, which is crucial for engaging young readers. Consider adding more diverse vocabulary and sentence structures to enhance the literary quality.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 78,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 4,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 5,
+              "readability": 4,
+              "sentence_simplicity": 4,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 4,
+              "dialogue_naturalness": 3,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Warm and relatable dialogue",
+              "Clear emotional progression"
+            ],
+            "weaknesses": [
+              "Limited character growth",
+              "Slightly repetitive sentences"
+            ],
+            "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. However, it could benefit from more varied sentence structures and deeper character development.",
+            "final_judge_comments": "This lesson successfully contributes to the overall narrative by resolving a central event in a heartwarming way. The dialogue is natural and relatable, which is crucial for engaging young readers. Consider adding more diverse vocabulary and sentence structures to enhance the literary quality.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+      "episode_role": "development",
+      "score": 82,
+      "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. It meets most criteria but could benefit from more creative storytelling.",
+      "lesson": {
+        "lesson_id": "book1_ep9_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 9,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo and his friends were overjoyed when they finally returned the baby bird to its relieved mother.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo and his friends were overjoyed when they finally returned the baby bird to its relieved mother.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "The mother bird thanked them with a special gift - a handmade wooden birdhouse.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The mother bird thanked them with a special gift - a handmade wooden birdhouse.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Pipi said, 'Wow, what a wonderful gift! Thank you so much!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Pipi said, 'Wow, what a wonderful gift! Thank you so much!",
+            "image_path": "outputs/test17_character/images/book1_ep9_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Momo replied, 'We worked together to help the baby birds. We make a great team!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo replied, 'We worked together to help the baby birds. We make a great team!",
+            "image_path": "outputs/test17_character/images/book1_ep9_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Popo smiled and said, 'I can help! Let's take care of the birdhouse too.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo smiled and said, 'I can help! Let's take care of the birdhouse too.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Gigi exclaimed, 'What a wonderful idea, Popo! I love helping to take care of our new friend's home!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi exclaimed, 'What a wonderful idea, Popo! I love helping to take care of our new friend's home!",
+            "image_path": "outputs/test17_character/images/book1_ep9_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Toto added, 'And we can all help with little tasks, like bringing water and twigs for the birdhouse.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto added, 'And we can all help with little tasks, like bringing water and twigs for the birdhouse.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "The friends all cheered and began working together to make the birdhouse a happy home.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends all cheered and began working together to make the birdhouse a happy home.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "Popo said, 'I'm so glad we can help our new friend. We're making something special together!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo said, 'I'm so glad we can help our new friend. We're making something special together!",
+            "image_path": "outputs/test17_character/images/book1_ep9_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "Momo replied, 'And I'm glad we have each other to share the joy of helping.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo replied, 'And I'm glad we have each other to share the joy of helping.",
+            "image_path": "outputs/test17_character/images/book1_ep9_p10.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+        "quality_score": 82,
+        "quality_reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. It meets most criteria but could benefit from more creative storytelling."
+      },
+      "evaluation": {
+        "total_score": 82,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 4,
+          "character_growth": 3,
+          "child_emotional_relatability": 4,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 4,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 4,
+          "illustration_friendliness": 4,
+          "description_quiz_compatibility": 3,
+          "roleplay_compatibility": 4,
+          "emotional_safety": 5,
+          "creativity": 3,
+          "memorability": 4,
+          "theme_consistency": 4,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Warm and relatable dialogue",
+          "Clear emotional progression"
+        ],
+        "weaknesses": [
+          "Limited creativity in story elements",
+          "Slightly repetitive sentences"
+        ],
+        "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. It meets most criteria but could benefit from more creative storytelling.",
+        "final_judge_comments": "The story successfully resolves the central event and maintains character growth and emotional warmth. However, it would be stronger with more unique elements.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 82,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 4,
+              "character_growth": 3,
+              "child_emotional_relatability": 4,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 4,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 4,
+              "illustration_friendliness": 4,
+              "description_quiz_compatibility": 3,
+              "roleplay_compatibility": 4,
+              "emotional_safety": 5,
+              "creativity": 3,
+              "memorability": 4,
+              "theme_consistency": 4,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Warm and relatable dialogue",
+              "Clear emotional progression"
+            ],
+            "weaknesses": [
+              "Limited creativity in story elements",
+              "Slightly repetitive sentences"
+            ],
+            "reason": "The story effectively advances the plot while maintaining a warm, child-friendly tone. It meets most criteria but could benefit from more creative storytelling.",
+            "final_judge_comments": "The story successfully resolves the central event and maintains character growth and emotional warmth. However, it would be stronger with more unique elements.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+      "episode_role": "ending",
+      "score": 89,
+      "reason": "The story effectively resolves the book's plot with a clear emotional arc, character growth, and warm resolution. It maintains readability and is suitable for child-centered learning.",
+      "lesson": {
+        "lesson_id": "book1_ep10_lv1",
+        "book_id": "book1",
+        "level": 1,
+        "episode": 10,
+        "pages": [
+          {
+            "page_number": 1,
+            "text": "Popo and friends proudly display their new birdhouse in Sunflower Meadow.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo and friends proudly display their new birdhouse in Sunflower Meadow.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p1.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 2,
+            "text": "The sun shines brightly on the happy gathering, a perfect day to celebrate their teamwork.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The sun shines brightly on the happy gathering, a perfect day to celebrate their teamwork.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p2.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 3,
+            "text": "Pipi says, \"We did it! Our home is beautiful thanks to all of us working together.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Pipi says, \"We did it! Our home is beautiful thanks to all of us working together.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p3.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 4,
+            "text": "Momo replies, \"I'm so glad we helped our new friend. We make a great team!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo replies, \"I'm so glad we helped our new friend. We make a great team!",
+            "image_path": "outputs/test17_character/images/book1_ep10_p4.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 5,
+            "text": "Popo smiles and says, \"I can help with the next project too! I love helping friends.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo smiles and says, \"I can help with the next project too! I love helping friends.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p5.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 6,
+            "text": "Toto adds, \"And we can all help with little tasks to keep our homes happy and healthy.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Toto adds, \"And we can all help with little tasks to keep our homes happy and healthy.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p6.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 7,
+            "text": "Gigi exclaims, \"What a wonderful idea, Popo! We're making something special together!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Gigi exclaims, \"What a wonderful idea, Popo! We're making something special together!",
+            "image_path": "outputs/test17_character/images/book1_ep10_p7.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 8,
+            "text": "The friends all cheer and hug each other, knowing they've learned valuable lessons about teamwork and bravery.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: The friends all cheer and hug each other, knowing they've learned valuable lessons about teamwork and bravery.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p8.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 9,
+            "text": "Popo says, \"I'm so glad we have each other to share the joy of helping. I can help!",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Popo says, \"I'm so glad we have each other to share the joy of helping. I can help!",
+            "image_path": "outputs/test17_character/images/book1_ep10_p9.png",
+            "audio_path": null
+          },
+          {
+            "page_number": 10,
+            "text": "Momo replies, \"And I'm glad we have this beautiful birdhouse to remind us of our special day.",
+            "image_prompt": "Bright 2D mobile children's storybook app illustration, same protagonist (Popo the lion), consistent character design, scene: Momo replies, \"And I'm glad we have this beautiful birdhouse to remind us of our special day.",
+            "image_path": "outputs/test17_character/images/book1_ep10_p10.png",
+            "audio_path": null
+          }
+        ],
+        "description_scenes": [],
+        "roleplay_scenarios": [],
+        "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+        "quality_score": 89,
+        "quality_reason": "The story effectively resolves the book's plot with a clear emotional arc, character growth, and warm resolution. It maintains readability and is suitable for child-centered learning."
+      },
+      "evaluation": {
+        "total_score": 89,
+        "passed": true,
+        "category_scores": {
+          "story_structure_completeness": 4,
+          "emotional_progression_clarity": 5,
+          "character_growth": 4,
+          "child_emotional_relatability": 5,
+          "emotional_warmth": 5,
+          "readability": 5,
+          "sentence_simplicity": 5,
+          "repetition_effectiveness": 3,
+          "read_aloud_quality": 5,
+          "dialogue_naturalness": 4,
+          "visual_scene_clarity": 5,
+          "illustration_friendliness": 5,
+          "description_quiz_compatibility": 4,
+          "roleplay_compatibility": 5,
+          "emotional_safety": 5,
+          "creativity": 4,
+          "memorability": 3,
+          "theme_consistency": 5,
+          "educational_suitability": 4,
+          "award_level_literary_feeling": 4
+        },
+        "strengths": [
+          "Clear emotional progression and warmth",
+          "Readability and sentence simplicity",
+          "Character growth and teamwork theme"
+        ],
+        "weaknesses": [
+          "Limited creativity and memorability",
+          "Some repetition in dialogue"
+        ],
+        "reason": "The story effectively resolves the book's plot with a clear emotional arc, character growth, and warm resolution. It maintains readability and is suitable for child-centered learning.",
+        "final_judge_comments": "While the story successfully concludes the book with a positive message about teamwork and bravery, it could benefit from more unique dialogue and creative elements to enhance memorability.",
+        "judge_model": "qwen2.5:7b",
+        "evaluations": [
+          {
+            "total_score": 89,
+            "passed": true,
+            "category_scores": {
+              "story_structure_completeness": 4,
+              "emotional_progression_clarity": 5,
+              "character_growth": 4,
+              "child_emotional_relatability": 5,
+              "emotional_warmth": 5,
+              "readability": 5,
+              "sentence_simplicity": 5,
+              "repetition_effectiveness": 3,
+              "read_aloud_quality": 5,
+              "dialogue_naturalness": 4,
+              "visual_scene_clarity": 5,
+              "illustration_friendliness": 5,
+              "description_quiz_compatibility": 4,
+              "roleplay_compatibility": 5,
+              "emotional_safety": 5,
+              "creativity": 4,
+              "memorability": 3,
+              "theme_consistency": 5,
+              "educational_suitability": 4,
+              "award_level_literary_feeling": 4
+            },
+            "strengths": [
+              "Clear emotional progression and warmth",
+              "Readability and sentence simplicity",
+              "Character growth and teamwork theme"
+            ],
+            "weaknesses": [
+              "Limited creativity and memorability",
+              "Some repetition in dialogue"
+            ],
+            "reason": "The story effectively resolves the book's plot with a clear emotional arc, character growth, and warm resolution. It maintains readability and is suitable for child-centered learning.",
+            "final_judge_comments": "While the story successfully concludes the book with a positive message about teamwork and bravery, it could benefit from more unique dialogue and creative elements to enhance memorability.",
+            "judge_model": "qwen2.5:7b"
+          }
+        ]
+      }
+    }
+  ],
+  "rejected": []
+}

@@ -1,0 +1,411 @@
+[
+  {
+    "level": 3,
+    "lesson_number": 1,
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "lesson": [
+      {
+        "page1": "Popo the lion, Toto the rabbit, and friends played together in Sunflower Meadow."
+      },
+      {
+        "page2": "They heard a faint chirping sound coming from a nearby bush."
+      },
+      {
+        "page3": "Popo asked, 'What's that sound?"
+      },
+      {
+        "page4": "Let's go find out!' said Toto."
+      },
+      {
+        "page5": "They all walked towards the bush together, curious about what they would find."
+      },
+      {
+        "page6": "When they reached the bush, they saw a tiny bird trapped inside."
+      },
+      {
+        "page7": "Popo carefully said, 'I can help. I'll get you out!"
+      },
+      {
+        "page8": "Popo gently lifted the bush and freed the bird."
+      },
+      {
+        "page9": "The bird thanked them with a sweet song."
+      },
+      {
+        "page10": "The friends cheered and hugged each other, happy to have helped the bird."
+      },
+      {
+        "page11": "Popo said, 'We make a great team! Let's help more birds!"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 2,
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "lesson": [
+      {
+        "page1": "The friends walked towards the bush, searching for a sign of the lost bird."
+      },
+      {
+        "page2": "Popo carefully said, 'Let's be gentle. Maybe the thorns will hurt it."
+      },
+      {
+        "page3": "Toto replied, 'But we must help! It's a little bird in trouble!"
+      },
+      {
+        "page4": "Pipi pointed to the bush and shouted, 'Look, there it is!"
+      },
+      {
+        "page5": "The friends saw the tiny bird trapped inside, with thorns all around."
+      },
+      {
+        "page6": "Popo carefully removed some of the thorns so the bird could move a bit."
+      },
+      {
+        "page7": "Gigi said, 'I think I see how we can get it out safely!"
+      },
+      {
+        "page8": "Momo nodded and added, 'We can work together to help our new friend!"
+      },
+      {
+        "page9": "Popo gently lifted some more thorns, creating a pathway for the bird."
+      },
+      {
+        "page10": "The bird slowly emerged from its trap, looking relieved."
+      },
+      {
+        "page11": "Toto cheered and hugged Popo, 'You're so brave!"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 3,
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "lesson": [
+      {
+        "page1": "Popo the lion tried to free a bird trapped in thorns."
+      },
+      {
+        "page2": "He realized that his mane was getting tangled with the thorns, making it harder to move."
+      },
+      {
+        "page3": "Popo gently asked Gigi for help to untangle his mane."
+      },
+      {
+        "page4": "Gigi carefully worked with Momo to untangle Popo's mane."
+      },
+      {
+        "page5": "With his mane freed, Popo was able to help the bird escape."
+      },
+      {
+        "page6": "The friends cheered and hugged each other, happy that they worked together to help the bird."
+      },
+      {
+        "page7": "Popo said, 'I can help! Let's work together to free the bird."
+      },
+      {
+        "page8": "We can do it! I'm not alone,' said Toto, smiling at his friends."
+      },
+      {
+        "page9": "The friends carefully removed the thorns, making sure not to hurt the bird."
+      },
+      {
+        "page10": "The bird was finally free, and it thanked its new friends for their help."
+      },
+      {
+        "page11": "Popo smiled, feeling proud that he could help his friend in need."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 4,
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "lesson": [
+      {
+        "page1": "Popo the lion was stuck in Sunflower Meadow, his mane tangled with thorns."
+      },
+      {
+        "page2": "Toto the rabbit saw him and said, 'Let's help! We can work together to free you."
+      },
+      {
+        "page3": "Gigi the giraffe and Momo the mole joined in, eager to assist their friend Popo."
+      },
+      {
+        "page4": "Toto said, 'We need something sharp to cut the thorns. Do you have any ideas?"
+      },
+      {
+        "page5": "Gigi found a nearby rock and said, 'This will do to cut the thorns.'."
+      },
+      {
+        "page6": "Toto carefully used the rock to cut Popo's mane, freeing him from the thorns."
+      },
+      {
+        "page7": "Popo was finally free and thanked his friends for their help."
+      },
+      {
+        "page8": "Toto said, 'I can help! Let's work together to overcome any challenge."
+      },
+      {
+        "page9": "The friends cheered and hugged each other, happy that they worked together to solve the problem."
+      },
+      {
+        "page10": "Popo said, \"I'm proud that we make a great team!"
+      },
+      {
+        "page11": "The friends continued their adventure together, ready for the next challenge."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 5,
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "lesson": [
+      {
+        "page1": "Popo was finally free from the bush, thanks to his friends' help."
+      },
+      {
+        "page2": "Toto said, 'I can help! Let's work together to lift Pipi out."
+      },
+      {
+        "page3": "We need something strong to pull with,\" Toto explained."
+      },
+      {
+        "page4": "Gigi found some sturdy vines and suggested using them as a rope."
+      },
+      {
+        "page5": "Popo's mane was still tangled, but he didn't mind; he helped his friends instead."
+      },
+      {
+        "page6": "I can help,\" Popo said. \"Let's work together!"
+      },
+      {
+        "page7": "With the vines and sticks, they created a makeshift pulley system."
+      },
+      {
+        "page8": "Pipi cheered as she was lifted out of the bush, safe and sound."
+      },
+      {
+        "page9": "The friends hugged each other, happy that they worked together."
+      },
+      {
+        "page10": "Popo said, 'I'm proud that we can help each other in need."
+      },
+      {
+        "page11": "Toto smiled and replied, 'We make a great team! We can do anything together."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 6,
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "lesson": [
+      {
+        "page1": "Strong winds started blowing as Popo and his friends neared the bird's nest."
+      },
+      {
+        "page2": "Popo held onto a vine but the wind pulled him back."
+      },
+      {
+        "page3": "Toto grabbed another vine and tied it around a stick shouting 'We can do this!'."
+      },
+      {
+        "page4": "Gigi held the pulley system steady while Pipi cheered from below."
+      },
+      {
+        "page5": "Momo held onto the nest as it swayed in the strong wind."
+      },
+      {
+        "page6": "Popo and his friends worked together, holding tight against the strong winds."
+      },
+      {
+        "page7": "Toto exclaimed 'We did it! We're here!' as they slowly inched closer."
+      },
+      {
+        "page8": "Popo said, 'I'm so glad we worked together!'."
+      },
+      {
+        "page9": "As they caught their breath, the winds died down, leaving behind a peaceful Sunflower Meadow."
+      },
+      {
+        "page10": "Popo smiled at his friends and said \"Let's build again soon!"
+      },
+      {
+        "page11": "Toto grinned and said, 'Let's enjoy helping each other out for now.'."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 7,
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "lesson": [
+      {
+        "page1": "Popo the lion looked up at the big tree swaying in the wind."
+      },
+      {
+        "page2": "Popo said we need to find something for a pulley system."
+      },
+      {
+        "page3": "Toto asked, 'What do you mean by a pulley system? Can't we just climb the tree?"
+      },
+      {
+        "page4": "Gigi explained that they could use vines and sticks for a big game of tug-of-war."
+      },
+      {
+        "page5": "Momo held up a long vine and said, 'This is perfect for the pulley!'."
+      },
+      {
+        "page6": "Popo and his friends started to work together using vines and sticks."
+      },
+      {
+        "page7": "Popo used his strong claws to tie a vine around the branch."
+      },
+      {
+        "page8": "The friends held tight and continued their work, 'We can do this!'."
+      },
+      {
+        "page9": "They inched closer to their goal of creating a pulley system!"
+      },
+      {
+        "page10": "The friends cheered as they finally completed the pulley system, 'We did it! We're a team!"
+      },
+      {
+        "page11": "Pipi used her sharp eyesight to spot a nearby tree for shelter."
+      },
+      {
+        "page12": "Gigi used his long neck to tie the pulley system to the branches."
+      },
+      {
+        "page13": "The friends worked together to create a cozy shelter, 'We're all safe now!"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 8,
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "lesson": [
+      {
+        "page1": "Momo the mole and friends worked together to rescue a bird's nest."
+      },
+      {
+        "page2": "Momo used his digging skills to create a small trench beneath the bird's nest."
+      },
+      {
+        "page3": "The friends carefully lowered the nest into the trench to keep it safe."
+      },
+      {
+        "page4": "Popo said, \"Let's get soft leaves to make a cozy bed for the baby birds."
+      },
+      {
+        "page5": "Toto said, 'Let's work together to make it safe and comfortable for them.'."
+      },
+      {
+        "page6": "Pipi helped Momo place soft leaves in the bird's nest carefully."
+      },
+      {
+        "page7": "Momo said, 'Let's carefully place the baby birds inside and make them safe."
+      },
+      {
+        "page8": "Popo and his friends cheered as they finally completed the rescue."
+      },
+      {
+        "page9": "Momo said, \"We make a great team and rescued the baby birds together!"
+      },
+      {
+        "page10": "The friends hugged each other and felt happy to have helped the baby birds."
+      },
+      {
+        "page11": "Popo said, \"I can help! Let's take care of baby birds until they fly."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 9,
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "lesson": [
+      {
+        "page1": "Popo and his friends were overjoyed when they returned the baby bird home."
+      },
+      {
+        "page2": "The mother bird thanked them with a special gift - a handmade wooden birdhouse."
+      },
+      {
+        "page3": "Wow, what a wonderful gift! Thank you so much!\" said Pipi, her eyes shining with excitement."
+      },
+      {
+        "page4": "Momo said with a smile, \"We make a great team!"
+      },
+      {
+        "page5": "Popo beamed and said, \"Let's work together to make it special."
+      },
+      {
+        "page6": "Gigi exclaimed, \"I love helping to take care of our new friend's home!"
+      },
+      {
+        "page7": "Toto added that we can help with little tasks like bringing water and twigs."
+      },
+      {
+        "page8": "The friends all cheered and began working together to make the birdhouse a happy home."
+      },
+      {
+        "page9": "Popo said with pride, \"We're making something special together for our new friend!"
+      },
+      {
+        "page10": "Momo said, \"We're happy to help each other and be a team!"
+      },
+      {
+        "page11": "The friends made a cozy birdhouse for their new friend to live happily."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 10,
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "lesson": [
+      {
+        "page1": "Popo the lion and his friends proudly display their new birdhouse in Sunflower Meadow."
+      },
+      {
+        "page2": "The sun shines brightly on the happy gathering, a perfect day to celebrate their teamwork."
+      },
+      {
+        "page3": "Pipi says proudly, \"Our home is beautiful thanks to all of us working together!"
+      },
+      {
+        "page4": "Momo replies, \"I'm so glad we helped our new friend. We make a great team!"
+      },
+      {
+        "page5": "We can help our homes stay happy and healthy with little tasks."
+      },
+      {
+        "page6": "Toto says, \"We should have a project plan so we know exactly who does what."
+      },
+      {
+        "page7": "That's a great idea,\" agrees Gigi. \"Let's make sure everyone knows their role."
+      },
+      {
+        "page8": "The friends all cheer and hug each other, knowing they learned teamwork."
+      },
+      {
+        "page9": "Popo smiles and says, \"I'm glad we have each other to share helping joy."
+      },
+      {
+        "page10": "Momo replies, \"I'm glad we have this beautiful birdhouse to remind us of our special day."
+      },
+      {
+        "page11": "We can help with the next project too!\" exclaims Popo. \"I love helping friends!"
+      },
+      {
+        "page12": "The friends all nod in agreement, knowing they've learned valuable lessons about teamwork and bravery."
+      }
+    ]
+  }
+]

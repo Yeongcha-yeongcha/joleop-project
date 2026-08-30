@@ -1,0 +1,262 @@
+[
+  {
+    "level": 1,
+    "lesson_number": 1,
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo and friends found a bird trapped in a bush.",
+        "character_name": "Popo",
+        "player_goal": "Offer to help the bird get out of the bush.",
+        "model_answer": "I can help you!",
+        "similar_answers": [
+          "Let me help you, little bird!",
+          "I'll get you out of there!",
+          "Don't worry, I'll help you!"
+        ],
+        "hint_sequence": [
+          "Look at Page 7 where Popo says 'I can help. I'll get you out!'",
+          "Think about how you would feel if you were trapped and someone offered to help.",
+          "Remember, we're learning to be kind and helpful friends like Popo."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 2,
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "The friends found a baby bird trapped in the bush. They want to help it.",
+        "character_name": "Popo",
+        "player_goal": "Help Popo decide how to carefully remove thorns from around the baby bird.",
+        "model_answer": "We have to be careful so we don't hurt the little bird.",
+        "similar_answers": [
+          "Let's be gentle, or it might get hurt.",
+          "We need to be careful so the baby bird doesn't get hurt.",
+          "We should be gentle when we touch the thorns."
+        ],
+        "hint_sequence": [
+          "Look at Page 2 of the story for what Popo said about being gentle.",
+          "Think about how you would feel if you were trapped like the baby bird.",
+          "Remember, the friends want to help the bird safely."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 3,
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo's mane is tangled with thorns and he needs help to untangle it.",
+        "character_name": "Gigi",
+        "player_goal": "Ask Popo if you can help him untangle his mane.",
+        "model_answer": "Can I help you, Popo?",
+        "similar_answers": [
+          "Popo, do you need my help?",
+          "May I help you with your mane?",
+          "I can help you untangle it, Popo!"
+        ],
+        "hint_sequence": [
+          "Look at Page 3 to see what Popo asked Gigi for.",
+          "Remember when Gigi helped Popo in the story.",
+          "You can use a friendly tone and ask if they need help."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 4,
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo the lion got stuck in Sunflower Meadow and his friends want to help him.",
+        "character_name": "Toto",
+        "player_goal": "Encourage Toto to express her willingness to help Popo.",
+        "model_answer": "I can help!",
+        "similar_answers": [
+          "Let me help you, Popo!",
+          "We should work together to get you out!",
+          "I'll do my best to help you!"
+        ],
+        "hint_sequence": [
+          "Remember what Toto said on page 2?",
+          "Think about how Toto helped Popo in the story.",
+          "What would you say if your friend needed help?"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 5,
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo's friends want to lift Pipi out of the bush.",
+        "character_name": "Toto",
+        "player_goal": "Offer help to lift Pipi out of the bush.",
+        "model_answer": "I can help! Let's work together!",
+        "similar_answers": [
+          "We should do it together, right?",
+          "Can I help you guys lift Pipi?",
+          "Let me help, we can do it!"
+        ],
+        "hint_sequence": [
+          "Look at page 2 for Toto's idea.",
+          "Remember what Popo said on page 6.",
+          "Think about how friends work together."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 6,
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo and friends are trying to reach the bird's nest, but strong winds are making it hard.",
+        "character_name": "Momo",
+        "player_goal": "Encourage Popo with a reassuring message when he's struggling to hold onto the nest.",
+        "model_answer": "Don't worry, Popo! We've got this!",
+        "similar_answers": [
+          "We can do it, Popo! Just hang on!",
+          "You're doing great, Popo! Keep going!",
+          "I'm here with you, Popo. We'll get through this!"
+        ],
+        "hint_sequence": [
+          "Remember what Momo said to help Popo feel better.",
+          "Think about a time when someone helped you feel more confident.",
+          "Use a kind and encouraging tone of voice."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 7,
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo and his friends are working together to create a pulley system.",
+        "character_name": "Popo",
+        "player_goal": "Offer help to your friend who needs it.",
+        "model_answer": "I can help!",
+        "similar_answers": [
+          "Let me do that for you!",
+          "I'll lend a hand!",
+          "Can I give you a hand?"
+        ],
+        "hint_sequence": [
+          "Look at Page 7 where Popo says 'I can help!'",
+          "Think about what it means to be a good friend.",
+          "Remember, helping others makes us happy!"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 8,
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Momo and his friends are rescuing a bird's nest.",
+        "character_name": "Momo",
+        "player_goal": "Ask for help to make the nest cozy for the baby birds.",
+        "model_answer": "Can you guys help me put some leaves in the nest?",
+        "similar_answers": [
+          "Can we all work together to make the nest comfy?",
+          "Do you think we could add some soft leaves to the nest?",
+          "Let's all help Momo make the nest cozy for the baby birds."
+        ],
+        "hint_sequence": [
+          "Look at Page 4, what did Popo say he wanted to do?",
+          "Remember how Gigi and Pipi helped Momo on Page 6.",
+          "Think about how you can help your friends when they need it."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 9,
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo and friends want to take care of the birdhouse.",
+        "character_name": "Popo",
+        "player_goal": "Encourage Popo to express his willingness to help with taking care of the birdhouse.",
+        "model_answer": "I want to help take care of the birdhouse too!",
+        "similar_answers": [
+          "Can I help make the birdhouse happy?",
+          "I'd love to help with taking care of our new friend's home!",
+          "Let me help with little tasks, like bringing water and twigs!"
+        ],
+        "hint_sequence": [
+          "Look at what Popo said on page 5.",
+          "Think about how the friends worked together to return the baby bird.",
+          "Remember what Momo said about being a great team."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 10,
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_1_1",
+        "topic": "self_intro",
+        "level": 1,
+        "scene_description": "Popo and friends are celebrating their new birdhouse in Sunflower Meadow.",
+        "character_name": "Pipi",
+        "player_goal": "Express gratitude for teamwork and help from friends.",
+        "model_answer": "I'm so happy we worked together to build this beautiful home!",
+        "similar_answers": [
+          "We did it! Our birdhouse is amazing because of all our friends helping us.",
+          "Thank you, everyone, for building such a wonderful home with me!",
+          "Our new birdhouse is the best because we all helped each other."
+        ],
+        "hint_sequence": [
+          "Look at the happy faces in Sunflower Meadow.",
+          "Remember what Pipi said on Page 3?",
+          "What did Popo say on Page 5?"
+        ]
+      }
+    ]
+  }
+]

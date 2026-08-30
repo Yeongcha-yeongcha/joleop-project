@@ -27,9 +27,10 @@ plans/curriculum_plan.json
 audio/
 images/
 generated_images/
-outputs/
+outputs/*
 !outputs/test17_character/
 !outputs/test17_character/**
+
 tmp/
 *.mp3
 *.wav
