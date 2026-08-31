@@ -1,0 +1,342 @@
+[
+  {
+    "level": 2,
+    "lesson_number": 1,
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "They heard a faint chirping sound coming from a nearby bush.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "chirping",
+        "blank_text": "They heard a faint {chirping} sound coming from a nearby bush."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "They all walked towards the bush together.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "walked",
+        "blank_text": "They all {walked} towards the bush together."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "Popo gently lifted the bush and freed the bird.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "lifted",
+        "blank_text": "Popo gently {lifted} the bush and freed the bird."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 2,
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "Pipi pointed to the bush and shouted, 'Look, there it is!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "pointed",
+        "blank_text": "Pipi {pointed} to the bush and shouted, 'Look, there it is!"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "The friends saw the tiny bird trapped inside, with thorns all around.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "trapped",
+        "blank_text": "The friends saw the tiny bird {trapped} inside, with thorns all around."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 10,
+        "text": "The bird slowly emerged from its trap, looking relieved.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "emerged",
+        "blank_text": "The bird slowly {emerged} from its trap, looking relieved."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 3,
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Popo the lion tried to free a bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "bird",
+        "blank_text": "Popo the lion tried to free a {bird} trapped in thorns."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "Popo asked Gigi for help to untangle his mane gently.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "mane",
+        "blank_text": "Popo asked Gigi for help to untangle his {mane} gently."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "The friends carefully removed the thorns without hurting the bird.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "thorns",
+        "blank_text": "The friends carefully removed the {thorns} without hurting the bird."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 4,
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Popo the lion was stuck in Sunflower Meadow.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "Meadow",
+        "blank_text": "Popo the lion was stuck in Sunflower {Meadow}."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 2,
+        "text": "Toto the rabbit saw him and said, 'Let's help!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "help",
+        "blank_text": "Toto the rabbit saw him and said, 'Let's {help}!"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 3,
+        "text": "Gigi the giraffe and Momo the mole joined in.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "joined",
+        "blank_text": "Gigi the giraffe and Momo the mole {joined} in."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 5,
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Gigi found some sturdy vines and suggested using them as a rope.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "vines",
+        "blank_text": "Gigi found some sturdy {vines} and suggested using them as a rope."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "With the vines and sticks, they created a makeshift pulley system.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "pulley",
+        "blank_text": "With the vines and sticks, they created a makeshift {pulley} system."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 7,
+        "text": "Pipi cheered as she was lifted out of the bush, safe and sound.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "lifted",
+        "blank_text": "Pipi cheered as she was {lifted} out of the bush, safe and sound."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 6,
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Toto grabbed another vine and tied it around a strong stick.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "tied",
+        "blank_text": "Toto grabbed another vine and {tied} it around a strong stick."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "Momo held onto the nest as it swayed in the strong wind.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "held",
+        "blank_text": "Momo {held} onto the nest as it swayed in the strong wind."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "As they caught their breath, the winds died down, leaving behind a peaceful Sunflower Meadow.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "died",
+        "blank_text": "As they caught their breath, the winds {died} down, leaving behind a peaceful Sunflower Meadow."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 7,
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 6,
+        "text": "Popo used his sharp eyesight to spot a nearby tree with sturdy branches.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "tree",
+        "blank_text": "Popo used his sharp eyesight to spot a nearby {tree} with sturdy branches."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 8,
+        "text": "Gigi used his long neck to tie the pulley system to the branches.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "pulley",
+        "blank_text": "Gigi used his long neck to tie the {pulley} system to the branches."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "The friends cheered as they finally completed the pulley system.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "pulley",
+        "blank_text": "The friends cheered as they finally completed the {pulley} system."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 8,
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "Momo used his digging skills to create a small trench beneath the nest.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "digging",
+        "blank_text": "Momo used his {digging} skills to create a small trench beneath the nest."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "The friends carefully lowered the nest into the safe trench.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "trench",
+        "blank_text": "The friends carefully lowered the nest into the safe {trench}."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "Popo and his friends cheered as they safely rescued the baby birds.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "cheered",
+        "blank_text": "Popo and his friends {cheered} as they safely rescued the baby birds."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 9,
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Popo and his friends returned the baby bird to its relieved mother.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "returned",
+        "blank_text": "Popo and his friends {returned} the baby bird to its relieved mother."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "Wow, what a wonderful gift! Thank you so much!\" said Pipi.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "Pipi",
+        "blank_text": "Wow, what a wonderful gift! Thank you so much!\" said {Pipi}."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "The friends all cheered and began working together to make the birdhouse a happy home.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "working",
+        "blank_text": "The friends all cheered and began {working} together to make the birdhouse a happy home."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 10,
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "review_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Pipi says, \"We did it! Our home is beautiful thanks to us.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "home",
+        "blank_text": "Pipi says, \"We did it! Our {home} is beautiful thanks to us."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Toto says we can help our homes stay happy and healthy.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "homes",
+        "blank_text": "Toto says we can help our {homes} stay happy and healthy."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "The friends all cheer and hug each other happily together.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "together",
+        "blank_text": "The friends all cheer and hug each other happily {together}."
+      }
+    ]
+  }
+]
