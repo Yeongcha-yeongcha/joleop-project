@@ -225,6 +225,7 @@ async def test_new_session(learning_session_context) -> None:
     assert response["data"] == {
         "sessionId": 128,
         "bookId": 1,
+        "chapterNumber": 1,
         "isNew": True,
         "status": "IN_PROGRESS",
         "currentCourse": "READING",

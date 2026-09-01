@@ -48,6 +48,8 @@ class FinalScoreService:
 
     @staticmethod
     def stars(score: int) -> int:
+        if score <= 39:
+            return 0
         if score <= 59:
             return 1
         if score <= 79:

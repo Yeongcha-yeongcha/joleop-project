@@ -126,14 +126,6 @@ leveled_books = [
 
 
 def upgrade() -> None:
-    books_table = sa.table(
-        "books",
-        sa.column("title", sa.String),
-        sa.column("lesson_name", sa.String),
-        sa.column("difficulty", sa.String),
-        sa.column("cover_image_url", sa.String),
-        sa.column("display_order", sa.Integer),
-    )
     connection = op.get_bind()
     for book in leveled_books:
         exists = connection.execute(
@@ -142,7 +134,7 @@ def upgrade() -> None:
                 SELECT 1 FROM books
                 WHERE title = :title
                   AND lesson_name = :lesson_name
-                  AND difficulty = :difficulty
+                  AND difficulty = CAST(:difficulty AS difficulty)
                 LIMIT 1
                 """
             ),
@@ -157,13 +149,33 @@ def upgrade() -> None:
                         display_order = :display_order
                     WHERE title = :title
                       AND lesson_name = :lesson_name
-                      AND difficulty = :difficulty
+                      AND difficulty = CAST(:difficulty AS difficulty)
                     """
                 ),
                 book,
             )
             continue
-        op.bulk_insert(books_table, [book])
+        connection.execute(
+            sa.text(
+                """
+                INSERT INTO books (
+                    title,
+                    lesson_name,
+                    difficulty,
+                    cover_image_url,
+                    display_order
+                )
+                VALUES (
+                    :title,
+                    :lesson_name,
+                    CAST(:difficulty AS difficulty),
+                    :cover_image_url,
+                    :display_order
+                )
+                """
+            ),
+            book,
+        )
 
 
 def downgrade() -> None:

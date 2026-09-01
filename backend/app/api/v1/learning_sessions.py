@@ -7,7 +7,11 @@ from app.api.deps import (
 )
 from app.models import ChildProfile
 from app.schemas.common import success_response
-from app.schemas.learning import QuestionProgressRequest, ReadingProgressRequest
+from app.schemas.learning import (
+    QuestionProgressRequest,
+    ReadingProgressRequest,
+    StartLearningSessionRequest,
+)
 from app.services.learning_sessions import LearningSessionService
 from app.services.speech import SpeechToTextService
 
@@ -18,6 +22,7 @@ router = APIRouter(prefix="/learning-sessions", tags=["Learning - Reading"])
 @book_sessions_router.post("/{bookId}/sessions")
 async def start_or_resume_learning_session(
     bookId: int,
+    request: StartLearningSessionRequest | None = None,
     current_profile: ChildProfile = Depends(get_current_profile),
     learning_session_service: LearningSessionService = Depends(
         get_learning_session_service
@@ -27,6 +32,8 @@ async def start_or_resume_learning_session(
         await learning_session_service.start_or_resume_session(
             profile=current_profile,
             book_id=bookId,
+            chapter_number=request.chapter_number if request else 1,
+            restart=request.restart if request else False,
         )
     )
 

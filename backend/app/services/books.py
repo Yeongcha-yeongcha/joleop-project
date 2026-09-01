@@ -1,8 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppException
-from app.models import Book, ChildProfile, CourseType, UserBookProgress
+from app.models import Book, ChildProfile, CourseType, Difficulty, UserBookProgress
 
 
 class BookService:
@@ -33,12 +33,17 @@ class BookService:
         }
 
     async def list_books(self, *, profile: ChildProfile) -> dict:
-        books = await self._all_books()
+        books = await self._books_for_profile(profile)
         progress_by_book_id = await self._progress_by_book_id(profile.profile_id)
         return {
             "books": [
-                self.book_list_item(book, progress_by_book_id.get(book.book_id))
-                for book in books
+                self.book_list_item(
+                    book,
+                    progress_by_book_id.get(book.book_id),
+                    total_lessons=await self._chapter_count(book.book_id),
+                    default_unlocked=index == 0,
+                )
+                for index, book in enumerate(books)
             ]
         }
 
@@ -47,13 +52,22 @@ class BookService:
         if book is None:
             raise AppException(status_code=404, detail="책을 찾을 수 없습니다.")
         progress = await self._progress_for_book(profile.profile_id, book_id)
-        data = self.book_list_item(book, progress)
+        data = self.book_list_item(book, progress, total_lessons=await self._chapter_count(book.book_id))
         data["lessonName"] = book.lesson_name
         data["courses"] = self.course_items(progress.progress if progress else 0)
         return data
 
     async def _all_books(self) -> list[Book]:
         result = await self.session.execute(select(Book).order_by(Book.display_order, Book.book_id))
+        return list(result.scalars().all())
+
+    async def _books_for_profile(self, profile: ChildProfile) -> list[Book]:
+        difficulty = profile.difficulty or Difficulty.BEGINNER
+        result = await self.session.execute(
+            select(Book)
+            .where(Book.difficulty == difficulty)
+            .order_by(Book.display_order, Book.book_id)
+        )
         return list(result.scalars().all())
 
     async def _book_by_id(self, book_id: int) -> Book | None:
@@ -79,6 +93,16 @@ class BookService:
         )
         return result.scalar_one_or_none()
 
+    async def _chapter_count(self, book_id: int) -> int:
+        from app.models import ReadingChunk
+
+        result = await self.session.execute(
+            select(func.count(func.distinct(ReadingChunk.chapter_number))).where(
+                ReadingChunk.book_id == book_id
+            )
+        )
+        return int(result.scalar_one() or 1)
+
     async def _current_progress(self, profile_id: int) -> UserBookProgress | None:
         progress_by_book_id = await self._progress_by_book_id(profile_id)
         candidates = [
@@ -103,19 +127,29 @@ class BookService:
             "bookId": book.book_id,
             "title": book.title,
             "coverImageUrl": book.cover_image_url,
+            "coverColor": book.cover_color,
             "lessonName": book.lesson_name,
             "progress": progress.progress,
             "canResume": True,
         }
 
     @staticmethod
-    def book_list_item(book: Book, progress: UserBookProgress | None) -> dict:
-        is_default_unlocked = progress is None and book.display_order == 1
+    def book_list_item(
+        book: Book,
+        progress: UserBookProgress | None,
+        *,
+        total_lessons: int = 1,
+        default_unlocked: bool = False,
+    ) -> dict:
+        is_default_unlocked = progress is None and default_unlocked
         return {
             "bookId": book.book_id,
             "title": book.title,
             "coverImageUrl": book.cover_image_url,
+            "coverColor": book.cover_color,
             "difficulty": book.difficulty.value if book.difficulty else None,
+            "totalLessons": total_lessons,
+            "currentLesson": max(1, round(((0 if progress is None else progress.progress) / 100) * total_lessons)),
             "locked": False if is_default_unlocked else True if progress is None else not progress.unlocked,
             "completed": False if progress is None else progress.completed,
             "progress": 0 if progress is None else progress.progress,

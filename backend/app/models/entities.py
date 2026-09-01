@@ -169,6 +169,7 @@ class Book(TimestampMixin, Base):
     lesson_name: Mapped[str | None] = mapped_column(String)
     difficulty: Mapped[Difficulty] = mapped_column(difficulty_enum, nullable=False)
     cover_image_url: Mapped[str | None] = mapped_column(String)
+    cover_color: Mapped[str | None] = mapped_column(String)
     display_order: Mapped[int | None] = mapped_column(Integer)
 
     reading_chunks: Mapped[list["ReadingChunk"]] = relationship(
@@ -202,7 +203,7 @@ class Book(TimestampMixin, Base):
 
 class ReadingChunk(Base):
     __tablename__ = "reading_chunks"
-    __table_args__ = (UniqueConstraint("book_id", "step", name="uq_reading_chunks_book_step"),)
+    __table_args__ = (UniqueConstraint("book_id", "chapter_number", "step", name="uq_reading_chunks_book_chapter_step"),)
 
     chunk_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
     book_id: Mapped[int] = mapped_column(
@@ -211,6 +212,7 @@ class ReadingChunk(Base):
         nullable=False,
         index=True,
     )
+    chapter_number: Mapped[int] = mapped_column(Integer, server_default=text("1"), nullable=False)
     step: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str | None] = mapped_column(String)
@@ -220,7 +222,7 @@ class ReadingChunk(Base):
 
 class RepeatQuestion(Base):
     __tablename__ = "repeat_questions"
-    __table_args__ = (UniqueConstraint("book_id", "step", name="uq_repeat_questions_book_step"),)
+    __table_args__ = (UniqueConstraint("book_id", "chapter_number", "step", name="uq_repeat_questions_book_chapter_step"),)
 
     question_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
     book_id: Mapped[int] = mapped_column(
@@ -229,6 +231,7 @@ class RepeatQuestion(Base):
         nullable=False,
         index=True,
     )
+    chapter_number: Mapped[int] = mapped_column(Integer, server_default=text("1"), nullable=False)
     step: Mapped[int] = mapped_column(Integer, nullable=False)
     target_text: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str | None] = mapped_column(String)
@@ -239,7 +242,7 @@ class RepeatQuestion(Base):
 class DescriptionQuestion(Base):
     __tablename__ = "description_questions"
     __table_args__ = (
-        UniqueConstraint("book_id", "step", name="uq_description_questions_book_step"),
+        UniqueConstraint("book_id", "chapter_number", "step", name="uq_description_questions_book_chapter_step"),
     )
 
     question_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
@@ -249,6 +252,7 @@ class DescriptionQuestion(Base):
         nullable=False,
         index=True,
     )
+    chapter_number: Mapped[int] = mapped_column(Integer, server_default=text("1"), nullable=False)
     step: Mapped[int] = mapped_column(Integer, nullable=False)
     question_type: Mapped[DescriptionQuestionType] = mapped_column(
         description_question_type_enum,
@@ -276,6 +280,7 @@ class RoleplayMission(Base):
         nullable=False,
         index=True,
     )
+    chapter_number: Mapped[int] = mapped_column(Integer, server_default=text("1"), nullable=False)
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     character_name: Mapped[str] = mapped_column(String, nullable=False)
@@ -354,6 +359,7 @@ class LearningSession(Base):
         nullable=False,
         index=True,
     )
+    chapter_number: Mapped[int] = mapped_column(Integer, server_default=text("1"), nullable=False)
     status: Mapped[LearningSessionStatus] = mapped_column(
         learning_session_status_enum,
         nullable=False,

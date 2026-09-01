@@ -1,11 +1,12 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
     AppException,
     AttemptRequiredException,
+    BookLockedException,
     BookNotFoundException,
     InvalidCourseStateException,
     InvalidStepException,
@@ -60,11 +61,19 @@ class LearningSessionService:
         self.final_score_service = final_score_service or FinalScoreService()
         self.reward_service = reward_service or RewardService()
 
-    async def start_or_resume_session(self, *, profile: ChildProfile, book_id: int) -> dict:
-        await self._ensure_book_exists(book_id)
+    async def start_or_resume_session(
+        self,
+        *,
+        profile: ChildProfile,
+        book_id: int,
+        chapter_number: int = 1,
+        restart: bool = False,
+    ) -> dict:
+        await self._ensure_book_available_for_profile(profile=profile, book_id=book_id)
         learning_session = await self._active_or_exited_session(
             profile_id=profile.profile_id,
             book_id=book_id,
+            chapter_number=chapter_number,
             for_update=True,
         )
         is_new = learning_session is None
@@ -74,6 +83,7 @@ class LearningSessionService:
             learning_session = LearningSession(
                 profile_id=profile.profile_id,
                 book_id=book_id,
+                chapter_number=chapter_number,
                 status=LearningSessionStatus.IN_PROGRESS,
                 current_course=CourseType.READING,
                 current_course_number=1,
@@ -85,6 +95,21 @@ class LearningSessionService:
             self.session.add(learning_session)
             await self.session.flush()
         else:
+            if restart:
+                await self.session.execute(
+                    delete(RoleplayMessage).where(
+                        RoleplayMessage.session_id == learning_session.session_id
+                    )
+                )
+                await self.session.execute(
+                    delete(LearningAttempt).where(
+                        LearningAttempt.session_id == learning_session.session_id
+                    )
+                )
+                learning_session.current_course = CourseType.READING
+                learning_session.current_course_number = 1
+                learning_session.current_step = 1
+                learning_session.total_progress = 0
             learning_session.status = LearningSessionStatus.IN_PROGRESS
             learning_session.last_studied_at = now
 
@@ -110,7 +135,7 @@ class LearningSessionService:
             session_id=session_id,
         )
         self._ensure_reading_course(learning_session)
-        chunks = await self._reading_chunks(learning_session.book_id)
+        chunks = await self._reading_chunks(learning_session.book_id, learning_session.chapter_number)
         chunk = self._chunk_for_step(chunks, learning_session.current_step)
         total_steps = len(chunks)
         return {
@@ -142,7 +167,7 @@ class LearningSessionService:
         if learning_session.current_step != current_step:
             raise InvalidStepException()
 
-        chunks = await self._reading_chunks(learning_session.book_id)
+        chunks = await self._reading_chunks(learning_session.book_id, learning_session.chapter_number)
         total_steps = len(chunks)
         if total_steps == 0:
             raise AppException(status_code=404, detail="읽기 콘텐츠를 찾을 수 없습니다.")
@@ -205,7 +230,7 @@ class LearningSessionService:
             session_id=session_id,
         )
         self._ensure_course(learning_session, CourseType.REPEAT)
-        questions = await self._repeat_questions(learning_session.book_id)
+        questions = await self._repeat_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         total_steps = len(questions)
         return {
@@ -263,7 +288,7 @@ class LearningSessionService:
             "passed": attempt.passed,
             "courseProgress": self.progress_service.course_progress(
                 current_step=learning_session.current_step,
-                total_steps=len(await self._repeat_questions(learning_session.book_id)),
+                total_steps=len(await self._repeat_questions(learning_session.book_id, learning_session.chapter_number)),
             ),
             "totalProgress": min(50, learning_session.total_progress + 1),
         }
@@ -284,7 +309,7 @@ class LearningSessionService:
         question = await self._current_repeat_question(learning_session, question_id)
         if not await self._has_attempt(learning_session.session_id, CourseType.REPEAT, question.question_id):
             raise AttemptRequiredException()
-        questions = await self._repeat_questions(learning_session.book_id)
+        questions = await self._repeat_questions(learning_session.book_id, learning_session.chapter_number)
         return await self._advance_question_course(
             learning_session=learning_session,
             profile=profile,
@@ -301,7 +326,7 @@ class LearningSessionService:
             session_id=session_id,
         )
         self._ensure_course(learning_session, CourseType.DESCRIPTION)
-        questions = await self._description_questions(learning_session.book_id)
+        questions = await self._description_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         total_steps = len(questions)
         return {
@@ -372,7 +397,7 @@ class LearningSessionService:
             "guideHint": question.guide_hint,
             "courseProgress": self.progress_service.course_progress(
                 current_step=learning_session.current_step,
-                total_steps=len(await self._description_questions(learning_session.book_id)),
+                total_steps=len(await self._description_questions(learning_session.book_id, learning_session.chapter_number)),
             ),
             "totalProgress": min(75, learning_session.total_progress + 2),
         }
@@ -397,7 +422,7 @@ class LearningSessionService:
             question.question_id,
         ):
             raise AttemptRequiredException()
-        questions = await self._description_questions(learning_session.book_id)
+        questions = await self._description_questions(learning_session.book_id, learning_session.chapter_number)
         return await self._advance_question_course(
             learning_session=learning_session,
             profile=profile,
@@ -414,7 +439,7 @@ class LearningSessionService:
             session_id=session_id,
         )
         self._ensure_course(learning_session, CourseType.ROLEPLAY)
-        mission = await self._roleplay_mission(learning_session.book_id)
+        mission = await self._roleplay_mission(learning_session.book_id, learning_session.chapter_number)
         message_count = await self._roleplay_message_count(learning_session.session_id)
         course_progress = self.progress_service.course_progress(
             current_step=message_count,
@@ -457,7 +482,7 @@ class LearningSessionService:
             for_update=True,
         )
         self._ensure_course(learning_session, CourseType.ROLEPLAY)
-        mission = await self._roleplay_mission(learning_session.book_id)
+        mission = await self._roleplay_mission(learning_session.book_id, learning_session.chapter_number)
         if mission.mission_id != mission_id:
             raise QuestionNotFoundException()
 
@@ -527,6 +552,7 @@ class LearningSessionService:
             "sessionId": learning_session.session_id,
             "status": learning_session.status.value,
             "bookId": learning_session.book_id,
+            "chapterNumber": learning_session.chapter_number,
             "currentCourse": learning_session.current_course.value,
             "currentStep": learning_session.current_step,
             "totalProgress": learning_session.total_progress,
@@ -562,14 +588,16 @@ class LearningSessionService:
             book_id=learning_session.book_id,
             now=now,
         )
-        progress.progress = 100
-        progress.completed = True
+        total_chapters = await self._chapter_count(learning_session.book_id)
+        progress.progress = max(progress.progress, round((learning_session.chapter_number / max(total_chapters, 1)) * 100))
+        progress.completed = learning_session.chapter_number >= total_chapters
         progress.last_studied_at = now
         await self.session.commit()
         return {
             "sessionId": learning_session.session_id,
             "status": learning_session.status.value,
             "bookId": learning_session.book_id,
+            "chapterNumber": learning_session.chapter_number,
             "totalScore": learning_session.total_score,
             "stars": learning_session.stars,
             "completedAt": learning_session.completed_at.isoformat(),
@@ -594,6 +622,7 @@ class LearningSessionService:
                 "bookId": book.book_id,
                 "title": book.title,
             },
+            "chapterNumber": learning_session.chapter_number,
             "totalScore": learning_session.total_score,
             "stars": learning_session.stars,
             "completed": True,
@@ -623,6 +652,7 @@ class LearningSessionService:
         *,
         profile_id: int,
         book_id: int,
+        chapter_number: int,
         for_update: bool = False,
     ) -> LearningSession | None:
         stmt = (
@@ -630,6 +660,7 @@ class LearningSessionService:
             .where(
                 LearningSession.profile_id == profile_id,
                 LearningSession.book_id == book_id,
+                LearningSession.chapter_number == chapter_number,
                 LearningSession.status.in_(
                     [
                         LearningSessionStatus.IN_PROGRESS,
@@ -649,6 +680,19 @@ class LearningSessionService:
         if result.scalar_one_or_none() is None:
             raise BookNotFoundException()
 
+    async def _ensure_book_available_for_profile(
+        self,
+        *,
+        profile: ChildProfile,
+        book_id: int,
+    ) -> None:
+        result = await self.session.execute(select(Book).where(Book.book_id == book_id))
+        book = result.scalar_one_or_none()
+        if book is None:
+            raise BookNotFoundException()
+        if profile.difficulty is not None and book.difficulty != profile.difficulty:
+            raise BookLockedException()
+
     async def _book(self, book_id: int) -> Book:
         result = await self.session.execute(select(Book).where(Book.book_id == book_id))
         book = result.scalar_one_or_none()
@@ -656,18 +700,25 @@ class LearningSessionService:
             raise BookNotFoundException()
         return book
 
-    async def _reading_chunks(self, book_id: int) -> list[ReadingChunk]:
+    async def _chapter_count(self, book_id: int) -> int:
+        result = await self.session.execute(
+            select(func.count(func.distinct(ReadingChunk.chapter_number)))
+            .where(ReadingChunk.book_id == book_id)
+        )
+        return int(result.scalar_one() or 1)
+
+    async def _reading_chunks(self, book_id: int, chapter_number: int) -> list[ReadingChunk]:
         result = await self.session.execute(
             select(ReadingChunk)
-            .where(ReadingChunk.book_id == book_id)
+            .where(ReadingChunk.book_id == book_id, ReadingChunk.chapter_number == chapter_number)
             .order_by(ReadingChunk.step)
         )
         return list(result.scalars().all())
 
-    async def _roleplay_mission(self, book_id: int) -> RoleplayMission:
+    async def _roleplay_mission(self, book_id: int, chapter_number: int) -> RoleplayMission:
         result = await self.session.execute(
             select(RoleplayMission)
-            .where(RoleplayMission.book_id == book_id)
+            .where(RoleplayMission.book_id == book_id, RoleplayMission.chapter_number == chapter_number)
             .order_by(RoleplayMission.mission_id)
         )
         mission = result.scalars().first()
@@ -693,18 +744,18 @@ class LearningSessionService:
         )
         return list(result.scalars().all())
 
-    async def _repeat_questions(self, book_id: int) -> list[RepeatQuestion]:
+    async def _repeat_questions(self, book_id: int, chapter_number: int) -> list[RepeatQuestion]:
         result = await self.session.execute(
             select(RepeatQuestion)
-            .where(RepeatQuestion.book_id == book_id)
+            .where(RepeatQuestion.book_id == book_id, RepeatQuestion.chapter_number == chapter_number)
             .order_by(RepeatQuestion.step)
         )
         return list(result.scalars().all())
 
-    async def _description_questions(self, book_id: int) -> list[DescriptionQuestion]:
+    async def _description_questions(self, book_id: int, chapter_number: int) -> list[DescriptionQuestion]:
         result = await self.session.execute(
             select(DescriptionQuestion)
-            .where(DescriptionQuestion.book_id == book_id)
+            .where(DescriptionQuestion.book_id == book_id, DescriptionQuestion.chapter_number == chapter_number)
             .order_by(DescriptionQuestion.step)
         )
         return list(result.scalars().all())
@@ -714,7 +765,7 @@ class LearningSessionService:
         learning_session: LearningSession,
         question_id: int,
     ) -> RepeatQuestion:
-        questions = await self._repeat_questions(learning_session.book_id)
+        questions = await self._repeat_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         if question.question_id != question_id:
             raise InvalidStepException()
@@ -725,7 +776,7 @@ class LearningSessionService:
         learning_session: LearningSession,
         question_id: int,
     ) -> DescriptionQuestion:
-        questions = await self._description_questions(learning_session.book_id)
+        questions = await self._description_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         if question.question_id != question_id:
             raise InvalidStepException()
@@ -874,6 +925,7 @@ class LearningSessionService:
         return {
             "sessionId": learning_session.session_id,
             "bookId": learning_session.book_id,
+            "chapterNumber": learning_session.chapter_number,
             "isNew": is_new,
             "status": learning_session.status.value,
             "currentCourse": learning_session.current_course.value,
@@ -887,6 +939,7 @@ class LearningSessionService:
         return {
             "sessionId": learning_session.session_id,
             "bookId": learning_session.book_id,
+            "chapterNumber": learning_session.chapter_number,
             "status": learning_session.status.value,
             "currentCourse": learning_session.current_course.value,
             "currentCourseNumber": learning_session.current_course_number,

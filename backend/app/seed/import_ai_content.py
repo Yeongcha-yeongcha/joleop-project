@@ -73,20 +73,45 @@ async def book_for_import(
     book_id: int | None,
     title: str,
     difficulty: Difficulty,
+    display_order: int | None = None,
+    cover_image_url: str | None = None,
+    cover_color: str | None = None,
 ) -> Book:
     if book_id is not None:
         result = await session.execute(select(Book).where(Book.book_id == book_id))
         book = result.scalar_one_or_none()
         if book is not None:
-            book.title = title or book.title
+            book.title = title if title is not None else book.title
             book.difficulty = difficulty
+            if display_order is not None:
+                book.display_order = display_order
+            if cover_image_url is not None:
+                book.cover_image_url = cover_image_url
+            if cover_color is not None:
+                book.cover_color = cover_color
             return book
+
+    result = await session.execute(
+        select(Book).where(Book.title == title, Book.difficulty == difficulty)
+    )
+    book = result.scalar_one_or_none()
+    if book is not None:
+        book.lesson_name = book.lesson_name or "Lesson 1"
+        if display_order is not None:
+            book.display_order = display_order
+        if cover_image_url is not None:
+            book.cover_image_url = cover_image_url
+        if cover_color is not None:
+            book.cover_color = cover_color
+        return book
 
     book = Book(
         title=title,
         lesson_name="Lesson 1",
         difficulty=difficulty,
-        display_order=await next_display_order(session),
+        cover_image_url=cover_image_url,
+        cover_color=cover_color,
+        display_order=display_order if display_order is not None else await next_display_order(session),
     )
     session.add(book)
     await session.flush()
@@ -116,16 +141,17 @@ async def replace_book_content(
     }
 
     reading_count = repeat_count = description_count = roleplay_count = 0
-    reading_step = repeat_step = description_step = 1
 
     for fallback, lesson in enumerate(accepted_lessons, start=1):
         current_lesson = lesson_number(lesson, fallback)
         if fallback == 1:
             book.lesson_name = f"Lesson {current_lesson}"
+        reading_step = repeat_step = description_step = 1
         for page_number, text in page_items(lesson):
             session.add(
                 ReadingChunk(
                     book_id=book.book_id,
+                    chapter_number=current_lesson,
                     step=reading_step,
                     text=text,
                     image_url=None,
@@ -137,6 +163,7 @@ async def replace_book_content(
             session.add(
                 RepeatQuestion(
                     book_id=book.book_id,
+                    chapter_number=current_lesson,
                     step=repeat_step,
                     target_text=text,
                     image_url=None,
@@ -150,6 +177,7 @@ async def replace_book_content(
             session.add(
                 DescriptionQuestion(
                     book_id=book.book_id,
+                    chapter_number=current_lesson,
                     step=description_step,
                     question_type=question_type(scene.get("desc_type")),
                     instruction=scene.get("guide_hint") or "Look at the picture and answer.",
@@ -170,6 +198,7 @@ async def replace_book_content(
             session.add(
                 RoleplayMission(
                     book_id=book.book_id,
+                    chapter_number=current_lesson,
                     title=scenario.get("topic") or f"Roleplay {current_lesson}-{index}",
                     description=scenario.get("scene_description") or lesson.get("theme") or "",
                     character_name=scenario.get("character_name") or "Friend",
@@ -201,8 +230,11 @@ async def import_content(args: argparse.Namespace) -> dict[str, int]:
         book = await book_for_import(
             session,
             book_id=args.book_id,
-            title=args.title or (accepted_lessons[0].get("story_title") if accepted_lessons else None) or "AI Story",
+            title=args.title if args.title is not None else (accepted_lessons[0].get("story_title") if accepted_lessons else None) or "AI Story",
             difficulty=Difficulty(args.difficulty),
+            display_order=args.display_order,
+            cover_image_url=args.cover_image_url,
+            cover_color=args.cover_color,
         )
         result = await replace_book_content(
             session,
@@ -222,6 +254,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--roleplay-file", help="Path to generated roleplay quiz JSON.")
     parser.add_argument("--book-id", type=int, help="Existing book id to replace content for.")
     parser.add_argument("--title", help="Book title to create or update.")
+    parser.add_argument("--display-order", type=int, help="Book display order.")
+    parser.add_argument("--cover-image-url", help="Cover image URL/path for the imported book.")
+    parser.add_argument("--cover-color", help="Cover color hex value for the imported book.")
     parser.add_argument(
         "--difficulty",
         choices=[item.value for item in Difficulty],
