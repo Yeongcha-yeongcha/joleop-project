@@ -24,9 +24,9 @@ export default function BookCard({ book, onSelect }: Props) {
 
   if (isLocked) {
     return (
-      <div className={`${styles.card} ${styles.locked}`} aria-label="잠긴 책">
+      <div className={`${styles.card} ${styles.locked}`} aria-label="Locked book">
         <div className={styles.coverWrap}>
-          <img src={IMAGES.bookLocked} className={styles.coverImage} alt="잠긴 책" />
+          <img src={IMAGES.bookLocked} className={styles.coverImage} alt="Locked book" />
         </div>
         <div className={styles.descCard}>
           <span className={styles.descTitle}>{book.title}</span>
@@ -43,7 +43,7 @@ export default function BookCard({ book, onSelect }: Props) {
         className={styles.coverWrap}
         onClick={() => onSelect(book)}
         role="button"
-        aria-label={`${book.title} 선택`}
+        aria-label={`Choose ${book.title}`}
         style={{ cursor: 'pointer' }}
       >
         <img src={book.coverImage} className={styles.coverImage} alt={book.title} />
@@ -55,7 +55,7 @@ export default function BookCard({ book, onSelect }: Props) {
         <div className={styles.chipRow}>
           <span className={`${styles.chip} ${styles.chipLv}`}>Lv. {book.level}</span>
           {book.status === 'reading' && (
-            <span className={`${styles.chip} ${styles.chipReading}`}>읽는 중</span>
+            <span className={`${styles.chip} ${styles.chipReading}`}>Reading</span>
           )}
           {book.status === 'done' && (
             <span className={`${styles.chip} ${styles.chipDone}`}>DONE !</span>

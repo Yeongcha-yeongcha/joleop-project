@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
-import { fetchBooks } from '../../services/api'
+import { ApiError, clearProfileSession, fetchBooks } from '../../services/api'
 import type { Book } from '../../types'
 import BookCard from '../../components/BookCard/BookCard'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
@@ -19,9 +19,20 @@ export default function BookChoicePage() {
     setError(null)
     fetchBooks()
       .then(setBooks)
-      .catch(() => setError('책 목록을 불러오지 못했어요.'))
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 401) {
+          clearProfileSession()
+          navigate('/profiles', { replace: true })
+          return
+        }
+        if (err instanceof TypeError) {
+          setError('Start the backend server on port 8000.')
+          return
+        }
+        setError(err instanceof Error ? err.message : 'Could not load books.')
+      })
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [navigate])
 
   useEffect(() => { load() }, [load])
 
@@ -36,7 +47,7 @@ export default function BookChoicePage() {
         <button
           className={styles.closeButton}
           onClick={() => navigate('/home')}
-          aria-label="책 선택 닫기"
+          aria-label="Close book picker"
         >
           ×
         </button>

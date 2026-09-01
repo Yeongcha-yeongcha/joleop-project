@@ -3,6 +3,7 @@ import styles from './StatsBar.module.css'
 
 interface Props {
   stats: UserStats
+  tone?: 'light' | 'dark'
   onCustomize?: () => void
 }
 
@@ -31,33 +32,34 @@ function StatIcon({ type }: { type: 'streak' | 'points' | 'energy' }) {
   )
 }
 
-export default function StatsBar({ stats, onCustomize }: Props) {
+export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) {
   return (
-    <div className={styles.bar}>
+    <div className={`${styles.bar} ${tone === 'dark' ? styles.dark : ''}`}>
       <div className={`${styles.stat} ${styles.streak}`}>
         <span className={styles.icon}><StatIcon type="streak" /></span>
         <span className={styles.meta}>
           <strong>{stats.streak}</strong>
-          <em>연속</em>
+          <em>Days</em>
         </span>
       </div>
       <div className={`${styles.stat} ${styles.rewards}`}>
         <span className={styles.icon}><StatIcon type="points" /></span>
         <span className={styles.meta}>
           <strong>{stats.hearts}</strong>
-          <em>포인트</em>
+          <em>Stars</em>
         </span>
       </div>
       <div className={`${styles.stat} ${styles.energy}`}>
         <span className={styles.icon}><StatIcon type="energy" /></span>
         <span className={styles.meta}>
           <strong>{Math.round(stats.xpPercent * 5)}/5</strong>
-          <em>에너지</em>
+          <em>Energy</em>
         </span>
       </div>
       {onCustomize && (
-        <button className={styles.customizeButton} onClick={onCustomize}>
-          꾸미기
+        <button className={styles.customizeButton} data-tour="customize" onClick={onCustomize} aria-label="Dress up">
+          <span>🎨</span>
+          <strong>Style</strong>
         </button>
       )}
     </div>

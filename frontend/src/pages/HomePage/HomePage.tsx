@@ -1,42 +1,45 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import StatsBar from '../../components/StatsBar/StatsBar'
-import BottomNav from '../../components/BottomNav/BottomNav'
-import { BOOKS } from '../../data/books'
-import { fetchHome, usesBackendApi } from '../../services/api'
+import { ApiError, clearProfileSession, fetchHome, usesBackendApi } from '../../services/api'
+import {
+  DEFAULT_HOME_BACKGROUND_THEME_ID,
+  HOME_BACKGROUND_THEMES,
+} from '../../data/homeBackgroundThemes'
+import {
+  fallbackCoverImage,
+  resolveHeroBackgroundImage,
+} from '../../utils/bookAssets'
 import styles from './HomePage.module.css'
 
-const CUSTOMIZATION_KEY = 'yeongcha:customization'
+const HOME_THEME_KEY = 'yeongcha:home-background-theme'
+const POPO_CUSTOMIZATION_KEY = 'yeongcha:popo-customization'
 
-interface CustomizationState {
-  characterItem?: string
-  rug?: string
-  lamp?: string
-  roomItem?: string
+interface PopoCustomization {
+  hat?: string
+  glasses?: string
+  necklace?: string
+  outfit?: string
 }
 
-function readCustomization(): CustomizationState {
+function readSelectedThemeId(): string {
+  return window.localStorage.getItem(HOME_THEME_KEY) || DEFAULT_HOME_BACKGROUND_THEME_ID
+}
+
+function readPopoCustomization(): PopoCustomization {
   try {
-    return JSON.parse(window.localStorage.getItem(CUSTOMIZATION_KEY) || '{}')
+    return JSON.parse(window.localStorage.getItem(POPO_CUSTOMIZATION_KEY) || '{}')
   } catch {
     return {}
   }
 }
 
-function normalizeBookTitle(title: string): string {
-  return title.toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]/g, '')
-}
-
-function fallbackCoverImage(title?: string): string | undefined {
-  if (!title) return undefined
-  return BOOKS.find((book) => normalizeBookTitle(book.title) === normalizeBookTitle(title))?.coverImage
-}
-
 export default function HomePage() {
   const navigate = useNavigate()
   const { selectedBook, userStats, loadUserStats, selectBook } = useAppStore()
-  const [customization, setCustomization] = useState<CustomizationState>(() => readCustomization())
+  const [selectedThemeId, setSelectedThemeId] = useState(readSelectedThemeId)
+  const [popoCustomization, setPopoCustomization] = useState(readPopoCustomization)
 
   useEffect(() => {
     if (!usesBackendApi()) {
@@ -48,13 +51,22 @@ export default function HomePage() {
         if (home.currentBook && !selectedBook) selectBook(home.currentBook)
         useAppStore.setState({ userStats: home.stats })
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 401) {
+          clearProfileSession()
+          navigate('/profiles', { replace: true })
+          return
+        }
         loadUserStats()
       })
-  }, [loadUserStats, selectBook, selectedBook])
+  }, [loadUserStats, navigate, selectBook, selectedBook])
 
   useEffect(() => {
-    const syncCustomization = () => setCustomization(readCustomization())
+    const syncSelectedTheme = () => setSelectedThemeId(readSelectedThemeId())
+    const syncCustomization = () => {
+      syncSelectedTheme()
+      setPopoCustomization(readPopoCustomization())
+    }
     window.addEventListener('storage', syncCustomization)
     window.addEventListener('focus', syncCustomization)
     return () => {
@@ -63,78 +75,81 @@ export default function HomePage() {
     }
   }, [])
 
+  const selectedTheme = useMemo(() => (
+    HOME_BACKGROUND_THEMES.find((theme) => theme.id === selectedThemeId) ??
+    HOME_BACKGROUND_THEMES[0]
+  ), [selectedThemeId])
+
   const selectedBookCover = selectedBook?.coverImage ?? fallbackCoverImage(selectedBook?.title)
-  const roomClass = useMemo(() => [
-    customization.rug ? styles[`rug_${customization.rug}`] : '',
-    customization.lamp ? styles[`lamp_${customization.lamp}`] : '',
-  ].filter(Boolean).join(' '), [customization.rug, customization.lamp])
+  const bookBackground = resolveHeroBackgroundImage(selectedBook)
+  const activeBackground = bookBackground ?? selectedTheme.background
+  const activeThemeClass = bookBackground ? styles.theme_book : styles[`theme_${selectedTheme.id}`]
+  const normalizedBookTitle = (selectedBook?.title ?? '').toLowerCase()
+  const isDarkTheme =
+    selectedTheme.id === 'night-star-room' ||
+    selectedTheme.id === 'space-adventure-room' ||
+    normalizedBookTitle.includes('dragon') ||
+    normalizedBookTitle.includes('star') ||
+    normalizedBookTitle.includes('moon') ||
+    normalizedBookTitle.includes('space')
 
   const handleStart = () => {
     if (!selectedBook) return
-    navigate(`/learn/${selectedBook.id}`)
+    navigate(`/books/${selectedBook.id}/chapters`)
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.scrim} />
-      <header className={styles.header}>
-        <StatsBar stats={userStats} onCustomize={() => navigate('/customize')} />
+    <div
+      className={`${styles.page} ${activeThemeClass ?? styles.theme_cream}`}
+      style={{ '--home-background': `url("${activeBackground}")` } as CSSProperties}
+    >
+      <header className={styles.header} data-tour="stats">
+        <StatsBar stats={userStats} tone={isDarkTheme ? 'dark' : 'light'} onCustomize={() => navigate('/customize')} />
       </header>
 
-      <section className={`${styles.hero} ${roomClass}`}>
-        <div className={styles.room} aria-hidden="true">
-          <div className={styles.wallArt} />
-          <div className={styles.floorLamp} />
-          <div className={styles.sofa} />
-          <div className={styles.rug} />
-          {customization.roomItem === 'bookcase' && <div className={styles.bookcase} />}
-          {customization.roomItem === 'mirror' && <div className={styles.mirror} />}
-          {customization.roomItem === 'plant' && <div className={styles.bigPlant} />}
-          {customization.roomItem === 'puppy' && <div className={styles.puppy} />}
-        </div>
-        <div className={styles.lionStage}>
+      <section className={styles.hero} aria-label="Home">
+        <div className={styles.backgroundLayer} aria-hidden="true" />
+        <div className={styles.mascotStage}>
           <img
             src="/images/HomeBearHands.png"
             alt=""
-            className={styles.lionImg}
+            className={styles.mascot}
             onError={(event) => {
               event.currentTarget.src = '/images/HomeLionBook.png'
             }}
           />
-          {customization.characterItem === 'hat' && <span className={styles.hat} aria-hidden="true" />}
-          {customization.characterItem === 'sunglasses' && <span className={styles.sunglasses} aria-hidden="true" />}
-          {customization.characterItem === 'necklace' && <span className={styles.necklace} aria-hidden="true" />}
-          {customization.characterItem === 'earrings' && <span className={styles.earrings} aria-hidden="true" />}
-          <button
-            className={`${styles.heldBook} ${selectedBookCover ? styles.heldBookSelected : ''}`}
-            onClick={() => navigate('/books')}
-            aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
-          >
-            {selectedBookCover ? (
-              <img src={selectedBookCover} alt="" />
-            ) : (
-              <img src="/images/BookBtn_unselected.png" alt="" />
-            )}
-          </button>
+          {popoCustomization.outfit && <span className={`${styles.popoOutfit} ${styles[`outfit_${popoCustomization.outfit}`]}`} />}
+          {popoCustomization.hat && <span className={`${styles.popoHat} ${styles[`hat_${popoCustomization.hat}`]}`} />}
+          {popoCustomization.glasses && <span className={`${styles.popoGlasses} ${styles[`glasses_${popoCustomization.glasses}`]}`} />}
+          {popoCustomization.necklace && <span className={`${styles.popoNecklace} ${styles[`necklace_${popoCustomization.necklace}`]}`} />}
         </div>
+        <button
+          className={styles.heldBook}
+          data-tour="held-book"
+          onClick={() => navigate('/books')}
+          aria-label={selectedBook ? 'Change book' : 'Pick a book'}
+        >
+          <img src={selectedBookCover || '/images/BookBtn_unselected.png'} alt="" />
+        </button>
       </section>
 
       <section className={styles.panel}>
         <button
-          className={`${styles.bookCard} ${!selectedBook ? styles.bookCardEmpty : ''}`}
+          className={styles.bookCard}
+          data-tour="book"
           onClick={() => navigate('/books')}
-          aria-label={selectedBook ? '책 바꾸기' : '책 선택하기'}
+          aria-label={selectedBook ? 'Change book' : 'Pick a book'}
         >
-          {selectedBookCover ? (
-            <img src={selectedBookCover} alt="" className={styles.bookCover} />
-          ) : (
-            <img src="/images/BookBtn_unselected.png" alt="" className={styles.emptyCover} />
-          )}
-          <div className={styles.bookMeta}>
-            <span className={styles.eyebrow}>{selectedBook ? 'Current Book' : 'Library'}</span>
-            <strong>{selectedBook?.title ?? 'Choose a Book'}</strong>
-            <span>{selectedBook ? `Lesson ${selectedBook.currentLesson} · ${selectedBook.currentText ?? 'Keep going!'}` : 'New stories are waiting.'}</span>
-          </div>
+          <img
+            src={selectedBookCover || '/images/BookBtn_unselected.png'}
+            alt=""
+            className={styles.bookCover}
+          />
+          <span className={styles.bookMeta}>
+            <em>{selectedBook ? 'Current Book' : 'Library'}</em>
+            <strong>{selectedBook ? selectedBook.title : 'Choose a Book'}</strong>
+            <span>{selectedBook ? selectedBook.currentText ?? 'Keep going!' : 'New stories are waiting.'}</span>
+          </span>
         </button>
 
         <div className={styles.progressTrack}>
@@ -145,14 +160,15 @@ export default function HomePage() {
         </div>
 
         <button
-          className={styles.startBtn}
+          className={styles.startButton}
+          data-tour="start-learning"
           onClick={handleStart}
           disabled={!selectedBook}
         >
           {selectedBook ? 'Start Adventure' : 'Choose Book First'}
         </button>
       </section>
-      <BottomNav />
+
     </div>
   )
 }

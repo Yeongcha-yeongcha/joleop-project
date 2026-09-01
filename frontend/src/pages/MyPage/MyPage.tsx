@@ -9,7 +9,6 @@ import {
   updateProfilePassword,
   type ChildProfile,
 } from '../../services/api'
-import BottomNav from '../../components/BottomNav/BottomNav'
 import type { UserStats } from '../../types'
 import {
   getProfileColor,
@@ -69,9 +68,9 @@ function LineIcon({ type }: { type: 'profile' | 'star' | 'lock' }) {
 }
 
 function profileLevelLabel(difficulty?: ChildProfile['difficulty'] | null) {
-  if (difficulty === 'INTERMEDIATE') return '2단계'
-  if (difficulty === 'ADVANCED') return '3단계'
-  return '1단계'
+  if (difficulty === 'INTERMEDIATE') return 'Level 2'
+  if (difficulty === 'ADVANCED') return 'Level 3'
+  return 'Level 1'
 }
 
 export default function MyPage() {
@@ -124,13 +123,13 @@ export default function MyPage() {
 
   const verifyProfilePin = async (label: string): Promise<boolean> => {
     if (!profile) return false
-    const pin = window.prompt(`${label}하려면 현재 유저 PIN을 입력해 주세요.`)
+    const pin = window.prompt(`Enter your PIN to ${label}.`)
     if (!pin) return false
     try {
       await loginProfile(profile.profileId, pin)
       return true
     } catch {
-      setMessage('PIN이 맞지 않아요.')
+      setMessage('That PIN is not right.')
       return false
     }
   }
@@ -139,7 +138,7 @@ export default function MyPage() {
     if (!profile) return
     const isUnlocked = unlockedAvatars.has(index)
     if (!isUnlocked && points < AVATAR_COST) {
-      setMessage(`포인트 ${AVATAR_COST}개가 필요해요.`)
+      setMessage(`You need ${AVATAR_COST} stars.`)
       return
     }
     setIsSaving(true)
@@ -155,7 +154,7 @@ export default function MyPage() {
       const nextProfile = { ...profile, ...updated, profileImageUrl: avatars[index] }
       saveProfileImageOverride(profile.profileId, avatars[index])
       syncProfile(nextProfile)
-      setMessage(isUnlocked ? '프로필 사진이 변경되었어요.' : '새 프로필 사진을 열었어요!')
+      setMessage(isUnlocked ? 'Your picture changed!' : 'New picture unlocked!')
     } finally {
       setIsSaving(false)
     }
@@ -169,7 +168,7 @@ export default function MyPage() {
     setAvatarPreview(null)
     setAvatarColor(color)
     syncProfile({ ...profile, profileImageUrl: null })
-    setMessage('단색 프로필로 변경했어요.')
+    setMessage('Simple color is on!')
   }
 
   const uploadSelfie = (file: File | null) => {
@@ -181,7 +180,7 @@ export default function MyPage() {
       saveProfileImageOverride(profile.profileId, imageUrl)
       setAvatarPreview(imageUrl)
       syncProfile({ ...profile, profileImageUrl: imageUrl })
-      setMessage('셀카 프로필로 변경했어요.')
+      setMessage('Your selfie is on!')
     }
     reader.readAsDataURL(file)
   }
@@ -194,7 +193,7 @@ export default function MyPage() {
     try {
       const updated = await updateProfile(profile.profileId, { nickname: nextNickname })
       syncProfile({ ...profile, ...updated, nickname: updated.nickname ?? nextNickname })
-      setMessage('별명이 변경되었어요.')
+      setMessage('Your name changed!')
     } finally {
       setIsSaving(false)
     }
@@ -202,14 +201,14 @@ export default function MyPage() {
 
   const changePassword = async () => {
     if (!profile) return
-    const nextPassword = window.prompt('새 프로필 비밀번호를 입력해 주세요.')
+    const nextPassword = window.prompt('Enter a new PIN.')
     if (!nextPassword) return
     setIsSaving(true)
     setMessage('')
     try {
       await updateProfilePassword(profile.profileId, nextPassword)
       syncProfile({ ...profile, passwordEnabled: true })
-      setMessage('비밀번호가 변경되었어요.')
+      setMessage('Your PIN changed!')
     } finally {
       setIsSaving(false)
     }
@@ -222,7 +221,7 @@ export default function MyPage() {
 
   const removeProfile = async () => {
     if (!profile) return
-    const confirmed = window.confirm(`${profile.nickname} 유저를 삭제할까요?`)
+    const confirmed = window.confirm(`Delete ${profile.nickname}?`)
     if (!confirmed) return
     setIsSaving(true)
     try {
@@ -234,7 +233,7 @@ export default function MyPage() {
   }
 
   const unlockGuardianPanel = async () => {
-    const verified = await verifyProfilePin('보호자 설정을 확인')
+    const verified = await verifyProfilePin('open parent settings')
     if (!verified) return
     setIsGuardianUnlocked(true)
     setMessage('')
@@ -242,23 +241,22 @@ export default function MyPage() {
 
   return (
     <main className={styles.page}>
-      <button className={styles.backButton} onClick={() => navigate('/home')}>←</button>
       <header className={styles.header}>
         <div className={styles.currentAvatar} style={{ background: avatarColor }}>
           {avatarPreview ? <img src={avatarPreview} alt="" /> : null}
         </div>
         <div>
           <h1>My Page</h1>
-          <p>{profile?.nickname ?? '친구'}의 프로필</p>
+          <p>{profile?.nickname ?? 'Friend'}'s profile</p>
         </div>
       </header>
 
       <section className={styles.card}>
         <div className={styles.sectionTitle}>
           <span><LineIcon type="profile" /></span>
-          <strong>프로필 설정</strong>
+          <strong>Profile</strong>
         </div>
-        <label htmlFor="profile-nickname" className={styles.fieldLabel}>별명</label>
+        <label htmlFor="profile-nickname" className={styles.fieldLabel}>Name</label>
         <div className={styles.inputRow}>
           <input
             id="profile-nickname"
@@ -268,7 +266,7 @@ export default function MyPage() {
             disabled={!profile || isSaving}
           />
           <button onClick={saveNickname} disabled={!profile || isSaving || !nickname.trim()}>
-            저장
+            Save
           </button>
         </div>
       </section>
@@ -276,15 +274,15 @@ export default function MyPage() {
       <section className={styles.card}>
         <div className={styles.sectionTitle}>
           <span><LineIcon type="star" /></span>
-          <strong>프로필 사진 상점</strong>
+          <strong>Picture Shop</strong>
           <em>{points}P</em>
         </div>
         <div className={styles.avatarTools}>
           <button onClick={useSolidAvatar} disabled={!profile || isSaving}>
-            단색 기본
+            Color
           </button>
           <label>
-            셀카 업로드
+            Selfie
             <input
               type="file"
               accept="image/*"
@@ -305,7 +303,7 @@ export default function MyPage() {
                 className={isSelected ? styles.selectedAvatar : ''}
               >
                 <img src={avatar} alt="" />
-                <span>{isUnlocked ? isSelected ? '사용중' : '변경' : `${AVATAR_COST}P`}</span>
+                <span>{isUnlocked ? isSelected ? 'On' : 'Use' : `${AVATAR_COST}P`}</span>
               </button>
             )
           })}
@@ -317,46 +315,45 @@ export default function MyPage() {
       <section className={`${styles.card} ${styles.safePanel}`}>
         <div className={styles.sectionTitle}>
           <span><LineIcon type="lock" /></span>
-          <strong>보호자 확인 설정</strong>
+          <strong>Parent Settings</strong>
         </div>
         <div className={styles.guardianSummary}>
           <div>
-            <span>아이 레벨</span>
+            <span>My Level</span>
             <strong>{profileLevelLabel(profile?.difficulty)}</strong>
           </div>
           <div>
-            <span>학습 리포트</span>
+            <span>Report</span>
             <strong>{Math.round(stats.xpPercent * 100)}%</strong>
           </div>
         </div>
         <div className={styles.reportGrid}>
           <div>
-            <span>연속 학습</span>
-            <strong>{stats.streak}일</strong>
+            <span>Days</span>
+            <strong>{stats.streak}</strong>
           </div>
           <div>
-            <span>보유 포인트</span>
+            <span>Stars</span>
             <strong>{points}P</strong>
           </div>
         </div>
         <button onClick={changePassword} disabled={!profile || isSaving}>
-          비밀번호 변경
+          Change PIN
         </button>
         <button onClick={leaveProfile} disabled={isSaving}>
-          유저 선택으로 이동
+          Switch User
         </button>
         <button className={styles.dangerButton} onClick={removeProfile} disabled={!profile || isSaving}>
-          유저 삭제
+          Delete User
         </button>
         {!isGuardianUnlocked && (
           <button className={styles.guardianOverlay} onClick={unlockGuardianPanel}>
             <span><LineIcon type="lock" /></span>
-            <strong>보호자 영역</strong>
-            <em>PIN 입력 후 보기</em>
+            <strong>Parent Area</strong>
+            <em>Enter PIN</em>
           </button>
         )}
       </section>
-      <BottomNav />
     </main>
   )
 }

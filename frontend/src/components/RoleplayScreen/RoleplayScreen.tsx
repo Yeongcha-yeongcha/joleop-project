@@ -24,7 +24,7 @@ function TrophyAnimation({ className, onComplete }: { className?: string; onComp
     })
     anim.addEventListener('complete', () => onCompleteRef.current?.())
     return () => anim.destroy()
-  }, []) // deps 비움 — 애니메이션은 마운트 시 1회만 생성
+  }, [])
   return <div ref={ref} className={className} />
 }
 
@@ -48,6 +48,7 @@ interface Props {
     userTranscript: string
     characterText: string
     missionCompleted: boolean
+    score?: number
   }>
 }
 
@@ -122,13 +123,13 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
             }
           </div>
           <div className={styles.missionCard}>
-            <div className={styles.missionBadge}>미션</div>
+            <div className={styles.missionBadge}>Mission</div>
             <p className={styles.missionText}>{roleplay.mission}</p>
           </div>
         </div>
         <div className={styles.introBottom}>
-          <button className={styles.imgBtn} onClick={() => setView('chat')} aria-label="시작">
-            <img src={IMAGES.nextBtnActive} alt="시작" className={styles.btnImg} />
+          <button className={styles.imgBtn} onClick={() => setView('chat')} aria-label="Start">
+            <img src={IMAGES.nextBtnActive} alt="Start" className={styles.btnImg} />
           </button>
         </div>
       </div>
@@ -167,11 +168,11 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
             className={styles.imgBtn}
             onClick={handleRecord}
             disabled={recordState === 'recording'}
-            aria-label={recordState === 'recording' ? '녹음 중...' : '탭하여 말하기'}
+            aria-label={recordState === 'recording' ? 'Recording...' : 'Tap to speak'}
           >
             <img
               src={recordState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
-              alt={recordState === 'recording' ? '녹음 중' : '탭하여 말하기'}
+              alt={recordState === 'recording' ? 'Recording' : 'Tap to speak'}
               className={`${styles.btnImg} ${recordState === 'recording' ? styles.recording : ''}`}
             />
           </button>
@@ -195,10 +196,10 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
           <button
             className={`${styles.imgBtn} ${styles.completionBtn} ${showButton ? styles.completionVisible : ''}`}
             onClick={onFinish}
-            aria-label="홈으로"
+            aria-label="Go home"
             disabled={!showButton}
           >
-            <img src={IMAGES.nextBtnActive} alt="홈으로" className={styles.btnImg} />
+            <img src={IMAGES.nextBtnActive} alt="Go home" className={styles.btnImg} />
           </button>
         </div>
       )}

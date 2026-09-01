@@ -22,6 +22,14 @@ export const IMAGES = {
     B: '/images/BookSample_B.png',
     C: '/images/BookSample_C.png',
   },
+  bookBackgrounds: {
+    dragon: '/images/home-themes/cream-book-room.png',
+    lemonade: '/images/home-themes/sunset-lounge.png',
+    snack: '/images/home-themes/sky-dream-room.png',
+    ocean: '/images/home-themes/ocean-blue-room.png',
+    forest: '/images/home-themes/forest-cozy-room.png',
+    space: '/images/home-themes/space-adventure-room.png',
+  },
 
   // 학습 화면 버튼
   nextBtnActive: '/images/NextBtn_active.png',

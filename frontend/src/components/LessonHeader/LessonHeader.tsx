@@ -10,7 +10,7 @@ export default function LessonHeader({ title, progress, onBack }: Props) {
   return (
     <div className={styles.header}>
       <div className={styles.top}>
-        <button className={styles.backBtn} onClick={onBack} aria-label="뒤로가기">
+        <button className={styles.backBtn} onClick={onBack} aria-label="Go back">
           ‹
         </button>
         <span className={styles.title}>{title}</span>

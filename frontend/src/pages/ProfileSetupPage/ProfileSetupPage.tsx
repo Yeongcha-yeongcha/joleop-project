@@ -21,17 +21,17 @@ export default function ProfileSetupPage() {
   return (
     <main className={styles.page}>
       <img src="/images/onboarding/lion-flag.png" alt="" className={styles.lion} />
-      <h1>새 유저 만들기</h1>
-      <p>먼저 네 자리 PIN을 정해주세요.</p>
+      <h1>Make a New User</h1>
+      <p>First, choose a 4-number PIN.</p>
       <form onSubmit={submit} className={styles.form}>
         <input
           value={pin}
           onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
           inputMode="numeric"
           type="password"
-          placeholder="네 자리 숫자"
+          placeholder="4 numbers"
         />
-        <button disabled={pin.length !== 4}>온보딩 시작</button>
+        <button disabled={pin.length !== 4}>Start</button>
       </form>
     </main>
   )

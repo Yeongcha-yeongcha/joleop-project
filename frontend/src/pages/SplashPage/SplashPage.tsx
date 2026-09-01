@@ -13,9 +13,9 @@ export default function SplashPage() {
   return (
     <main className={styles.page}>
       <div className={styles.logoMark}>
-        <img src="/images/onboarding/lion-reading.png" alt="라이온" />
+        <img src="/images/onboarding/lion-reading.png" alt="Lion" />
       </div>
-      <h1>라이온</h1>
+      <h1>Lion</h1>
       <p>AI English Stories</p>
     </main>
   )

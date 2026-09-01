@@ -12,7 +12,10 @@ import CustomizePage from './pages/CustomizePage/CustomizePage'
 import MyPage from './pages/MyPage/MyPage'
 import ReviewPage from './pages/ReviewPage/ReviewPage'
 import BookChoicePage from './pages/BookChoicePage/BookChoicePage'
+import ChapterSelectPage from './pages/ChapterSelectPage/ChapterSelectPage'
 import LearnPage from './pages/LearnPage/LearnPage'
+import BottomNav from './components/BottomNav/BottomNav'
+import OnboardingTour from './components/OnboardingTour/OnboardingTour'
 import './App.css'
 
 function AnimatedRoutes() {
@@ -35,10 +38,20 @@ function AnimatedRoutes() {
         <Route path="/review" element={<PageWrapper><ReviewPage /></PageWrapper>} />
         <Route path="/mypage" element={<PageWrapper slideUp><MyPage /></PageWrapper>} />
         <Route path="/books" element={<PageWrapper slideUp><BookChoicePage /></PageWrapper>} />
+        <Route path="/books/:bookId/chapters" element={<PageWrapper slideUp><ChapterSelectPage /></PageWrapper>} />
         <Route path="/learn/:bookId" element={<PageWrapper slideUp><LearnPage /></PageWrapper>} />
       </Routes>
+      <AppBottomNav />
+      <OnboardingTour />
     </div>
   )
+}
+
+function AppBottomNav() {
+  const location = useLocation()
+  const visibleRoutes = ['/home', '/review', '/mypage']
+  if (!visibleRoutes.includes(location.pathname)) return null
+  return <BottomNav />
 }
 
 function AppNavButton() {
@@ -49,17 +62,18 @@ function AppNavButton() {
   const hasParentToken = window.localStorage.getItem('yeongcha:parent-access-token')
 
   const hiddenRoutes = ['/']
-  const routesWithOwnNav = ['/home', '/customize', '/mypage', '/books']
+  const routesWithOwnNav = ['/home', '/customize', '/review', '/mypage', '/books']
   if (
     hiddenRoutes.includes(path) ||
     routesWithOwnNav.includes(path) ||
+    path.startsWith('/books/') ||
     path.startsWith('/learn/')
   ) {
     return null
   }
 
   const shouldGoHome = Boolean(activeProfile) && !path.startsWith('/profiles') && path !== '/start'
-  const label = shouldGoHome ? '홈으로' : '이전으로'
+  const label = shouldGoHome ? 'Go home' : 'Go back'
   const text = shouldGoHome ? '⌂' : '←'
 
   const fallbackPath = (() => {

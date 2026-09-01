@@ -36,6 +36,11 @@
   transition: color 0.3s ease;
 }
 
+.sentence span {
+  border-radius: 8px;
+  transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+}
+
 /* reading: bold, dark */
 .sentence.reading    { font-weight: 800; color: #1a1a2e; }
 /* repeat idle: dim, waiting for user to speak */
@@ -43,9 +48,15 @@
 /* repeat done: orange, confirmed correct */
 .sentence.repeatDone { font-weight: 800; color: #FF9600; }
 
-/* 단어별 STT 결과 하이라이트 */
+/* STT word result highlight */
 .wordCorrect { color: #FF9D00; font-weight: 800; }
 .wordWrong   { color: #FF4D4D; font-weight: 800; }
+
+.spokenWord {
+  background: #ffe37a;
+  color: #2d1b0b;
+  box-shadow: 0 0 0 4px rgba(255, 227, 122, 0.42);
+}
 
 /* ── Bottom Button Area ───────────────────────── */
 
@@ -112,6 +123,150 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.audioControls {
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 62px 1fr 72px;
+  gap: 8px;
+  background: #fff8df;
+}
+
+.audioControls button {
+  min-height: 38px;
+  border-radius: 999px;
+  background: white;
+  color: #7a4a17;
+  box-shadow: 0 3px 0 rgba(216, 121, 0, 0.24);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.rateToggle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #eadfc7;
+}
+
+.rateToggle button {
+  min-height: 30px;
+  box-shadow: none;
+  background: transparent;
+  color: #8b6a3e;
+}
+
+.rateToggle .activeRate {
+  background: #ff9700;
+  color: white;
+}
+
+.resultOverlay {
+  flex: 1;
+  min-height: 100dvh;
+  padding: 32px 24px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 217, 82, 0.45), transparent 28%),
+    linear-gradient(180deg, #ffe9a8 0%, #fff8df 50%, #ffcf7a 100%);
+}
+
+.resultCard {
+  width: min(100%, 354px);
+  padding: 24px 18px 20px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  border: 5px solid #ff9700;
+  border-radius: 18px;
+  background: #fffdf4;
+  color: #2d1b0b;
+  box-shadow: 0 9px 0 #d87900, 0 18px 32px rgba(78, 47, 10, 0.18);
+  text-align: center;
+  animation: resultPop 0.36s cubic-bezier(0.2, 1.3, 0.35, 1) both;
+}
+
+.resultBadge {
+  min-width: 104px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff0c7;
+  color: #8b5c1c;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.resultCard h1 {
+  margin: 0;
+  color: #2d1b0b;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.resultStars {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  font-size: 46px;
+  line-height: 1;
+  -webkit-text-stroke: 2px #704414;
+}
+
+.starOn {
+  color: #ffbd1f;
+}
+
+.starOff {
+  color: #d8d0c1;
+}
+
+.resultCard strong {
+  color: #7a3d13;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.resultCard p {
+  color: #7a5a2c;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.resultCard button {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 4px;
+  border-radius: 14px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 6px 0 #d87900;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.resultCard button:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #d87900;
+}
+
+@keyframes resultPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes phaseSlideIn {

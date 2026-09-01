@@ -5,23 +5,23 @@ import styles from './ServiceIntroPage.module.css'
 const slides = [
   {
     image: '/images/onboarding/lion-reading.png',
-    title: '영어 동화로 시작해요',
-    text: '짧은 장면을 넘기며 이야기를 읽고, 그림과 문장으로 오늘 배울 표현을 만나요.',
+    title: 'Start with Stories',
+    text: 'Read short scenes. Meet new words with pictures.',
   },
   {
     image: '/images/onboarding/lion-headphones.png',
-    title: '듣고 따라 말해요',
-    text: '문장을 듣고 직접 말하면 발음과 자신감을 함께 연습할 수 있어요.',
+    title: 'Listen and Say',
+    text: 'Hear a sentence. Say it out loud.',
   },
   {
     image: '/images/onboarding/lion-magnifier.png',
-    title: '그림을 보고 답해요',
-    text: '색깔, 사물, 상황을 말하면서 단어와 짧은 문장을 자연스럽게 익혀요.',
+    title: 'Look and Answer',
+    text: 'Look at the picture. Say a word or a short sentence.',
   },
   {
     image: '/images/onboarding/lion-wave.png',
-    title: '캐릭터와 대화해요',
-    text: '마지막에는 이야기 속 친구를 도와주는 역할놀이로 배운 표현을 써봐요.',
+    title: 'Talk with Friends',
+    text: 'Use what you learned in a small role play.',
   },
 ]
 
@@ -60,7 +60,7 @@ export default function ServiceIntroPage() {
         </div>
       </section>
       <button className={styles.primaryButton} onClick={next}>
-        {isLast ? '시작하기' : '다음'}
+        {isLast ? 'Start' : 'Next'}
       </button>
     </main>
   )

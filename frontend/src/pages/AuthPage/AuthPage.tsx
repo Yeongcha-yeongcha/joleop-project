@@ -27,7 +27,7 @@ export default function AuthPage() {
       if (error instanceof ApiError) {
         setError(error.message)
       } else {
-        setError(mode === 'signup' ? '회원가입 정보를 다시 확인해주세요.' : '아이디 또는 비밀번호를 확인해주세요.')
+        setError(mode === 'signup' ? 'Please check your sign up info.' : 'Please check your ID or password.')
       }
     } finally {
       setIsLoading(false)
@@ -39,7 +39,7 @@ export default function AuthPage() {
     try {
       startKakaoLogin()
     } catch {
-      setError('카카오 REST API 키를 .env.local에 설정해주세요.')
+      setError('Please set the Kakao REST API key in .env.local.')
     }
   }
 

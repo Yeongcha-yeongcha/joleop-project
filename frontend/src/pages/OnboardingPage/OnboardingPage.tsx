@@ -23,15 +23,15 @@ declare global {
 }
 
 const fruitCards = [
-  { id: 'apple', image: '/images/onboarding/apple.png', label: '사과', answer: 'Apple' },
-  { id: 'banana', image: '/images/onboarding/banana.png', label: '바나나', answer: 'Banana' },
-  { id: 'peach', image: '/images/onboarding/peach.png', label: '복숭아', answer: 'Peach' },
+  { id: 'apple', image: '/images/onboarding/apple.png', label: 'Apple', answer: 'Apple' },
+  { id: 'banana', image: '/images/onboarding/banana.png', label: 'Banana', answer: 'Banana' },
+  { id: 'peach', image: '/images/onboarding/peach.png', label: 'Peach', answer: 'Peach' },
 ]
 
 const weatherCards = [
-  { id: 'rain', emoji: '🌧️', label: '비', answer: 'Rain' },
-  { id: 'wind', emoji: '💨', label: '바람', answer: 'Wind' },
-  { id: 'sun', emoji: '☀️', label: '맑음', answer: 'Sunny' },
+  { id: 'rain', emoji: '🌧️', label: 'Rain', answer: 'Rain' },
+  { id: 'wind', emoji: '💨', label: 'Wind', answer: 'Wind' },
+  { id: 'sun', emoji: '☀️', label: 'Sunny', answer: 'Sunny' },
 ]
 
 function upsertAnswer(answers: OnboardingAnswer[], questionId: number, answer: string): OnboardingAnswer[] {
@@ -71,8 +71,8 @@ export default function OnboardingPage() {
   const next = () => setStep((current) => Math.min(current + 1, 6) as Step)
 
   const handleSpeechFallback = (field: 'name' | 'age') => {
-    const fallback = field === 'name' ? '별명' : '7'
-    const value = window.prompt(field === 'name' ? '내 별명을 입력해줘' : '내 나이를 입력해줘', fallback)
+    const fallback = field === 'name' ? 'Friend' : '7'
+    const value = window.prompt(field === 'name' ? 'What is your name?' : 'How old are you?', fallback)
     if (!value) return
     completeSpeechInput(field, value)
   }
@@ -162,14 +162,14 @@ export default function OnboardingPage() {
     const payload = answers.length
       ? answers
       : [
-          { questionId: 1, answer: name || '별명' },
+          { questionId: 1, answer: name || 'Friend' },
           { questionId: 2, answer: age || '7' },
           { questionId: 3, answer: 'Apple' },
         ]
     try {
       if (pendingProfile?.profilePassword) {
         const profile = await createProfile({
-          nickname: name || '새 친구',
+          nickname: name || 'New Friend',
           age: Number.parseInt(age, 10) || 7,
           profilePassword: pendingProfile.profilePassword,
         })
@@ -184,6 +184,7 @@ export default function OnboardingPage() {
     } finally {
       window.localStorage.setItem('yeongcha:onboarding-completed', 'true')
       window.localStorage.setItem('yeongcha:placement-level', String(placementLevel))
+      window.localStorage.setItem('yeongcha:home-tour-pending', 'true')
       window.localStorage.removeItem('yeongcha:pending-profile')
       navigate('/home')
     }
@@ -202,10 +203,10 @@ export default function OnboardingPage() {
         <img src="/images/onboarding/adventure-bag.png" alt="" className={styles.bag} />
       )}
 
-      {lionImage && <img src={lionImage} alt="포포" className={styles.lion} />}
+      {lionImage && <img src={lionImage} alt="Popo" className={styles.lion} />}
 
       {step === 3 && (
-        <div className={styles.cardRow} aria-label="과일 선택">
+        <div className={styles.cardRow} aria-label="Pick a fruit">
           {fruitCards.map((card) => (
             <button
               key={card.id}
@@ -229,7 +230,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 4 && (
-        <div className={styles.cardRow} aria-label="날씨 선택">
+        <div className={styles.cardRow} aria-label="Pick the weather">
           {weatherCards.map((card) => (
             <button
               key={card.id}
@@ -323,7 +324,7 @@ export default function OnboardingPage() {
         )}
 
         {step === 2 && (
-          <button className={styles.primaryButton} onClick={next} aria-label="다음">
+          <button className={styles.primaryButton} onClick={next} aria-label="Next">
             →
           </button>
         )}
@@ -335,7 +336,7 @@ export default function OnboardingPage() {
               addAnswer(3, 'Apple')
               setStep(4)
             }}
-            aria-label="다음"
+            aria-label="Next"
           >
             →
           </button>
@@ -349,7 +350,7 @@ export default function OnboardingPage() {
               setPlacementLevel(3)
               next()
             }}
-            aria-label="다음"
+            aria-label="Next"
           >
             →
           </button>

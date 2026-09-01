@@ -9,12 +9,12 @@
 
 .whiteHeader {
   position: relative;
-  height: 74px;
+  height: calc(74px + env(safe-area-inset-top, 0px));
   background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 20px 0;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 20px 0;
   box-sizing: border-box;
   box-shadow: 0 2px 0 rgba(80, 40, 20, 0.08);
 }
@@ -50,7 +50,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px 14px;
-  padding: 24px 32px 40px;
+  padding: 24px 32px calc(40px + env(safe-area-inset-bottom, 0px));
   align-content: start;
   overflow-y: auto;
 }

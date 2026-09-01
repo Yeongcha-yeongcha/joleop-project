@@ -18,7 +18,7 @@ export default function ProfilePinPage() {
       await loginProfile(Number(profileId), pin)
       navigate('/home')
     } catch {
-      setError('PIN 번호를 다시 확인해 주세요.')
+      setError('Please check your PIN.')
       setPin('')
     }
   }
@@ -45,7 +45,7 @@ export default function ProfilePinPage() {
   return (
     <main className={styles.page}>
       <img src="/images/onboarding/lion-magnifier.png" alt="" className={styles.lion} />
-      <h1>PIN을 입력해요</h1>
+      <h1>Type Your PIN</h1>
       <form onSubmit={submit} className={styles.form}>
         <input
           value={pin}
@@ -61,21 +61,21 @@ export default function ProfilePinPage() {
         <div className={styles.dots}>
           {[0, 1, 2, 3].map((index) => <span key={index} className={index < pin.length ? styles.filled : ''} />)}
         </div>
-        <div className={styles.keypad} aria-label="PIN 키패드">
+        <div className={styles.keypad} aria-label="PIN keypad">
           {keypad.map((key) => (
             <button
               key={key}
               type="button"
               className={key === 'clear' ? styles.utilityKey : ''}
               onClick={() => pressKeypad(key)}
-              aria-label={key === 'backspace' ? '한 자리 지우기' : key === 'clear' ? '전체 지우기' : `${key} 입력`}
+              aria-label={key === 'backspace' ? 'Delete one number' : key === 'clear' ? 'Clear all' : `Type ${key}`}
             >
               {key === 'backspace' ? '⌫' : key === 'clear' ? 'C' : key}
             </button>
           ))}
         </div>
         {error && <p>{error}</p>}
-        <button disabled={pin.length !== 4}>들어가기</button>
+        <button disabled={pin.length !== 4}>Go In</button>
       </form>
     </main>
   )

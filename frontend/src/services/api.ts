@@ -57,6 +57,7 @@ interface BackendCurrentBook {
   bookId: number
   title: string
   coverImageUrl?: string | null
+  coverColor?: string | null
   lessonName?: string | null
   progress: number
   canResume: boolean
@@ -66,7 +67,10 @@ interface BackendBook {
   bookId: number
   title: string
   coverImageUrl?: string | null
+  coverColor?: string | null
   difficulty?: Difficulty | null
+  totalLessons?: number
+  currentLesson?: number
   locked: boolean
   completed: boolean
   progress: number
@@ -222,7 +226,7 @@ export async function fetchHome(): Promise<{ currentBook: Book | null; stats: Us
 export async function fetchBooks(): Promise<Book[]> {
   if (BASE_URL && getProfileToken()) {
     const data = await get<BackendBookListData>('/books', getProfileToken())
-    return mergeBooksWithLocalSamples(data.books.map(toFrontendBook))
+    return hydrateBackendBooks(data.books.map(toFrontendBook))
   }
   return BOOKS
 }
@@ -239,26 +243,20 @@ function localBookFor(book: Book): Book | undefined {
   ))
 }
 
-function mergeBooksWithLocalSamples(backendBooks: Book[]): Book[] {
-  const hydratedBooks = backendBooks.map((book) => {
+function hydrateBackendBooks(backendBooks: Book[]): Book[] {
+  return backendBooks.map((book) => {
     const localBook = localBookFor(book)
     if (!localBook) return book
     return {
       ...localBook,
       ...book,
       title: localBook.title,
-      coverColor: localBook.coverColor,
+      coverColor: book.coverColor ?? localBook.coverColor,
       coverImage: book.coverImage ?? localBook.coverImage,
-      totalLessons: localBook.totalLessons,
+      totalLessons: book.totalLessons,
       currentText: book.currentText ?? localBook.currentText,
     }
   })
-
-  const hydratedKeys = new Set(hydratedBooks.map((book) => normalizeBookTitle(book.title)))
-  return [
-    ...hydratedBooks,
-    ...BOOKS.filter((book) => !hydratedKeys.has(normalizeBookTitle(book.title))),
-  ]
 }
 
 function publicCoverImageUrl(url?: string | null): string | undefined {
@@ -280,11 +278,11 @@ function toFrontendBook(book: BackendBook): Book {
   return {
     id: String(book.bookId),
     title: book.title,
-    coverColor: '#ffbd54',
+    coverColor: book.coverColor ?? '#ffbd54',
     coverImage: publicCoverImageUrl(book.coverImageUrl),
     level: book.difficulty ? levelByDifficulty[book.difficulty] : 1,
-    totalLessons: 4,
-    currentLesson: Math.max(1, Math.min(4, Math.floor(progress * 4) + 1)),
+    totalLessons: book.totalLessons ?? 10,
+    currentLesson: book.currentLesson ?? Math.max(1, Math.min(book.totalLessons ?? 10, Math.floor(progress * (book.totalLessons ?? 10)) + 1)),
     progress,
     status: book.locked ? 'locked' : book.completed ? 'done' : progress > 0 ? 'reading' : 'available',
     currentText: book.completed ? 'Completed!' : progress > 0 ? 'Keep reading' : 'Start reading',
@@ -296,7 +294,7 @@ function toFrontendCurrentBook(book: BackendCurrentBook): Book {
   const localBook = localBookFor({
     id: String(book.bookId),
     title: book.title,
-    coverColor: '#ffbd54',
+    coverColor: book.coverColor ?? '#ffbd54',
     level: 1,
     totalLessons: 4,
     currentLesson: 1,
@@ -306,11 +304,11 @@ function toFrontendCurrentBook(book: BackendCurrentBook): Book {
   return {
     id: String(book.bookId),
     title: localBook?.title ?? book.title,
-    coverColor: localBook?.coverColor ?? '#ffbd54',
+    coverColor: book.coverColor ?? localBook?.coverColor ?? '#ffbd54',
     coverImage: publicCoverImageUrl(book.coverImageUrl) ?? localBook?.coverImage,
     level: localBook?.level ?? 1,
-    totalLessons: localBook?.totalLessons ?? 4,
-    currentLesson: Math.max(1, Math.min(4, Math.floor(progress * 4) + 1)),
+    totalLessons: 10,
+    currentLesson: Math.max(1, Math.min(10, Math.floor(progress * 10) + 1)),
     progress,
     status: progress >= 1 ? 'done' : progress > 0 ? 'reading' : 'available',
     currentText: book.lessonName ?? localBook?.currentText ?? 'Keep reading',
@@ -395,7 +393,7 @@ export async function loginParent(username: string, password: string): Promise<P
     parentAccessToken: 'mock-parent-token',
     refreshToken: 'mock-refresh-token',
     isNewParent: false,
-    parent: { parentId: 1, nickname: parent?.nickname ?? '부모님', profileCount: mockProfiles().length },
+    parent: { parentId: 1, nickname: parent?.nickname ?? 'Parent', profileCount: mockProfiles().length },
   }
   saveParentSession(data)
   return data
@@ -437,9 +435,9 @@ export async function kakaoLoginMock(): Promise<ParentAuthData> {
     parentAccessToken: 'mock-kakao-parent-token',
     refreshToken: 'mock-kakao-refresh-token',
     isNewParent: false,
-    parent: { parentId: 1, nickname: '카카오 보호자', profileCount: mockProfiles().length },
+    parent: { parentId: 1, nickname: 'Kakao Parent', profileCount: mockProfiles().length },
   }
-  window.localStorage.setItem(MOCK_PARENT_KEY, JSON.stringify({ username: 'kakao', password: '', nickname: '카카오 보호자' }))
+  window.localStorage.setItem(MOCK_PARENT_KEY, JSON.stringify({ username: 'kakao', password: '', nickname: 'Kakao Parent' }))
   saveParentSession(data)
   return data
 }
@@ -630,6 +628,7 @@ export function usesBackendApi(): boolean {
 export interface LearningSessionData {
   sessionId: number
   bookId: number
+  chapterNumber?: number
   isNew?: boolean
   status: 'IN_PROGRESS' | 'EXITED' | 'COMPLETED'
   currentCourse: CourseType
@@ -778,8 +777,8 @@ async function postForm<T>(path: string, form: FormData, token?: string | null):
   return handleResponse(res, 'POST', path)
 }
 
-export async function startOrResumeLearningSession(bookId: string): Promise<LearningSessionData> {
-  return post<LearningSessionData>(`/books/${bookId}/sessions`, {}, getProfileToken())
+export async function startOrResumeLearningSession(bookId: string, chapterNumber = 1, restart = false): Promise<LearningSessionData> {
+  return post<LearningSessionData>(`/books/${bookId}/sessions`, { chapterNumber, restart }, getProfileToken())
 }
 
 export async function fetchLearningSession(sessionId: number): Promise<LearningSessionData> {

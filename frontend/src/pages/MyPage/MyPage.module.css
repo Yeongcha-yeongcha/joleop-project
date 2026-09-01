@@ -1,30 +1,20 @@
 .page {
-  min-height: 100dvh;
-  padding: 28px 18px 124px;
+  height: 100dvh;
+  padding:
+    calc(28px + env(safe-area-inset-top, 0px))
+    18px
+    calc(124px + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(circle at 78% 8%, rgba(255, 203, 91, 0.46) 0 12%, transparent 29%),
     linear-gradient(180deg, #ff9633 0 132px, #fff8df 132px 100%);
   color: #2c2115;
   box-sizing: border-box;
   overflow-y: auto;
-}
-
-.backButton {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #a45012;
-  box-shadow: 0 4px 0 rgba(126, 77, 8, 0.16);
-  font-size: 22px;
-  font-weight: 900;
+  overscroll-behavior: contain;
 }
 
 .header {
-  margin-top: 34px;
+  margin-top: 6px;
   display: grid;
   justify-items: center;
   gap: 8px;

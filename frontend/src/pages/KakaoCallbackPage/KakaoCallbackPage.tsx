@@ -8,7 +8,7 @@ const processingCodes = new Set<string>()
 export default function KakaoCallbackPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [message, setMessage] = useState('카카오 로그인 중...')
+  const [message, setMessage] = useState('Kakao login is loading...')
 
   useEffect(() => {
     const code = searchParams.get('code')
@@ -16,13 +16,13 @@ export default function KakaoCallbackPage() {
     const error = searchParams.get('error')
 
     if (error) {
-      setMessage('카카오 로그인이 취소되었어요.')
+      setMessage('Kakao login was canceled.')
       window.setTimeout(() => navigate('/start'), 900)
       return
     }
 
     if (!code) {
-      setMessage('카카오 인증 코드를 찾을 수 없어요.')
+      setMessage('We could not find the Kakao code.')
       window.setTimeout(() => navigate('/start'), 900)
       return
     }
@@ -40,7 +40,7 @@ export default function KakaoCallbackPage() {
       return
     }
     if (processedState === 'failed') {
-      setMessage('새 카카오 로그인으로 다시 시도해주세요.')
+      setMessage('Please try Kakao login again.')
       window.setTimeout(() => navigate('/start'), 900)
       return
     }
@@ -57,7 +57,7 @@ export default function KakaoCallbackPage() {
         if (error instanceof ApiError) {
           setMessage(`${error.message} (${error.code ?? error.status})`)
         } else {
-          setMessage('카카오 로그인에 실패했어요.')
+          setMessage('Kakao login failed.')
         }
         window.setTimeout(() => navigate('/start'), 1800)
       })

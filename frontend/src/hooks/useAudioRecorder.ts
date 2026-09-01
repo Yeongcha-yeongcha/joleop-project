@@ -15,7 +15,7 @@ export function useAudioRecorder() {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     } catch {
       setState('idle')
-      throw new Error('마이크 권한이 필요해요.')
+      throw new Error('Microphone permission is needed.')
     }
 
     const recorder = new MediaRecorder(stream)

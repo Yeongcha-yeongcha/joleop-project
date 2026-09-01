@@ -30,13 +30,13 @@ export default function ProfileSelectPage() {
   }, [])
 
   const changeParentPassword = () => {
-    const nextPassword = window.prompt('새 계정 비밀번호를 입력해 주세요.')
+    const nextPassword = window.prompt('Type a new account password.')
     if (!nextPassword) return
     const raw = window.localStorage.getItem('yeongcha:mock-parent')
     if (raw) {
       window.localStorage.setItem('yeongcha:mock-parent', JSON.stringify({ ...JSON.parse(raw), password: nextPassword }))
     }
-    window.alert('비밀번호가 변경되었어요.')
+    window.alert('Your password changed.')
   }
 
   const handleLogout = async () => {
@@ -45,21 +45,21 @@ export default function ProfileSelectPage() {
   }
 
   const handleWithdrawal = () => {
-    window.alert('회원 탈퇴는 백엔드 계정 삭제 API가 연결되면 사용할 수 있어요.')
+    window.alert('Account delete will work when the backend API is ready.')
   }
 
   return (
     <main className={styles.page}>
-      <button className={styles.settingsButton} onClick={() => setSettingsOpen(true)} aria-label="보호자 설정">
+      <button className={styles.settingsButton} onClick={() => setSettingsOpen(true)} aria-label="Parent settings">
         <SettingsIcon />
       </button>
       <header className={styles.header}>
-        <h1>누가 배울까요?</h1>
-        <p>프로필을 선택해 주세요</p>
+        <h1>Who will learn?</h1>
+        <p>Pick your profile.</p>
       </header>
 
       <section className={styles.grid}>
-        {isLoading && <p className={styles.loading}>불러오는 중...</p>}
+        {isLoading && <p className={styles.loading}>Loading...</p>}
         {profiles.map((profile) => (
           <button key={profile.profileId} className={styles.profile} onClick={() => navigate(`/profiles/${profile.profileId}/pin`)}>
             <span
@@ -71,30 +71,30 @@ export default function ProfileSelectPage() {
             <span>{profile.nickname}</span>
           </button>
         ))}
-        <button className={styles.addProfile} onClick={() => navigate('/profiles/new')} aria-label="유저 추가">
+        <button className={styles.addProfile} onClick={() => navigate('/profiles/new')} aria-label="Add user">
           <span>+</span>
-          <strong>유저 추가</strong>
+          <strong>Add User</strong>
         </button>
       </section>
 
       {settingsOpen && (
         <div className={styles.settingsBackdrop}>
-          <section className={styles.settingsPanel} role="dialog" aria-modal="true" aria-label="보호자 설정">
-            <button className={styles.closeButton} onClick={() => setSettingsOpen(false)} aria-label="닫기">×</button>
-            <h2>보호자 설정</h2>
+          <section className={styles.settingsPanel} role="dialog" aria-modal="true" aria-label="Parent settings">
+            <button className={styles.closeButton} onClick={() => setSettingsOpen(false)} aria-label="Close">×</button>
+            <h2>Parent Settings</h2>
             <div className={styles.settingCard}>
-              <strong>기본 정보</strong>
-              <span>아이디: {parent?.username ?? 'parent'}</span>
-              <span>이름: {parent?.nickname ?? '보호자'}</span>
+              <strong>Basic Info</strong>
+              <span>ID: {parent?.username ?? 'parent'}</span>
+              <span>Name: {parent?.nickname ?? 'Parent'}</span>
             </div>
             <div className={styles.settingCard}>
-              <strong>계정 관리</strong>
-              <button onClick={changeParentPassword}>비밀번호 변경</button>
-              <button onClick={() => window.alert('카카오 연동 관리는 백엔드 연동 상태에 맞춰 연결하면 됩니다.')}>
-                카카오 연동 로그인
+              <strong>Account</strong>
+              <button onClick={changeParentPassword}>Change Password</button>
+              <button onClick={() => window.alert('Kakao link will work when the backend is ready.')}>
+                Kakao Login
               </button>
-              <button onClick={handleLogout}>로그아웃</button>
-              <button className={styles.dangerButton} onClick={handleWithdrawal}>회원 탈퇴</button>
+              <button onClick={handleLogout}>Log Out</button>
+              <button className={styles.dangerButton} onClick={handleWithdrawal}>Delete Account</button>
             </div>
           </section>
         </div>

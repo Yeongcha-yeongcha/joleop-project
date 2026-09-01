@@ -23,15 +23,15 @@ export const LESSONS: Lesson[] = [
       { id: 'p5', text: 'Dori jumps, flaps, and flies over the sunny hill.', imageColor: '#D4B8E8' },
     ],
     quiz: {
-      question: 'Q. Dori는 어디에 살고 있나요?',
+      question: 'Q. Where does Dori live?',
       sentence: 'Dori lives in a warm',
       answer: 'cave.',
       imageColor: '#D4B8E8',
     },
     roleplay: {
       thumbnailColor: '#C4D4B8',
-      mission: 'Dori가 날 수 있도록 영어로 용기를 주고 방법을 알려주기',
-      missionSummary: 'Dori 날기 도와주기',
+      mission: 'Help Dori fly. Give him courage in English.',
+      missionSummary: 'Help Dori fly',
       turns: [
         {
           npc: 'I want to fly, but I feel a little scared.',
@@ -60,15 +60,15 @@ export const LESSONS: Lesson[] = [
       { id: 'p4', text: 'They stir the lemonade until it tastes sweet.', imageColor: '#BFEA8A' },
     ],
     quiz: {
-      question: 'Q. Lina는 무엇을 땄나요?',
+      question: 'Q. What does Lina pick?',
       sentence: 'Lina picks three',
       answer: 'lemons.',
       imageColor: '#FFE07A',
     },
     roleplay: {
       thumbnailColor: '#FFE07A',
-      mission: '레모네이드 가게에서 공손하게 주문하고 고맙다고 말하기',
-      missionSummary: '레모네이드 주문하기',
+      mission: 'Order lemonade politely and say thank you.',
+      missionSummary: 'Order lemonade',
       turns: [
         { npc: 'Welcome! Would you like some fresh lemonade?', user: 'Yes, please.' },
         { npc: 'How many cups would you like?', user: 'One lemonade, please.' },
@@ -88,15 +88,15 @@ export const LESSONS: Lesson[] = [
       { id: 'p4', text: 'At the end, she draws her favorite snack.', imageColor: '#C8E7FF' },
     ],
     quiz: {
-      question: 'Q. Momo는 무엇 구름을 봤나요?',
+      question: 'Q. What clouds does Momo see?',
       sentence: 'Momo sees popcorn',
       answer: 'clouds.',
       imageColor: '#FFF0B5',
     },
     roleplay: {
       thumbnailColor: '#F8D2E5',
-      mission: 'Momo에게 좋아하는 간식을 말하고 질문 하나 하기',
-      missionSummary: '간식 박물관 대화하기',
+      mission: 'Tell Momo your favorite snack and ask one question.',
+      missionSummary: 'Talk at the snack museum',
       turns: [
         { npc: 'This museum is full of snacks! Which snack do you like?', user: 'I like cookies.' },
         { npc: 'Cookies are great! Do you have a question?', user: 'What is your favorite snack?' },

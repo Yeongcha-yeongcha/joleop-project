@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import {
   completeLearningSession,
@@ -35,10 +35,26 @@ import StatusScreen from '../../components/StatusScreen/StatusScreen'
 import QuizScreen from '../../components/QuizScreen/QuizScreen'
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { Lesson, LessonPage, QuizQuestion, RoleplayMission } from '../../types'
+import {
+  type ChapterResult,
+  messageForScore,
+  saveChapterResult,
+  starsForScore,
+} from '../../utils/chapterProgress'
 import styles from './LearnPage.module.css'
 
 type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
 type RepeatState = 'idle' | 'recording' | 'done'
+type ScoreBreakdown = ChapterResult['breakdown']
+type SpeechRate = 0.95 | 0.55
+
+interface ReadToken {
+  text: string
+  start: number
+  end: number
+  isWord: boolean
+  wordIndex: number | null
+}
 
 /** Must match the phaseExit animation duration in LearnPage.module.css */
 const PHASE_EXIT_MS = 230
@@ -63,9 +79,54 @@ function blankedDescriptionSentence(description: DescriptionData): string {
   return sourceText ?? ''
 }
 
+function getReadTokens(text: string): ReadToken[] {
+  const matches = text.matchAll(/\S+|\s+/g)
+  let wordIndex = -1
+  return Array.from(matches, (match) => {
+    const token = match[0]
+    const start = match.index ?? 0
+    const isWord = /\S/.test(token)
+    if (isWord) wordIndex += 1
+    return {
+      text: token,
+      start,
+      end: start + token.length,
+      isWord,
+      wordIndex: isWord ? wordIndex : null,
+    }
+  })
+}
+
+function wordIndexFromChar(tokens: ReadToken[], charIndex: number): number | null {
+  const token = tokens.find((item) => item.isWord && charIndex >= item.start && charIndex < item.end)
+  if (token?.wordIndex !== null && token?.wordIndex !== undefined) return token.wordIndex
+  return tokens.find((item) => item.isWord && charIndex < item.end)?.wordIndex ?? null
+}
+
+function pickKidFriendlyVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  const englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'))
+  const preferredNames = [
+    'child',
+    'kid',
+    'junior',
+    'jenny',
+    'aria',
+    'samantha',
+    'google us english',
+    'zira',
+    'karen',
+    'tessa',
+  ]
+  return englishVoices.find((voice) => {
+    const label = `${voice.name} ${voice.voiceURI}`.toLowerCase()
+    return preferredNames.some((name) => label.includes(name))
+  }) ?? englishVoices[0] ?? null
+}
+
 export default function LearnPage() {
   const navigate = useNavigate()
   const { bookId } = useParams<{ bookId: string }>()
+  const [searchParams] = useSearchParams()
   const { selectedBook } = useAppStore()
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
@@ -83,10 +144,51 @@ export default function LearnPage() {
   const [sttResult, setSttResult] = useState<SpeechResult | null>(null)
   const [roleplayProgress, setRoleplayProgress] = useState(0.70)
   const [isExiting, setIsExiting] = useState(false)
+  const [repeatScores, setRepeatScores] = useState<number[]>([])
+  const [descriptionScores, setDescriptionScores] = useState<number[]>([])
+  const [roleplayScores, setRoleplayScores] = useState<number[]>([])
+  const [completionResult, setCompletionResult] = useState<ChapterResult | null>(null)
+  const [speechRate, setSpeechRate] = useState<SpeechRate>(0.95)
+  const [speechVoices, setSpeechVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [speakingWordIndex, setSpeakingWordIndex] = useState<number | null>(null)
 
   const recorder = useAudioRecorder()
   const { play: playAudio, stop: stopAudio } = useAudioPlayer()
   const isBackendMode = usesBackendApi()
+  const chapterNumber = Math.max(1, Number.parseInt(searchParams.get('chapter') || String(selectedBook?.currentLesson ?? 1), 10) || 1)
+  const shouldRestart = searchParams.has('restart')
+
+  const average = (scores: number[]) => scores.length
+    ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+    : null
+
+  const buildLocalResult = useCallback((fallbackScore = 85): ChapterResult | null => {
+    if (!bookId) return null
+    const breakdown: ScoreBreakdown = {
+      repeat: average(repeatScores),
+      description: average(descriptionScores),
+      roleplay: average(roleplayScores),
+    }
+    const availableScores = Object.values(breakdown).filter((score): score is number => score !== null)
+    const totalScore = availableScores.length
+      ? Math.round(availableScores.reduce((sum, score) => sum + score, 0) / availableScores.length)
+      : fallbackScore
+    return {
+      bookId,
+      chapterNumber,
+      stars: starsForScore(totalScore),
+      totalScore,
+      message: messageForScore(totalScore),
+      completedAt: new Date().toISOString(),
+      breakdown,
+    }
+  }, [bookId, chapterNumber, descriptionScores, repeatScores, roleplayScores])
+
+  const showCompletion = useCallback((result: ChapterResult | null) => {
+    if (!result) return
+    saveChapterResult(result)
+    setCompletionResult(result)
+  }, [])
 
   const loadBackendCourse = useCallback(async (session: LearningSessionData) => {
     setBackendSession(session)
@@ -127,21 +229,21 @@ export default function LearnPage() {
     setIsLoading(true)
     setError(null)
     if (isBackendMode) {
-      startOrResumeLearningSession(bookId)
+      startOrResumeLearningSession(bookId, chapterNumber, shouldRestart)
         .then(loadBackendCourse)
-        .catch(() => setError('학습 세션을 불러오지 못했어요.'))
+        .catch(() => setError('Could not load your lesson.'))
         .finally(() => setIsLoading(false))
       return
     }
-    const lessonId = `${bookId}-lesson-${selectedBook?.currentLesson ?? 1}`
+    const lessonId = `${bookId}-lesson-${chapterNumber}`
     fetchLesson(bookId, lessonId)
       .then((l) => {
-        if (!l) setError('레슨을 찾을 수 없어요.')
+        if (!l) setError('Could not find this lesson.')
         else setLesson(l)
       })
-      .catch(() => setError('레슨을 불러오지 못했어요.'))
+      .catch(() => setError('Could not load this lesson.'))
       .finally(() => setIsLoading(false))
-  }, [bookId, selectedBook, isBackendMode, loadBackendCourse])
+  }, [bookId, chapterNumber, shouldRestart, selectedBook, isBackendMode, loadBackendCourse])
 
   useEffect(() => {
     void Promise.resolve().then(load)
@@ -187,13 +289,61 @@ export default function LearnPage() {
     finalNpc: 'Great job!',
   } : undefined
 
-  // 읽기/따라말하기 단계에서 페이지 바뀔 때 오디오 자동 재생
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return
+    const updateVoices = () => setSpeechVoices(window.speechSynthesis.getVoices())
+    updateVoices()
+    window.speechSynthesis.addEventListener('voiceschanged', updateVoices)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', updateVoices)
+  }, [])
+
+  const speakCurrentPage = useCallback(() => {
+    if (!currentPage?.text || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    setSpeakingWordIndex(null)
+    const utterance = new SpeechSynthesisUtterance(currentPage.text)
+    const tokens = getReadTokens(currentPage.text)
+    const voice = pickKidFriendlyVoice(speechVoices)
+    utterance.lang = 'en-US'
+    if (voice) utterance.voice = voice
+    utterance.rate = speechRate
+    utterance.pitch = 1.28
+    utterance.volume = 1
+    utterance.onboundary = (event) => {
+      if (event.name === 'word' || event.charIndex >= 0) {
+        setSpeakingWordIndex(wordIndexFromChar(tokens, event.charIndex))
+      }
+    }
+    utterance.onend = () => setSpeakingWordIndex(null)
+    utterance.onerror = () => setSpeakingWordIndex(null)
+    window.speechSynthesis.speak(utterance)
+  }, [currentPage?.text, speechRate, speechVoices])
+
+  const goToFirstPage = useCallback(() => {
+    if (isBackendMode && bookId) {
+      navigate(`/learn/${bookId}?chapter=${chapterNumber}&restart=${Date.now()}`, { replace: true })
+      return
+    }
+    setPageIndex(0)
+    setRepeatState('idle')
+    setSttResult(null)
+    setSpeakingWordIndex(null)
+  }, [bookId, chapterNumber, isBackendMode, navigate])
+
+  // Auto-play audio when the reading or speaking page changes.
   useEffect(() => {
     if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
       playAudio(currentPage.audioUrl)
     }
-    return () => { stopAudio() }
-  }, [phase, pageIndex, currentPage?.audioUrl, playAudio, stopAudio])
+    if ((phase === 'reading' || phase === 'repeat') && currentPage?.text) {
+      speakCurrentPage()
+    }
+    return () => {
+      stopAudio()
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+      setSpeakingWordIndex(null)
+    }
+  }, [phase, pageIndex, currentPage?.audioUrl, currentPage?.text, playAudio, stopAudio, speakCurrentPage])
 
   // Progress: reading 0–30%, repeat 30–60%, quiz 65%, roleplay 70–100%
   const lessonProgress =
@@ -257,7 +407,7 @@ export default function LearnPage() {
           return
         }
       } catch {
-        setError('진도를 저장하지 못했어요.')
+        setError('Could not save your progress.')
       }
       return
     }
@@ -275,10 +425,10 @@ export default function LearnPage() {
         goToPhase('quiz')
       } else {
         if (bookId && lesson) postProgress(bookId, lesson.id)
-        navigate('/', { replace: true })
+        showCompletion(buildLocalResult())
       }
     }
-  }, [isBackendMode, backendSession, phase, reading, repeat, pageIndex, totalPages, navigate, bookId, lesson, goToPhase])
+  }, [isBackendMode, backendSession, phase, reading, repeat, pageIndex, totalPages, bookId, lesson, goToPhase, buildLocalResult, showCompletion])
 
   const handleMicTap = useCallback(async () => {
     if (repeatState !== 'idle') return
@@ -294,6 +444,7 @@ export default function LearnPage() {
           }))
         : await postSpeechRecognize(blob, currentPage?.text ?? '')
       setSttResult(result)
+      setRepeatScores((scores) => [...scores, Math.round(result.score * 100)])
       setRepeatState('done')
     } catch {
       setRepeatState('idle')
@@ -302,11 +453,13 @@ export default function LearnPage() {
 
   const handleDescriptionRecord = useCallback(async (audio: Blob) => {
     if (!backendSession || !description) return
-    await createDescriptionAttempt(
+    const attempt = await createDescriptionAttempt(
       backendSession.sessionId,
       description.content.questionId,
       audio,
     )
+    setDescriptionScores((scores) => [...scores, attempt.score])
+    return attempt.score
   }, [backendSession, description])
 
   const handleDescriptionNext = useCallback(async () => {
@@ -314,7 +467,7 @@ export default function LearnPage() {
       if (lesson?.roleplay) goToPhase('roleplay')
       else {
         if (bookId && lesson) postProgress(bookId, lesson.id)
-        navigate('/', { replace: true })
+        showCompletion(buildLocalResult())
       }
       return
     }
@@ -334,9 +487,9 @@ export default function LearnPage() {
         setDescription(next)
       }
     } catch {
-      setError('묘사 학습 진도를 저장하지 못했어요.')
+      setError('Could not save your quiz progress.')
     }
-  }, [isBackendMode, backendSession, description, lesson, bookId, navigate, goToPhase])
+  }, [isBackendMode, backendSession, description, lesson, bookId, goToPhase, buildLocalResult, showCompletion])
 
   const handleRoleplayRecord = useCallback(async (audio: Blob) => {
     if (!backendSession || !roleplay) {
@@ -348,22 +501,39 @@ export default function LearnPage() {
       audio,
     )
     setRoleplayProgress(0.70 + (result.courseProgress / 100) * 0.30)
+    setRoleplayScores((scores) => [...scores, result.score])
     return {
       userTranscript: result.user.transcript,
       characterText: result.character.text,
       missionCompleted: result.missionCompleted,
+      score: result.score,
     }
   }, [backendSession, roleplay])
 
   const finishBackendSession = useCallback(async () => {
     if (!backendSession) return
-    await completeLearningSession(backendSession.sessionId)
-    navigate('/', { replace: true })
-  }, [backendSession, navigate])
+    const result = await completeLearningSession(backendSession.sessionId)
+    if (!bookId) return
+    showCompletion({
+      bookId,
+      chapterNumber,
+      stars: result.stars,
+      totalScore: result.totalScore,
+      message: messageForScore(result.totalScore),
+      completedAt: result.completedAt,
+      breakdown: {
+        repeat: average(repeatScores),
+        description: average(descriptionScores),
+        roleplay: average(roleplayScores),
+      },
+    })
+  }, [backendSession, bookId, chapterNumber, descriptionScores, repeatScores, roleplayScores, showCompletion])
 
   const lessonTitle = selectedBook
-    ? `${selectedBook.title} - lesson ${selectedBook.currentLesson}`
+    ? `${selectedBook.title} - Chapter ${chapterNumber}`
     : lesson?.title ?? ''
+  const displayPage = currentPage as LessonPage | undefined
+  const displayReadTokens = useMemo(() => getReadTokens(displayPage?.text ?? ''), [displayPage?.text])
 
   if (isLoading || error) {
     return (
@@ -379,7 +549,31 @@ export default function LearnPage() {
   const showNextBtn = phase === 'reading' || repeatState === 'done'
   const activeQuiz = isBackendMode ? backendQuiz : lesson?.quiz
   const activeRoleplay = isBackendMode ? backendRoleplay : lesson?.roleplay
-  const displayPage = currentPage as LessonPage | undefined
+
+  if (completionResult) {
+    return (
+      <div className={styles.page}>
+        <section className={styles.resultOverlay}>
+          <div className={styles.resultCard}>
+            <span className={styles.resultBadge}>Chapter {completionResult.chapterNumber}</span>
+            <h1>{completionResult.message}</h1>
+            <div className={styles.resultStars} aria-label={`${completionResult.stars} stars`}>
+              {[0, 1, 2].map((index) => (
+                <span key={index} className={index < completionResult.stars ? styles.starOn : styles.starOff}>
+                  ★
+                </span>
+              ))}
+            </div>
+            <strong>{completionResult.totalScore} points</strong>
+            <p>Your result is saved for your parent report.</p>
+            <button onClick={() => navigate(bookId ? `/books/${bookId}/chapters` : '/', { replace: true })}>
+              Back to Chapters
+            </button>
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -400,7 +594,7 @@ export default function LearnPage() {
                 return
               }
               if (bookId && lesson) postProgress(bookId, lesson.id)
-              navigate('/', { replace: true })
+              showCompletion(buildLocalResult())
             }}
           />
         )}
@@ -416,10 +610,22 @@ export default function LearnPage() {
         {(phase === 'reading' || phase === 'repeat') && (
           <>
             <div className={styles.sceneContent}>
+              <div className={styles.audioControls} aria-label="Audio controls">
+                <button onClick={goToFirstPage}>First</button>
+                <div className={styles.rateToggle}>
+                  <button className={speechRate === 0.95 ? styles.activeRate : ''} onClick={() => setSpeechRate(0.95)}>
+                    Normal
+                  </button>
+                  <button className={speechRate === 0.55 ? styles.activeRate : ''} onClick={() => setSpeechRate(0.55)}>
+                    Slow
+                  </button>
+                </div>
+                <button onClick={speakCurrentPage}>Listen</button>
+              </div>
               <div
                 className={styles.illustration}
                 style={{ background: displayPage?.imageColor }}
-                aria-label="동화 일러스트"
+                aria-label="Story picture"
               >
                 {displayPage?.imageUrl
                   ? <img src={displayPage.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -442,7 +648,18 @@ export default function LearnPage() {
                     repeatState === 'done' ? styles.repeatDone :
                                              styles.repeatIdle
                   }`}>
-                    {displayPage?.text}
+                    {displayReadTokens.map((token, tokenIndex) => (
+                      <span
+                        key={`${token.text}-${token.start}-${tokenIndex}`}
+                        className={
+                          token.isWord && speakingWordIndex !== null && token.wordIndex === speakingWordIndex
+                            ? styles.spokenWord
+                            : undefined
+                        }
+                      >
+                        {token.text}
+                      </span>
+                    ))}
                   </p>
                 )}
               </div>
@@ -450,19 +667,19 @@ export default function LearnPage() {
 
             <div className={styles.bottomArea}>
               {showNextBtn ? (
-                <button className={styles.imgBtn} onClick={goToNextScene} aria-label="다음">
-                  <img src={IMAGES.nextBtnActive} alt="다음" className={styles.btnImg} />
+                <button className={styles.imgBtn} onClick={goToNextScene} aria-label="Next">
+                  <img src={IMAGES.nextBtnActive} alt="Next" className={styles.btnImg} />
                 </button>
               ) : (
                 <button
                   className={styles.imgBtn}
                   onClick={handleMicTap}
                   disabled={repeatState === 'recording'}
-                  aria-label={repeatState === 'recording' ? '녹음 중...' : '탭하여 말하기'}
+                  aria-label={repeatState === 'recording' ? 'Recording...' : 'Tap to speak'}
                 >
                   <img
                     src={repeatState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
-                    alt={repeatState === 'recording' ? '녹음 중' : '탭하여 말하기'}
+                    alt={repeatState === 'recording' ? 'Recording' : 'Tap to speak'}
                     className={`${styles.btnImg} ${repeatState === 'recording' ? styles.recording : ''}`}
                   />
                 </button>

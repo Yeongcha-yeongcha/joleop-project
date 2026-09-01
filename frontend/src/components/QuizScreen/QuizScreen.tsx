@@ -11,7 +11,7 @@ type QuizState = 'idle' | 'recording' | 'done'
 interface Props {
   quiz: QuizQuestion
   onNext: () => void
-  onRecord?: (audio: Blob) => Promise<void>
+  onRecord?: (audio: Blob) => Promise<void | number>
 }
 
 export default function QuizScreen({ quiz, onNext, onRecord }: Props) {
@@ -46,7 +46,7 @@ export default function QuizScreen({ quiz, onNext, onRecord }: Props) {
         <div
           className={styles.illustration}
           style={{ background: quiz.imageColor }}
-          aria-label="퀴즈 일러스트"
+          aria-label="Quiz picture"
         >
           {quiz.imageUrl
             ? <img src={quiz.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -71,18 +71,18 @@ export default function QuizScreen({ quiz, onNext, onRecord }: Props) {
 
       <div className={styles.bottomArea}>
         {state === 'done' ? (
-          <button className={styles.imgBtn} onClick={onNext} aria-label="다음">
-            <img src={IMAGES.nextBtnActive} alt="다음" className={styles.btnImg} />
+          <button className={styles.imgBtn} onClick={onNext} aria-label="Next">
+            <img src={IMAGES.nextBtnActive} alt="Next" className={styles.btnImg} />
           </button>
         ) : (
           <button
             className={styles.imgBtn}
             onClick={handleMicTap}
-            aria-label={state === 'recording' ? '녹음 중...' : '탭하여 말하기'}
+            aria-label={state === 'recording' ? 'Recording...' : 'Tap to speak'}
           >
             <img
               src={state === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
-              alt={state === 'recording' ? '녹음 중' : '탭하여 말하기'}
+              alt={state === 'recording' ? 'Recording' : 'Tap to speak'}
               className={`${styles.btnImg} ${state === 'recording' ? styles.recording : ''}`}
             />
           </button>
