@@ -261,6 +261,16 @@ python -m scripts.generate_roleplay_quizzes \
 `*_accepted_text_roleplays.json`입니다. `--output`으로 경로를 직접 지정할 수도
 있으며 원본 accepted text 파일은 변경하지 않습니다.
 
+Level 1~3 동화와 각 레벨의 묘사/롤플레이 문제를 한 번에 생성하려면 단일
+Level 1 책 plan을 통합 스크립트에 전달합니다. 각 생성기는 subprocess가 아닌
+Python import로 연결되며, 모든 결과 경로는 실행 폴더의
+`all_content_manifest.json`에도 기록됩니다.
+
+```bash
+python -m scripts.generate_all_content plans/test1_book_plan.json \
+  --run-name test1_all
+```
+
 초안의 `parse_status`가 `invalid`이면 Llama JSON이 잘렸거나 형식이 깨진
 상태입니다. 원본 확인을 위해 초안 파일에는 보존하지만 Qwen 평가와 다음 Lesson의
 연속성 문맥에는 사용하지 않습니다. 같은 Lesson과 같은 episode beat로 다시 시도합니다.

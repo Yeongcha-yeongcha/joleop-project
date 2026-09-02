@@ -97,6 +97,12 @@ def accepted_sentences(item: dict[str, Any]) -> list[str]:
 	return sentences
 
 
+def accepted_story_title(item: dict[str, Any], plan: dict[str, Any]) -> str:
+	"""Return the Level 1 title that must be preserved in every rewrite."""
+	title = item.get("story_title") or plan.get("story_title")
+	return str(title).strip() if title else ""
+
+
 def episode_number(item: dict[str, Any], fallback: int) -> int:
 	theme = str(item.get("theme", ""))
 	try:
@@ -108,6 +114,7 @@ def episode_number(item: dict[str, Any], fallback: int) -> int:
 def build_rewrite_prompt(
 	*,
 	base_sentences: list[str],
+	story_title: str,
 	episode: int,
 	total_episodes: int,
 	level: int,
@@ -165,6 +172,7 @@ Rewrite the reference lesson below for English Level {level}.
 - Use AR {AR_LEVELS[level]} difficulty.
 {language_rules}
 - Do not copy the Level 1 wording. Change language, not story content.
+- Keep the exact same story_title: {story_title}
 - Keep the story emotionally safe, concrete, visual, and easy to read aloud.
 
 Reference Level 1 lesson:
@@ -328,11 +336,18 @@ async def rewrite_lesson(
 	base_sentences = accepted_sentences(base_item)
 	if not base_sentences:
 		return None
+	story_title = accepted_story_title(base_item, plan)
+	if not story_title:
+		raise ValueError(
+			f"Level 1 lesson {episode} does not contain a story_title, and the plan "
+			"does not provide a fallback story_title."
+		)
 
 	beats = plan["episode_beats"]
 	beat = str(beats[episode - 1]) if episode <= len(beats) else str(base_item.get("theme", ""))
 	prompt = build_rewrite_prompt(
 		base_sentences=base_sentences,
+		story_title=story_title,
 		episode=episode,
 		total_episodes=total_episodes,
 		level=level,
@@ -468,6 +483,7 @@ async def rewrite_lesson(
 			return {
 				"level": level,
 				"lesson_number": episode,
+				"story_title": story_title,
 				"theme": beat,
 				"lesson": sentences,
 				"quality_score": last_score,
@@ -537,6 +553,7 @@ def accepted_text_payload(
 		payload.append({
 			"level": level,
 			"lesson_number": lesson_number,
+			"story_title": item.get("story_title", ""),
 			"theme": item.get("theme", ""),
 			"lesson": [
 				{f"page{page_number}": sentence}

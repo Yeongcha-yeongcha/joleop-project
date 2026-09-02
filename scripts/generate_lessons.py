@@ -198,6 +198,7 @@ def lesson_to_dict(lesson) -> dict[str, Any]:
         "book_id": lesson.book_id,
         "level": lesson.level,
         "episode": lesson.episode,
+        "story_title": lesson.story_title,
         "pages": [
             {
                 "page_number": page.page_number,
@@ -838,6 +839,7 @@ def write_accepted_text_output(result: dict[str, Any], output_path: Path) -> Pat
             {
                 "level": level,
                 "lesson_number": lesson_number,
+                "story_title": lesson.get("story_title", ""),
                 "theme": item.get("theme") or lesson.get("theme", ""),
                 "lesson": [
                     {

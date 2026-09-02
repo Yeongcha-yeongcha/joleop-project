@@ -58,6 +58,7 @@ class Lesson:
     book_id: str
     level: int
     episode: int
+    story_title: str = ""               # LLM이 생성한 동화책 제목
     pages: list[StoryPage] = field(default_factory=list)
     description_scenes: list[DescriptionScene] = field(default_factory=list)
     roleplay_scenarios: list[RoleplayScenario] = field(default_factory=list)

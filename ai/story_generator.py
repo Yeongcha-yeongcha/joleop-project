@@ -291,6 +291,19 @@ def extract_story_sentences_from_json(text: str) -> list[str]:
     return [sentence for sentence in sentences if sentence]
 
 
+def extract_story_title(text: str) -> str:
+    """LLM의 JSON 응답에서 생성된 동화책 제목을 추출한다."""
+    try:
+        data = parse_json_object(text)
+    except Exception:
+        return ""
+
+    title = data.get("story_title") or data.get("title")
+    if not isinstance(title, str):
+        return ""
+    return re.sub(r"\s+", " ", title).strip().strip("\"'“”")
+
+
 def looks_like_story_sentence(sentence: str) -> bool:
     lowered = sentence.lower()
     metadata_markers = [
@@ -830,7 +843,11 @@ async def generate_lesson(
 
     # 후처리는 사람이 수행한다. 여기서는 구조를 검사하거나 자동 수리하지 않는다.
     sentences = extract_story_sentences(best_text)
+    story_title = extract_story_title(best_text)
     min_pages, max_pages = page_range_for_book(book_id)
+    if not story_title:
+        print("  ✗ 동화 초안에 책 제목이 없습니다")
+        return None
     if not sentences or not min_pages <= len(sentences) <= max_pages:
         print(
             f"  ✗ 동화 초안 페이지 수가 올바르지 않습니다: "
@@ -866,6 +883,7 @@ async def generate_lesson(
         book_id=book_id,
         level=level,
         episode=episode,
+        story_title=story_title,
         pages=pages,
         description_scenes=[],
         roleplay_scenarios=[],
@@ -948,6 +966,7 @@ async def generate_lesson_if_quality_passes(
             continue
 
         sentences = extract_story_sentences(best_text)
+        story_title = extract_story_title(best_text)
         min_pages, max_pages = page_range_for_book(book_id)
         page_count_valid = min_pages <= len(sentences) <= max_pages
         if on_draft:
@@ -959,6 +978,7 @@ async def generate_lesson_if_quality_passes(
                 "quality_attempt": quality_attempt,
                 "story_model": MODELS.story_model,
                 "raw_story": best_text,
+                "story_title": story_title,
                 "extracted_sentences": sentences,
                 "parse_status": "valid" if sentences else "invalid",
                 "page_count": len(sentences),
@@ -999,6 +1019,18 @@ async def generate_lesson_if_quality_passes(
                 continue
             page_count_valid = min_pages <= len(sentences) <= max_pages
             print(f"  → JSON 자동 수리 완료 ({len(sentences)}문장 추출)")
+
+        if not story_title:
+            best_failure = {
+                "theme": theme,
+                "accepted": False,
+                "score": 0,
+                "reason": "Draft JSON did not contain a story_title.",
+                "raw_story": best_text,
+                "extracted_sentences": sentences,
+            }
+            print(f"  초안 재생성 {quality_attempt}회차: 책 제목 누락")
+            continue
 
         if not page_count_valid:
             best_failure = {
@@ -1115,6 +1147,7 @@ async def generate_lesson_if_quality_passes(
         book_id=book_id,
         level=level,
         episode=episode,
+        story_title=story_title,
         pages=pages,
         description_scenes=[],
         roleplay_scenarios=[],
@@ -1123,6 +1156,7 @@ async def generate_lesson_if_quality_passes(
     return lesson, {
         "theme": theme,
         "accepted": True,
+        "story_title": story_title,
         "score": score,
         "reason": evaluation.get("reason", ""),
         "evaluation": evaluation,
