@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import type { UserStats } from '../../types'
 import styles from './StatsBar.module.css'
 
@@ -32,16 +33,61 @@ function StatIcon({ type }: { type: 'streak' | 'points' | 'energy' }) {
   )
 }
 
+function formatTimer(totalSeconds: number) {
+  const seconds = Math.max(0, Math.floor(totalSeconds))
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+function attendanceDays(streak: number) {
+  const today = new Date()
+  return Array.from({ length: Math.min(Math.max(streak, 0), 30) }, (_, index) => {
+    const day = new Date(today)
+    day.setDate(today.getDate() - index)
+    return day.toISOString().slice(0, 10)
+  }).reverse()
+}
+
 export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) {
+  const [showAttendance, setShowAttendance] = useState(false)
+  const [remainingSeconds, setRemainingSeconds] = useState(
+    stats.nextEnergyInSeconds ?? (stats.energyRechargeMinutes ?? 15) * 60,
+  )
+  const energy = stats.energy ?? Math.round(stats.xpPercent * (stats.maxEnergy ?? 5))
+  const maxEnergy = stats.maxEnergy ?? 5
+  const days = useMemo(() => {
+    if (stats.attendanceDates?.length) {
+      return [...stats.attendanceDates].sort((a, b) => a.localeCompare(b))
+    }
+    return attendanceDays(stats.streak)
+  }, [stats.attendanceDates, stats.streak])
+
+  useEffect(() => {
+    setRemainingSeconds(stats.nextEnergyInSeconds ?? (stats.energyRechargeMinutes ?? 15) * 60)
+  }, [stats.energyRechargeMinutes, stats.nextEnergyInSeconds])
+
+  useEffect(() => {
+    if (energy >= maxEnergy || remainingSeconds <= 0) return
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((value) => Math.max(0, value - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [energy, maxEnergy, remainingSeconds])
+
+  const energyLabel = energy >= maxEnergy
+    ? 'Full'
+    : `+1 in ${formatTimer(remainingSeconds)}`
+
   return (
-    <div className={`${styles.bar} ${tone === 'dark' ? styles.dark : ''}`}>
-      <div className={`${styles.stat} ${styles.streak}`}>
+    <div className={`${styles.bar} ${tone === 'dark' ? styles.dark : ''}`} data-tour="stats">
+      <button className={`${styles.stat} ${styles.streak}`} onClick={() => setShowAttendance(true)} aria-label="Open attendance calendar">
         <span className={styles.icon}><StatIcon type="streak" /></span>
         <span className={styles.meta}>
           <strong>{stats.streak}</strong>
           <em>Days</em>
         </span>
-      </div>
+      </button>
       <div className={`${styles.stat} ${styles.rewards}`}>
         <span className={styles.icon}><StatIcon type="points" /></span>
         <span className={styles.meta}>
@@ -52,10 +98,32 @@ export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) 
       <div className={`${styles.stat} ${styles.energy}`}>
         <span className={styles.icon}><StatIcon type="energy" /></span>
         <span className={styles.meta}>
-          <strong>{Math.round(stats.xpPercent * 5)}/5</strong>
+          <strong>{energy}/{maxEnergy}</strong>
           <em>Energy</em>
+          <small>{energyLabel}</small>
         </span>
       </div>
+      {showAttendance && (
+        <div className={styles.attendanceOverlay} role="dialog" aria-modal="true" aria-label="Attendance calendar">
+          <section className={styles.attendancePanel}>
+            <button className={styles.closeButton} onClick={() => setShowAttendance(false)} aria-label="Close attendance calendar">x</button>
+            <span>Learning Days</span>
+            <h2>{stats.streak} day streak</h2>
+            <div className={styles.calendarGrid}>
+              {days.map((day) => {
+                const date = new Date(`${day}T00:00:00`)
+                return (
+                  <b key={day}>
+                    <small>{date.toLocaleDateString('en-US', { weekday: 'short' })}</small>
+                    <strong>{date.getDate()}</strong>
+                  </b>
+                )
+              })}
+            </div>
+            <p>One finished lesson marks today as a learning day.</p>
+          </section>
+        </div>
+      )}
       {onCustomize && (
         <button className={styles.customizeButton} data-tour="customize" onClick={onCustomize} aria-label="Dress up">
           <span>🎨</span>

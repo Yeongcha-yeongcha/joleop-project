@@ -69,4 +69,9 @@ export interface UserStats {
   streak: number         // 연속 학습 일수
   hearts: number         // 보유 하트
   xpPercent: number      // XP 진행률 (0~1)
+  energy?: number
+  maxEnergy?: number
+  energyRechargeMinutes?: number
+  nextEnergyInSeconds?: number
+  attendanceDates?: string[]
 }

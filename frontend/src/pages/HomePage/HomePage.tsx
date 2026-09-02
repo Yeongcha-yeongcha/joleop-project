@@ -103,7 +103,7 @@ export default function HomePage() {
       className={`${styles.page} ${activeThemeClass ?? styles.theme_cream}`}
       style={{ '--home-background': `url("${activeBackground}")` } as CSSProperties}
     >
-      <header className={styles.header} data-tour="stats">
+      <header className={styles.header}>
         <StatsBar stats={userStats} tone={isDarkTheme ? 'dark' : 'light'} onCustomize={() => navigate('/customize')} />
       </header>
 

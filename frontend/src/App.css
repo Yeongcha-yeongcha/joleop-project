@@ -1,6 +1,6 @@
 .app-shell {
   width: 100%;
-  max-width: 430px;
+  max-width: 390px;
   height: 100dvh;
   min-height: 100dvh;
   position: relative;
@@ -38,7 +38,7 @@
 }
 
 /* On screens narrower than the app frame, expand to full width */
-@media (max-width: 430px) {
+@media (max-width: 390px) {
   .app-shell {
     max-width: 100%;
     box-shadow: none;

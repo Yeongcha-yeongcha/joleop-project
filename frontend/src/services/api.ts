@@ -49,6 +49,9 @@ interface BackendHomeData {
     hearts: number
     energy: number
     maxEnergy: number
+    energyRechargeMinutes?: number
+    nextEnergyInSeconds?: number
+    attendanceDates?: string[]
   }
   currentBook?: BackendCurrentBook | null
 }
@@ -202,7 +205,16 @@ function profileImageUrl(id?: number | null): string {
 
 export async function fetchUserStats(): Promise<UserStats> {
   if (BASE_URL && getProfileToken()) return get('/users/me/stats', getProfileToken())
-  return { streak: 15, hearts: 210, xpPercent: 0.7 }
+  return {
+    streak: 0,
+    hearts: 0,
+    xpPercent: 1,
+    energy: 5,
+    maxEnergy: 5,
+    energyRechargeMinutes: 15,
+    nextEnergyInSeconds: 0,
+    attendanceDates: [],
+  }
 }
 
 export async function fetchHome(): Promise<{ currentBook: Book | null; stats: UserStats }> {
@@ -215,6 +227,11 @@ export async function fetchHome(): Promise<{ currentBook: Book | null; stats: Us
         streak: data.status.streakDays,
         hearts: data.status.hearts,
         xpPercent: data.status.energy / maxEnergy,
+        energy: data.status.energy,
+        maxEnergy: data.status.maxEnergy,
+        energyRechargeMinutes: data.status.energyRechargeMinutes,
+        nextEnergyInSeconds: data.status.nextEnergyInSeconds,
+        attendanceDates: data.status.attendanceDates,
       },
     }
   }
@@ -762,10 +779,77 @@ export interface CompletionData {
   sessionId: number
   status: 'COMPLETED'
   bookId: number
+  chapterNumber?: number
   totalScore: number
   stars: number
   completedAt: string
   rewards: unknown
+  reviewCardsCreated?: number
+}
+
+export interface ReviewCardData {
+  cardId: number
+  bookId: number
+  bookTitle: string
+  chapterNumber: number
+  cardType?: 'WORD' | 'SENTENCE' | 'CHAT'
+  sourceSentence: string
+  clozeSentence: string
+  keyword: string
+  memoryScore: number
+  reviewCount: number
+  nextReviewAt: string
+}
+
+export interface ReviewDueData {
+  generatedAt: string
+  dueCount: number
+  limit: number
+  mode?: ReviewMode
+  memoryScore: number
+  cards: ReviewCardData[]
+}
+
+export interface ReviewSummaryData {
+  dueCount: number
+  totalCount: number
+  memoryScore: number
+  chapters: Array<{ bookId: number; chapterNumber: number }>
+  modes?: Array<{ mode: ReviewMode; title: string; description: string }>
+  gameTypes?: string[]
+}
+
+export type ReviewRating = 'AGAIN' | 'GOOD' | 'EASY'
+export type ReviewMode = 'SMART_MIX' | 'WORD_PLAYGROUND' | 'SENTENCE_QUEST' | 'STORY_TALK'
+
+export interface StoryTalkData {
+  mode: 'STORY_TALK'
+  topic: {
+    title: string
+    opening: string
+    targetWords: string[]
+    starterQuestions: string[]
+  }
+  cards: ReviewCardData[]
+}
+
+export interface StoryTalkMessageData {
+  reply: string
+  source: 'OLLAMA' | 'MOCK'
+  targetWords: string[]
+  cards: ReviewCardData[]
+}
+
+export interface ReviewAttemptData {
+  card: ReviewCardData
+  attempt: {
+    rating: ReviewRating
+    correct: boolean
+    score: number
+    memoryBefore: number
+    memoryAfter: number
+    nextReviewAt: string
+  }
 }
 
 async function postForm<T>(path: string, form: FormData, token?: string | null): Promise<T> {
@@ -848,4 +932,29 @@ export async function createRoleplayMessage(sessionId: number, missionId: number
 
 export async function completeLearningSession(sessionId: number): Promise<CompletionData> {
   return post<CompletionData>(`/learning-sessions/${sessionId}/complete`, {}, getProfileToken())
+}
+
+export async function fetchReviewSummary(): Promise<ReviewSummaryData> {
+  return get<ReviewSummaryData>('/reviews/summary', getProfileToken())
+}
+
+export async function fetchDueReviews(limit = 5, mode: ReviewMode = 'SMART_MIX'): Promise<ReviewDueData> {
+  return get<ReviewDueData>(`/reviews/due?limit=${limit}&mode=${mode}`, getProfileToken())
+}
+
+export async function submitReviewAttempt(
+  cardId: number,
+  rating: ReviewRating,
+  correct: boolean,
+  score: number,
+): Promise<ReviewAttemptData> {
+  return post<ReviewAttemptData>('/reviews/attempts', { cardId, rating, correct, score }, getProfileToken())
+}
+
+export async function fetchStoryTalk(limit = 5): Promise<StoryTalkData> {
+  return get<StoryTalkData>(`/reviews/story-talk?limit=${limit}`, getProfileToken())
+}
+
+export async function sendStoryTalkMessage(cardIds: number[], message: string): Promise<StoryTalkMessageData> {
+  return post<StoryTalkMessageData>('/reviews/story-talk/messages', { cardIds, message }, getProfileToken())
 }

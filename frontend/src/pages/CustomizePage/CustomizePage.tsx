@@ -79,6 +79,8 @@ export default function CustomizePage() {
   ), [themeUnlocks])
   const isThemeOwned = (theme: HomeBackgroundTheme) => theme.owned || unlockedThemeIds.has(theme.id)
   const isPopoOwned = (item: PopoItem) => popoUnlocks.includes(item.id)
+  const previewItems = popoItems.filter((item) => previewPopo[item.kind] === item.id)
+  const previewCost = previewItems.reduce((sum, item) => sum + (isPopoOwned(item) ? 0 : item.price), 0)
 
   const persistTheme = (theme: HomeBackgroundTheme, nextUnlocks = themeUnlocks, nextSpent = themeSpent) => {
     setSelectedThemeId(theme.id)
@@ -107,39 +109,48 @@ export default function CustomizePage() {
   }
 
   const choosePopoItem = (item: PopoItem) => {
-    const isEquipped = popoCustomization[item.kind] === item.id
-    const nextCustomization = { ...popoCustomization }
-    if (isEquipped) {
-      delete nextCustomization[item.kind]
-      setPreviewPopo(nextCustomization)
-      setPopoCustomization(nextCustomization)
-      window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(nextCustomization))
-      setMessage(`${item.name} is off.`)
+    const isPreviewed = previewPopo[item.kind] === item.id
+    const nextPreview = { ...previewPopo }
+    if (isPreviewed) {
+      delete nextPreview[item.kind]
+      setPreviewPopo(nextPreview)
+      setMessage(`${item.name} is off in preview.`)
       return
     }
 
-    nextCustomization[item.kind] = item.id
-    setPopoCustomization(nextCustomization)
-    setPreviewPopo(nextCustomization)
-    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(nextCustomization))
+    nextPreview[item.kind] = item.id
+    setPreviewPopo(nextPreview)
+    setMessage(isPopoOwned(item)
+      ? `${item.name} is in preview. Tap Save Look to wear it at home.`
+      : `${item.name} is preview only. Buy it with Save Look to wear it at home.`)
+  }
 
-    if (!isPopoOwned(item) && points >= item.price) {
-      const nextUnlocks = [...popoUnlocks, item.id]
-      setPopoUnlocks(nextUnlocks)
-      setPopoSpent(popoSpent + item.price)
-      window.localStorage.setItem(POPO_UNLOCKS_KEY, JSON.stringify(nextUnlocks))
-      window.localStorage.setItem(POPO_SPENT_KEY, String(popoSpent + item.price))
+  const savePopoLook = () => {
+    if (previewCost > points) {
+      setMessage(`You need ${previewCost} stars to save this look.`)
+      return
     }
-    setMessage(`${item.name} is on!`)
+    const nextUnlocks = Array.from(new Set([...popoUnlocks, ...previewItems.map((item) => item.id)]))
+    const nextSpent = popoSpent + previewCost
+    setPopoUnlocks(nextUnlocks)
+    setPopoSpent(nextSpent)
+    window.localStorage.setItem(POPO_UNLOCKS_KEY, JSON.stringify(nextUnlocks))
+    window.localStorage.setItem(POPO_SPENT_KEY, String(nextSpent))
+    setPopoCustomization(previewPopo)
+    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(previewPopo))
+    setMessage(previewCost > 0 ? `Bought for ${previewCost} stars. Popo will wear this at home!` : 'Popo will wear this at home!')
+  }
+
+  const resetPopoPreview = () => {
+    setPreviewPopo(popoCustomization)
+    setMessage('Preview is back to saved look.')
   }
 
   const clearPopoKind = (kind: PopoItem['kind']) => {
-    const next = { ...popoCustomization }
+    const next = { ...previewPopo }
     delete next[kind]
-    setPopoCustomization(next)
     setPreviewPopo(next)
-    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(next))
-    setMessage('Popo item is off.')
+    setMessage('Popo item is off in preview.')
   }
 
   return (
@@ -153,7 +164,7 @@ export default function CustomizePage() {
           <p>Make the room and Popo fun</p>
         </div>
         <div className={styles.points} aria-label={`${points} stars`}>
-          <span />
+          <span>★</span>
           <strong>{points}</strong>
         </div>
       </header>
@@ -209,7 +220,7 @@ export default function CustomizePage() {
                   <span className={owned ? styles.ownedBadge : styles.priceBadge}>
                     {owned ? 'Use' : (
                       <>
-                        <span>💎</span>
+                        <span>★</span>
                         {theme.price}
                       </>
                     )}
@@ -224,13 +235,14 @@ export default function CustomizePage() {
           <section className={styles.popoGrid} aria-label="Popo items">
             {popoItems.map((item) => {
               const owned = isPopoOwned(item)
+              const previewed = previewPopo[item.kind] === item.id
               const equipped = popoCustomization[item.kind] === item.id
               return (
-                <article key={item.id} className={`${styles.popoCard} ${equipped ? styles.selected : ''}`}>
+                <article key={item.id} className={`${styles.popoCard} ${previewed ? styles.selected : ''}`}>
                   <button className={styles.popoButton} onClick={() => choosePopoItem(item)}>
                     <span className={`${styles.itemPreview} ${styles[`item_${item.id}`]}`} />
                     <strong>{item.name}</strong>
-                    <em>{equipped ? 'Take off' : owned ? 'Wear' : `💎 ${item.price}`}</em>
+                    <em>{previewed ? 'Preview Off' : equipped ? 'Wearing' : owned ? 'Preview' : `★ ${item.price}`}</em>
                   </button>
                 </article>
               )
@@ -241,6 +253,10 @@ export default function CustomizePage() {
             <button onClick={() => clearPopoKind('glasses')}>No Glasses</button>
             <button onClick={() => clearPopoKind('necklace')}>No Necklace</button>
             <button onClick={() => clearPopoKind('outfit')}>No Clothes</button>
+          </div>
+          <div className={styles.saveActions}>
+            <button onClick={resetPopoPreview}>Reset Preview</button>
+            <button onClick={savePopoLook}>{previewCost > 0 ? `Buy & Save ★ ${previewCost}` : 'Save Look'}</button>
           </div>
         </>
       )}

@@ -11,9 +11,11 @@ function NavIcon({ type }: { type: string }) {
   if (type === 'review') {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5.5 5.5h9.2a3.8 3.8 0 0 1 0 7.6H7" />
-        <path d="m9 9.7-3.5 3.4L9 16.5" />
-        <path d="M8 19h10" />
+        <path d="M12 6.8c-1.7-1-3.7-1.5-6-1.5v12.2c2.3 0 4.3.5 6 1.5" />
+        <path d="M12 6.8c1.7-1 3.7-1.5 6-1.5v12.2c-2.3 0-4.3.5-6 1.5" />
+        <path d="M12 6.8V19" />
+        <path d="M7.8 9.2c1.1.1 2 .3 2.8.7" />
+        <path d="M16.2 9.2c-1.1.1-2 .3-2.8.7" />
       </svg>
     )
   }

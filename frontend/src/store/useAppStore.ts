@@ -12,7 +12,7 @@ interface AppStore {
 
 export const useAppStore = create<AppStore>((set) => ({
   selectedBook: null,
-  userStats: { streak: 0, hearts: 0, xpPercent: 0 },
+  userStats: { streak: 0, hearts: 0, xpPercent: 1, energy: 5, maxEnergy: 5, energyRechargeMinutes: 15, nextEnergyInSeconds: 0, attendanceDates: [] },
 
   selectBook: (book) => set({ selectedBook: book }),
   clearBook: () => set({ selectedBook: null }),

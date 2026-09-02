@@ -144,12 +144,16 @@ export default function OnboardingTour() {
 
   const tooltipAbove = targetRect ? targetRect.top > window.innerHeight * 0.52 : false
   const tooltipStyle: CSSProperties = targetRect
-    ? {
-        left: Math.min(Math.max(16, targetRect.left + targetRect.width / 2 - 152), window.innerWidth - 320),
+    ? (() => {
+        const tooltipWidth = Math.min(window.innerWidth - 32, 304)
+        const maxLeft = Math.max(16, window.innerWidth - tooltipWidth - 16)
+        return {
+          left: Math.min(Math.max(16, targetRect.left + targetRect.width / 2 - tooltipWidth / 2), maxLeft),
         top: tooltipAbove
           ? Math.max(16, targetRect.top - 178)
           : Math.min(window.innerHeight - 186, targetRect.top + targetRect.height + 24),
-      }
+        }
+      })()
     : {}
 
   return (

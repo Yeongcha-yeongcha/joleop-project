@@ -59,9 +59,13 @@
 .points span {
   width: 31px;
   height: 31px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ffda55, #ffc234);
-  box-shadow: inset 0 -4px 0 rgba(130, 75, 0, 0.12);
+  display: grid;
+  place-items: center;
+  color: #ffc234;
+  filter: drop-shadow(0 2px 0 #7a4a17);
+  font-size: 31px;
+  line-height: 1;
+  -webkit-text-stroke: 2px #7a4a17;
 }
 
 .points strong {
@@ -515,7 +519,8 @@
   gap: 9px;
 }
 
-.clearActions button {
+.clearActions button,
+.saveActions button {
   min-height: 38px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
@@ -523,6 +528,19 @@
   box-shadow: 0 4px 0 rgba(206, 179, 127, 0.2);
   font-size: 12px;
   font-weight: 900;
+}
+
+.saveActions {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 9px;
+}
+
+.saveActions button:last-child {
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 5px 0 #d87700;
 }
 
 .message {
@@ -611,7 +629,7 @@
 
 @media (min-width: 560px) {
   .page {
-    max-width: 430px;
+    max-width: 390px;
     margin: 0 auto;
   }
 }
