@@ -2,14 +2,18 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppException
-from app.models import Book, ChildProfile, CourseType, Difficulty, UserBookProgress
+from app.models import Book, ChildProfile, CourseType, Difficulty, LearningSession, LearningSessionStatus, UserBookProgress
+from app.services.energy import EnergyService
 
 
 class BookService:
     def __init__(self, *, session: AsyncSession) -> None:
         self.session = session
+        self.energy_service = EnergyService()
 
     async def home(self, *, profile: ChildProfile) -> dict:
+        energy = self.energy_service.apply_recharge(profile)
+        attendance_dates = await self._attendance_dates(profile.profile_id)
         progress = await self._current_progress(profile.profile_id)
         current_book = None
         if progress is not None:
@@ -17,6 +21,7 @@ class BookService:
             if book is not None:
                 current_book = self.current_book_data(book, progress)
 
+        await self.session.commit()
         return {
             "profile": {
                 "profileId": profile.profile_id,
@@ -26,8 +31,8 @@ class BookService:
             "status": {
                 "streakDays": profile.streak_days,
                 "hearts": profile.hearts,
-                "energy": profile.energy,
-                "maxEnergy": profile.max_energy,
+                "attendanceDates": attendance_dates,
+                **energy,
             },
             "currentBook": current_book,
         }
@@ -60,6 +65,22 @@ class BookService:
     async def _all_books(self) -> list[Book]:
         result = await self.session.execute(select(Book).order_by(Book.display_order, Book.book_id))
         return list(result.scalars().all())
+
+    async def _attendance_dates(self, profile_id: int) -> list[str]:
+        dates = (
+            await self.session.execute(
+                select(func.date(LearningSession.completed_at))
+                .where(
+                    LearningSession.profile_id == profile_id,
+                    LearningSession.status == LearningSessionStatus.COMPLETED,
+                    LearningSession.completed_at.is_not(None),
+                )
+                .group_by(func.date(LearningSession.completed_at))
+                .order_by(func.date(LearningSession.completed_at).desc())
+                .limit(30)
+            )
+        ).scalars().all()
+        return [str(day) for day in dates]
 
     async def _books_for_profile(self, profile: ChildProfile) -> list[Book]:
         difficulty = profile.difficulty or Difficulty.BEGINNER

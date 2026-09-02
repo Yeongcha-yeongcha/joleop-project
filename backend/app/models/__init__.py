@@ -9,6 +9,8 @@ from app.models.entities import (
     ReadingChunk,
     RefreshToken,
     RepeatQuestion,
+    ReviewAttempt,
+    ReviewCard,
     RoleplayMessage,
     RoleplayMission,
     UserBookProgress,
@@ -19,6 +21,9 @@ from app.models.enums import (
     DescriptionQuestionType,
     Difficulty,
     LearningSessionStatus,
+    ReviewCardType,
+    ReviewMode,
+    ReviewRating,
 )
 
 __all__ = [
@@ -37,6 +42,11 @@ __all__ = [
     "ReadingChunk",
     "RefreshToken",
     "RepeatQuestion",
+    "ReviewAttempt",
+    "ReviewCard",
+    "ReviewCardType",
+    "ReviewMode",
+    "ReviewRating",
     "RoleplayMessage",
     "RoleplayMission",
     "UserBookProgress",

@@ -12,6 +12,7 @@ from app.services.books import BookService
 from app.services.learning_sessions import LearningSessionService
 from app.services.onboarding import OnboardingService
 from app.services.profiles import ProfileService
+from app.services.reviews import ReviewService
 from app.services.speech import MockSpeechToTextService, SpeechToTextService
 
 
@@ -43,6 +44,10 @@ def get_learning_session_service(
     session: AsyncSession = Depends(get_db),
 ) -> LearningSessionService:
     return LearningSessionService(session=session)
+
+
+def get_review_service(session: AsyncSession = Depends(get_db)) -> ReviewService:
+    return ReviewService(session=session)
 
 
 def get_speech_to_text_service() -> SpeechToTextService:

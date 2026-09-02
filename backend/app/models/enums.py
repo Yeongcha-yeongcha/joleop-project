@@ -27,6 +27,25 @@ class DescriptionQuestionType(StrEnum):
     WHY_QUESTION = "WHY_QUESTION"
 
 
+class ReviewRating(StrEnum):
+    AGAIN = "AGAIN"
+    GOOD = "GOOD"
+    EASY = "EASY"
+
+
+class ReviewCardType(StrEnum):
+    WORD = "WORD"
+    SENTENCE = "SENTENCE"
+    CHAT = "CHAT"
+
+
+class ReviewMode(StrEnum):
+    SMART_MIX = "SMART_MIX"
+    WORD_PLAYGROUND = "WORD_PLAYGROUND"
+    SENTENCE_QUEST = "SENTENCE_QUEST"
+    STORY_TALK = "STORY_TALK"
+
+
 class AuthTokenType(StrEnum):
     PARENT = "PARENT"
     PROFILE = "PROFILE"

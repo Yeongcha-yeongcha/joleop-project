@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Float,
     Integer,
     String,
     Text,
@@ -23,6 +24,8 @@ from app.models.enums import (
     DescriptionQuestionType,
     Difficulty,
     LearningSessionStatus,
+    ReviewCardType,
+    ReviewRating,
 )
 
 bigint_pk = BigInteger().with_variant(Integer, "sqlite")
@@ -56,6 +59,8 @@ description_question_type_enum = Enum(
     DescriptionQuestionType,
     name="description_question_type",
 )
+review_rating_enum = Enum(ReviewRating, name="review_rating")
+review_card_type_enum = Enum(ReviewCardType, name="review_card_type")
 
 
 class Parent(UpdatedTimestampMixin, Base):
@@ -127,6 +132,11 @@ class ChildProfile(UpdatedTimestampMixin, Base):
         server_default=text("5"),
         nullable=False,
     )
+    energy_recharged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     parent: Mapped[Parent] = relationship(back_populates="child_profiles")
@@ -135,6 +145,10 @@ class ChildProfile(UpdatedTimestampMixin, Base):
         passive_deletes=True,
     )
     learning_sessions: Mapped[list["LearningSession"]] = relationship(
+        back_populates="profile",
+        passive_deletes=True,
+    )
+    review_cards: Mapped[list["ReviewCard"]] = relationship(
         back_populates="profile",
         passive_deletes=True,
     )
@@ -196,6 +210,10 @@ class Book(TimestampMixin, Base):
         passive_deletes=True,
     )
     learning_sessions: Mapped[list["LearningSession"]] = relationship(
+        back_populates="book",
+        passive_deletes=True,
+    )
+    review_cards: Mapped[list["ReviewCard"]] = relationship(
         back_populates="book",
         passive_deletes=True,
     )
@@ -446,6 +464,110 @@ class RoleplayMessage(TimestampMixin, Base):
 
     session: Mapped[LearningSession] = relationship(back_populates="roleplay_messages")
     mission: Mapped[RoleplayMission] = relationship(back_populates="roleplay_messages")
+
+
+class ReviewCard(UpdatedTimestampMixin, Base):
+    __tablename__ = "review_cards"
+    __table_args__ = (
+        UniqueConstraint(
+            "profile_id",
+            "book_id",
+            "chapter_number",
+            "card_type",
+            "source_question_id",
+            name="uq_review_cards_profile_book_chapter_question",
+        ),
+    )
+
+    card_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
+    profile_id: Mapped[int] = mapped_column(
+        bigint_fk,
+        ForeignKey("child_profiles.profile_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    book_id: Mapped[int] = mapped_column(
+        bigint_fk,
+        ForeignKey("books.book_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    chapter_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    card_type: Mapped[ReviewCardType] = mapped_column(
+        review_card_type_enum,
+        server_default=text("'SENTENCE'"),
+        nullable=False,
+        index=True,
+    )
+    source_question_id: Mapped[int | None] = mapped_column(bigint_fk, index=True)
+    source_sentence: Mapped[str] = mapped_column(Text, nullable=False)
+    cloze_sentence: Mapped[str] = mapped_column(Text, nullable=False)
+    keyword: Mapped[str] = mapped_column(String, nullable=False)
+    memory_strength_days: Mapped[float] = mapped_column(
+        Float,
+        server_default=text("1"),
+        nullable=False,
+    )
+    interval_hours: Mapped[int] = mapped_column(
+        Integer,
+        server_default=text("0"),
+        nullable=False,
+    )
+    ease_factor: Mapped[int] = mapped_column(
+        Integer,
+        server_default=text("250"),
+        nullable=False,
+    )
+    review_count: Mapped[int] = mapped_column(
+        Integer,
+        server_default=text("0"),
+        nullable=False,
+    )
+    lapse_count: Mapped[int] = mapped_column(
+        Integer,
+        server_default=text("0"),
+        nullable=False,
+    )
+    last_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    next_review_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True,
+    )
+
+    profile: Mapped[ChildProfile] = relationship(back_populates="review_cards")
+    book: Mapped[Book] = relationship(back_populates="review_cards")
+    attempts: Mapped[list["ReviewAttempt"]] = relationship(
+        back_populates="card",
+        passive_deletes=True,
+    )
+
+
+class ReviewAttempt(TimestampMixin, Base):
+    __tablename__ = "review_attempts"
+
+    attempt_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
+    card_id: Mapped[int] = mapped_column(
+        bigint_fk,
+        ForeignKey("review_cards.card_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    profile_id: Mapped[int] = mapped_column(
+        bigint_fk,
+        ForeignKey("child_profiles.profile_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    rating: Mapped[ReviewRating] = mapped_column(review_rating_enum, nullable=False)
+    correct: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    score: Mapped[int] = mapped_column(Integer, nullable=False)
+    memory_before: Mapped[int] = mapped_column(Integer, nullable=False)
+    memory_after: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    card: Mapped[ReviewCard] = relationship(back_populates="attempts")
 
 
 class RefreshToken(TimestampMixin, Base):

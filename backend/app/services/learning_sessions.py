@@ -34,6 +34,7 @@ from app.services.evaluation import DescriptionEvaluationService, RepeatEvaluati
 from app.services.final_score import FinalScoreService
 from app.services.progress import ProgressService
 from app.services.rewards import RewardService
+from app.services.reviews import ReviewService
 from app.services.roleplay import MockRoleplayService, RoleplayService
 
 
@@ -60,6 +61,7 @@ class LearningSessionService:
         self.roleplay_service = roleplay_service or MockRoleplayService()
         self.final_score_service = final_score_service or FinalScoreService()
         self.reward_service = reward_service or RewardService()
+        self.review_service = ReviewService(session=session)
 
     async def start_or_resume_session(
         self,
@@ -592,6 +594,12 @@ class LearningSessionService:
         progress.progress = max(progress.progress, round((learning_session.chapter_number / max(total_chapters, 1)) * 100))
         progress.completed = learning_session.chapter_number >= total_chapters
         progress.last_studied_at = now
+        review_cards_created = await self.review_service.enqueue_chapter_cards(
+            profile_id=profile.profile_id,
+            book_id=learning_session.book_id,
+            chapter_number=learning_session.chapter_number,
+            due_at=now,
+        )
         await self.session.commit()
         return {
             "sessionId": learning_session.session_id,
@@ -602,6 +610,7 @@ class LearningSessionService:
             "stars": learning_session.stars,
             "completedAt": learning_session.completed_at.isoformat(),
             "rewards": rewards,
+            "reviewCardsCreated": review_cards_created,
         }
 
     async def get_result(self, *, profile: ChildProfile, session_id: int) -> dict:
@@ -722,9 +731,23 @@ class LearningSessionService:
             .order_by(RoleplayMission.mission_id)
         )
         mission = result.scalars().first()
-        if mission is None:
+        if mission is not None:
+            return mission
+
+        book = await self._book(book_id)
+        fallback_result = await self.session.execute(
+            select(RoleplayMission)
+            .join(Book, Book.book_id == RoleplayMission.book_id)
+            .where(
+                Book.difficulty == book.difficulty,
+                RoleplayMission.chapter_number == chapter_number,
+            )
+            .order_by(Book.display_order, Book.book_id, RoleplayMission.mission_id)
+        )
+        fallback_mission = fallback_result.scalars().first()
+        if fallback_mission is None:
             raise QuestionNotFoundException()
-        return mission
+        return fallback_mission
 
     async def _roleplay_message_count(self, session_id: int) -> int:
         result = await self.session.execute(

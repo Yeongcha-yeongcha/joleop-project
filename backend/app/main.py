@@ -26,6 +26,7 @@ OPENAPI_TAGS = [
         "description": "Description course and audio attempts.",
     },
     {"name": "Learning - Roleplay", "description": "Mock roleplay course flow."},
+    {"name": "Reviews", "description": "Spaced review cards and memory scheduling."},
 ]
 
 
