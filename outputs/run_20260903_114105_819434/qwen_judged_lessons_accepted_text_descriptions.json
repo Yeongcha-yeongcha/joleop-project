@@ -1,0 +1,382 @@
+[
+  {
+    "level": 1,
+    "lesson_number": 1,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "They heard a faint chirping sound coming from a nearby bush.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "chirping",
+        "answer_sentence": "chirping",
+        "guide_hint": "It's a noise that birds make."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 4,
+        "text": "As he approached, the chirping grew louder, and he saw a small bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "bird",
+        "answer_sentence": "bird",
+        "guide_hint": "It has feathers and wings."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 7,
+        "text": "After a few moments, the bird was free, and it flew away happily.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "flew",
+        "answer_sentence": "flew",
+        "guide_hint": "It moved through the air using its wings."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 2,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "They heard a faint chirping sound coming from a nearby bush, but it was different this time.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "chirping",
+        "answer_sentence": "chirping",
+        "guide_hint": "It's a noise that birds make when they are happy or scared."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "Together, they carefully examined the bush and found the small bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "thorns",
+        "answer_sentence": "thorns",
+        "guide_hint": "They are sharp and pointy, like little sticks."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "The bird flew away happily, singing its sweet song. 'I can help!' said Popo proudly.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "flew",
+        "answer_sentence": "flew",
+        "guide_hint": "It moved through the air, like a plane or a kite."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 3,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "The thorns were tangled in his mane, making it hard to move.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "thorns",
+        "answer_sentence": "thorns",
+        "guide_hint": "They are pointy and hurt if you touch them."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "Toto the rabbit and Pipi the parrot watched carefully as Popo gently tugged on the thorns.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "parrot",
+        "answer_sentence": "parrot",
+        "guide_hint": "He has bright colors on his feathers."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "Popo's mane was a bit tangled but he felt happy knowing they helped the little bird together.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "tangled",
+        "answer_sentence": "tangled",
+        "guide_hint": "It's not smooth and straight anymore."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 4,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "Toto used the rock to carefully cut through the thorns on Popo's mane.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "rock",
+        "answer_sentence": "rock",
+        "guide_hint": "It's a hard thing you can find outside."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "I'm free! Thank you, Toto!' Popo exclaimed with a happy smile.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "happy",
+        "answer_sentence": "happy",
+        "guide_hint": "It's a feeling when you're pleased or content."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "We make a great team,' Popo said, looking at his friends with appreciation.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "team",
+        "answer_sentence": "team",
+        "guide_hint": "It's a group of people working together."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 5,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Toto the rabbit thought for a moment and then exclaimed, 'I have an idea! We can use our skills to build a bridge!",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "bridge",
+        "answer_sentence": "bridge",
+        "guide_hint": "Toto thought about something to help them cross the river."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Popo's mane was still a bit messy from being trapped in thorns, but he felt happy knowing they were working together.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "mane",
+        "answer_sentence": "mane",
+        "guide_hint": "It's something on an animal's head that sticks out and looks like hair."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "Pipi cheered and Gigi clapped for them, excited about their new project.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "cheered",
+        "answer_sentence": "cheered",
+        "guide_hint": "Pipi made a happy noise to show she was excited."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 6,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Popo's mane was still a bit messy from being trapped in thorns.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "thorns",
+        "answer_sentence": "thorns",
+        "guide_hint": "It hurts when you touch it."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 9,
+        "text": "The friends started building the bridge, using sticks and rocks to make it sturdy.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "sticks",
+        "answer_sentence": "sticks",
+        "guide_hint": "They find them on the ground."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 10,
+        "text": "As they worked, Pipi cheered them on, saying, 'You're doing great! We can do anything together!",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "cheering",
+        "answer_sentence": "cheering",
+        "guide_hint": "Pipi is saying nice things to them."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 7,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "Popo the lion and his friends, Toto, Pipi, Gigi, and Momo, were playing together.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "Pipi",
+        "answer_sentence": "Pipi",
+        "guide_hint": "a small friend of Popo's"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "Suddenly, Pipi said, 'Look! A strong wind is blowing!",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "wind",
+        "answer_sentence": "wind",
+        "guide_hint": "It's not sunny, and it's not a cloud."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "The friends worked together, using sticks and rocks to build a sturdy fence.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "sticks",
+        "answer_sentence": "sticks",
+        "guide_hint": "They used things from nature."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 8,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "The friends carefully placed the bird's nest in the trench.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "nest",
+        "answer_sentence": "nest",
+        "guide_hint": "It's where the bird lives with its family."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "With the wind reduced, Momo began to lower the nest slowly.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "lower",
+        "answer_sentence": "lower",
+        "guide_hint": "He's moving the nest from high to low."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "I can help,' said Popo, 'we need to make sure it's safe!",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "beamed",
+        "answer_sentence": "beamed",
+        "guide_hint": "His face looks happy and proud."
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 9,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "She said, \"Thank you, dear friends, for returning my baby to me.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "thank",
+        "answer_sentence": "thank",
+        "guide_hint": "When you are happy or relieved, you use this word."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 4,
+        "text": "The mother bird led them to a beautiful garden with colorful flowers.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "garden",
+        "answer_sentence": "garden",
+        "guide_hint": "A special place where people grow flowers and vegetables."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "When they finished, the mother bird thanked them again with a warm hug.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "hug",
+        "answer_sentence": "hug",
+        "guide_hint": "a way to show love and affection by holding someone close"
+      }
+    ]
+  },
+  {
+    "level": 1,
+    "lesson_number": 10,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "The mother bird thanked them again with a warm hug.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "hug",
+        "answer_sentence": "hug",
+        "guide_hint": "A way to show love and care by holding someone close."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Pipi the parrot suggested making colorful streamers for the party.",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "streamers",
+        "answer_sentence": "streamers",
+        "guide_hint": "Long, thin pieces of colorful paper that we wave in the air to celebrate."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "As they decorated, Popo exclaimed, \"Wow! It's even more beautiful now!",
+        "image_path": "",
+        "desc_type": "word_guess",
+        "blank_word": "beautiful",
+        "answer_sentence": "beautiful",
+        "guide_hint": "Something that makes you happy and feel good when you touch it or hold it."
+      }
+    ]
+  }
+]

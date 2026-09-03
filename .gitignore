@@ -30,6 +30,7 @@ generated_images/
 outputs/*
 !outputs/test17_character/
 !outputs/test17_character/**
+!outputs/run_20260903_114105_819434/
 
 tmp/
 *.mp3

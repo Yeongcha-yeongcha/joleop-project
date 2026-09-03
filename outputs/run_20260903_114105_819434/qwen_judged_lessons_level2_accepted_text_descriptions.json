@@ -1,0 +1,382 @@
+[
+  {
+    "level": 2,
+    "lesson_number": 1,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "They heard a faint chirping sound coming from a nearby bush.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "heard",
+        "answer_sentence": "They heard a faint sound.",
+        "guide_hint": "Listen carefully to what they are doing."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 4,
+        "text": "Popo saw a small bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "sees",
+        "answer_sentence": "Popo sees a small bird trapped.",
+        "guide_hint": "Look at what Popo is looking at."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 7,
+        "text": "The bird was finally free and flew away happily into the sky.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "bird",
+        "answer_sentence": "The bird flies away happily.",
+        "guide_hint": "Look at what the bird is doing now."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 2,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "They heard a faint chirping sound coming from the bush.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "chirping",
+        "answer_sentence": "The bird is chirping.",
+        "guide_hint": "Listen carefully"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "Together, they carefully examined the bush and found the small bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "trapped",
+        "answer_sentence": "The small bird is trapped.",
+        "guide_hint": "Look carefully"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 7,
+        "text": "Toto and Pipi watched closely as Popo carefully removed thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "removing",
+        "answer_sentence": "Popo is removing thorns.",
+        "guide_hint": "Watch Popo carefully"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 3,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Popo the lion gently touched the bird's soft feathers.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "feathers",
+        "answer_sentence": "Popo the lion gently touched the bird's soft feathers.",
+        "guide_hint": "Popo the lion gently touche"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 2,
+        "text": "The thorns were tangled in his mane, making it hard to move.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "hard",
+        "answer_sentence": "The thorns were tangled in his mane, making it hard",
+        "guide_hint": "The thorns were tangled in his"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 3,
+        "text": "Popo carefully tried to free the bird's wings from the thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "from",
+        "answer_sentence": "Popo carefully tried to free the bird's wings from the",
+        "guide_hint": "Popo carefully tried to free th"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 4,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Toto picked up a nearby rock, 'I can help!' she said.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "rock",
+        "answer_sentence": "Toto is holding a rock.",
+        "guide_hint": "Look at what Toto is holding."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 4,
+        "text": "Toto used the rock to carefully cut through Popo's mane thorns.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "cutting",
+        "answer_sentence": "Toto is cutting Popo's mane with a rock.",
+        "guide_hint": "What is Toto doing to Popo?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 5,
+        "text": "Popo exclaimed, 'Thank you, Toto! I'm free!' with a happy smile.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "thank",
+        "answer_sentence": "Popo says thank you to Toto.",
+        "guide_hint": "What is Popo saying to Toto?"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 5,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Toto thought for a moment and exclaimed 'We can build a bridge!'.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "thinking",
+        "answer_sentence": "Toto is thinking.",
+        "guide_hint": "Look at Toto's face."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 9,
+        "text": "Momo brought out special tools to help with the building process.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "tools",
+        "answer_sentence": "Momo brings out tools.",
+        "guide_hint": "What is Momo holding?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 10,
+        "text": "With everyone working together, they built a sturdy bridge across the river.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "bridge",
+        "answer_sentence": "The friends are building a bridge.",
+        "guide_hint": "Look at the picture of the river."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 6,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 6,
+        "text": "Pipi cheered for their project, but Popo worried they wouldn't make it.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "worry",
+        "answer_sentence": "Popo is worried they won't make it.",
+        "guide_hint": "What does Popo feel like saying?"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 9,
+        "text": "The friends started building the bridge, using sticks and rocks to make it sturdy.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "bridge",
+        "answer_sentence": "The friends are building a bridge.",
+        "guide_hint": "What are the friends doing with sticks and rocks?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "Toto helped Momo hold the sticks in place while Gigi made sure everything was secure.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "sticks",
+        "answer_sentence": "Toto is holding sticks for Momo.",
+        "guide_hint": "What is Toto doing to help Momo?"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 7,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Pipi looked around and said, 'I see a tall tree over there!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "looking",
+        "answer_sentence": "Pipi is looking around.",
+        "guide_hint": "What is Pipi doing?"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 2,
+        "text": "Gigi stretched his long neck and saw sturdy branches.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "stretches",
+        "answer_sentence": "Gigi stretches his long neck.",
+        "guide_hint": "What is Gigi doing with his body?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "The wind blew harder but they were safe in their new shelter.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "blows",
+        "answer_sentence": "The wind blows harder.",
+        "guide_hint": "What is happening to the wind?"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 8,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "Momo used his strong digging skills to create a small trench beneath the wind-blown nest.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "digging",
+        "answer_sentence": "Momo is digging.",
+        "guide_hint": "Look at what Momo is doing."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "The friends placed the bird's nest in the trench carefully.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "placing",
+        "answer_sentence": "The friends are placing the nest.",
+        "guide_hint": "Look at what the friends are doing with the nest."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 7,
+        "text": "The bird stretched its wings and made a happy chirping sound.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "stretching",
+        "answer_sentence": "The bird is stretching its wings.",
+        "guide_hint": "Look at what the bird is doing with its wings."
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 9,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "She thanked them with a special gift – a handmade wooden birdhouse.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "gift",
+        "answer_sentence": "She is giving them a gift.",
+        "guide_hint": "Look at what the mother bird has in her beak."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Popo exclaimed, \"Wow! It's even more beautiful than Sunflower Meadow!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "beautiful",
+        "answer_sentence": "It's even more beautiful than Sunflower Meadow!",
+        "guide_hint": "What did Popo say about this garden compared to the meadow?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "When they finished, the mother bird thanked them again with a warm hug.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "hug",
+        "answer_sentence": "She is hugging them warmly.",
+        "guide_hint": "What does the mother bird do to show her appreciation?"
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "lesson_number": 10,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 3,
+        "text": "Toto the rabbit said, \"I'm so happy we worked together to build this birdhouse!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "happy",
+        "answer_sentence": "Toto is happy they worked together.",
+        "guide_hint": "What does Toto feel about building the birdhouse?"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 7,
+        "text": "As they decorated, Popo exclaimed, \"Wow! It's even more beautiful now!",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "beautiful",
+        "answer_sentence": "Popo says it's even more beautiful now.",
+        "guide_hint": "What does Popo think about the decorated birdhouse?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 10,
+        "text": "Popo and friends proudly displayed their new birdhouse in Sunflower Meadow.",
+        "image_path": "",
+        "desc_type": "sentence",
+        "blank_word": "proudly",
+        "answer_sentence": "Popo and friends proudly display their new birdhouse.",
+        "guide_hint": "What are Popo and friends showing in Sunflower Meadow?"
+      }
+    ]
+  }
+]

@@ -1,0 +1,462 @@
+[
+  {
+    "level": 3,
+    "lesson_number": 1,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Popo's friends are trapped in a ballroom, and they need to escape safely.",
+        "character_name": "Toto",
+        "player_goal": "Ask for help from Popo when you get stuck behind a chair.",
+        "model_answer": "Popo! I'm stuck behind this chair, can you help me?",
+        "similar_answers": [
+          "Popo, I need your help, I'm stuck!",
+          "Can you please help me, Popo? I got stuck here.",
+          "Popo, I'm trapped behind this chair, what do I do?"
+        ],
+        "hint_sequence": [
+          "Look at page 3, who helped the bird in trouble?",
+          "Remember when Pipi followed Popo to help the bird. Who can you ask for help now?",
+          "You're playing with your friends in a ballroom, and you need to get out safely."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Popo's friends are trying to escape from the ballroom, but they see a small door that might be locked.",
+        "character_name": "Pipi",
+        "player_goal": "Suggest using a key to unlock the door and make a safe plan with friends.",
+        "model_answer": "We should use the key to unlock the door, then we can all go out together!",
+        "similar_answers": [
+          "Let's find the key and open the door so we can escape safely.",
+          "We need to use the key to unlock the door, it's our only way out.",
+          "If we have a key, we should use it to unlock the door and then go out together."
+        ],
+        "hint_sequence": [
+          "Look at page 5, how did Popo help the bird?",
+          "Remember when you all agreed that helping others makes everyone feel happy. Can you think of a way to help each other now?",
+          "You see a small door in the ballroom, but it might be locked. What can you do with your friends?"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 2,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "You notice a safe side door while music fills the ballroom. Story context: Popo the lion and his friends were playing in Sunflower Meadow.",
+        "character_name": "your story friend",
+        "player_goal": "Suggest using the side door to leave safely.",
+        "model_answer": "Let's leave safely through the side door.",
+        "similar_answers": [
+          "We can use the side door to get out.",
+          "Let's go out through that safe door.",
+          "I think we should take the side door."
+        ],
+        "hint_sequence": [
+          "Make a safe choice.",
+          "Suggest which door to use.",
+          "Start with, Let's leave safely..."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Your friend is nervous and needs help leaving the ballroom. Story context: They heard a faint chirping sound coming from a nearby bush.",
+        "character_name": "your story friend",
+        "player_goal": "Offer help and make a plan to leave together.",
+        "model_answer": "Stay with me, and we can leave together.",
+        "similar_answers": [
+          "Come with me so we can get out safely.",
+          "I will help you leave the ballroom.",
+          "Let's stay together and find the exit."
+        ],
+        "hint_sequence": [
+          "Help your worried friend.",
+          "Say you will leave together.",
+          "Start with, Stay with me..."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 3,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Popo is trying to free a bird, but his mane is getting tangled with thorns.",
+        "character_name": "Popo",
+        "player_goal": "Ask for help to untangle the thorns from Popo's mane.",
+        "model_answer": "Can you help me untangle these thorns from my mane?",
+        "similar_answers": [
+          "I need some help here, friends!",
+          "Can someone please help me with this tangle?",
+          "How can we get these thorns out of my mane?"
+        ],
+        "hint_sequence": [
+          "Look at Popo's mane on page 2.",
+          "Remember what happened when Popo tried to move in page 3.",
+          "Think about how Toto and Pipi helped Popo on page 5."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The thorns are finally untangled, but the bird is still trapped. What should Popo do next?",
+        "character_name": "Popo",
+        "player_goal": "Suggest a safe plan to free the bird without harming it.",
+        "model_answer": "Let's work together carefully and gently to set the bird free.",
+        "similar_answers": [
+          "We should be very careful when setting the bird free.",
+          "Let's help the bird slowly and gently, okay?",
+          "We need to move slowly so we don't scare the bird."
+        ],
+        "hint_sequence": [
+          "Look at how Popo worked with his friends on page 5.",
+          "Remember what Gigi said on page 8 about working together.",
+          "Think about how Popo spoke to the bird on page 6 when it was anxious."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 4,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Popo is stuck in a thorny bush and needs help.",
+        "character_name": "Toto",
+        "player_goal": "Ask for help to free Popo from the thorns.",
+        "model_answer": "Can you please help me cut these thorns with a rock?",
+        "similar_answers": [
+          "Can someone help us get Popo out of here?",
+          "Toto, can I use that rock to help Popo?",
+          "We need some help to free Popo from the bush!"
+        ],
+        "hint_sequence": [
+          "Look at Page 2 for a hint about what Toto did first.",
+          "Remember how Popo was feeling in Page 3.",
+          "Think about what you would do if you were stuck like Popo."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Popo's mane is messy after being freed from the thorns.",
+        "character_name": "Toto",
+        "player_goal": "Suggest a solution to clean up Popo's mane.",
+        "model_answer": "Let's use some leaves to gently brush away the thorns!",
+        "similar_answers": [
+          "We can use our paws to smooth out his mane.",
+          "Maybe we can find some soft grass to clean up his fur?",
+          "I think I saw some water nearby, let's wash off the thorns!"
+        ],
+        "hint_sequence": [
+          "Look at Page 8 for a hint about how Popo felt after being freed.",
+          "Remember what Toto said in Page 10 to make Popo feel better.",
+          "Think about what you would do if your friend's hair was messy like Popo's."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 5,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "You notice a safe side door while music fills the ballroom. Story context: The friends were overjoyed after helping Popo escape. They wanted to do something special together.",
+        "character_name": "your story friend",
+        "player_goal": "Suggest using the side door to leave safely.",
+        "model_answer": "Let's leave safely through the side door.",
+        "similar_answers": [
+          "We can use the side door to get out.",
+          "Let's go out through that safe door.",
+          "I think we should take the side door."
+        ],
+        "hint_sequence": [
+          "Make a safe choice.",
+          "Suggest which door to use.",
+          "Start with, Let's leave safely..."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Your friend is nervous and needs help leaving the ballroom. Story context: Pipi the parrot said, 'Let us find something to help each other with.",
+        "character_name": "your story friend",
+        "player_goal": "Offer help and make a plan to leave together.",
+        "model_answer": "Stay with me, and we can leave together.",
+        "similar_answers": [
+          "Come with me so we can get out safely.",
+          "I will help you leave the ballroom.",
+          "Let's stay together and find the exit."
+        ],
+        "hint_sequence": [
+          "Help your worried friend.",
+          "Say you will leave together.",
+          "Start with, Stay with me..."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 6,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Strong winds are blowing, making it hard to hold onto their bridge.",
+        "character_name": "Gigi",
+        "player_goal": "Ask for help to make the bridge more secure.",
+        "model_answer": "Can you guys help me make sure everything is secure?",
+        "similar_answers": [
+          "Do you think we can hold it together if I add some extra sticks?",
+          "We need to be careful, can someone help me tie this rock down?",
+          "I'm worried the bridge might fall over, can we all work together to fix it?"
+        ],
+        "hint_sequence": [
+          "Look at Page 6 where strong winds started blowing.",
+          "Remember what Gigi said on Page 7, 'We need to be brave and try again.'",
+          "Think about how Toto helped Momo hold the sticks in place on Page 11."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The friends are rebuilding their bridge, but it's still not sturdy.",
+        "character_name": "Pipi",
+        "player_goal": "Suggest a solution to make the bridge more stable.",
+        "model_answer": "Let's use some extra rocks to weigh down the sticks!",
+        "similar_answers": [
+          "We need to add more sticks to make it stronger, don't you think?",
+          "I have an idea! We can use some of these big rocks to hold it up better.",
+          "If we put some extra sticks under the bridge, it might be more stable."
+        ],
+        "hint_sequence": [
+          "Look at Page 2 where Pipi said, 'Let's use sticks and rocks to build a bridge.'",
+          "Remember what Toto said on Page 4, 'We must work together. We can do it! We're a team.'",
+          "Think about how Momo brought out special tools on Page 5 to help with building."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 7,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Pipi spots a nearby tree with sturdy branches that can provide shelter from the wind. But, it's too high to reach.",
+        "character_name": "Pipi",
+        "player_goal": "Ask Gigi for help to tie the pulley system to the branches of the tree.",
+        "model_answer": "Gigi, can you please use your long neck to tie the pulley system to the branches?",
+        "similar_answers": [
+          "Gigi, can you help me reach the branches with your long neck?",
+          "We need Gigi's help to tie the pulley system to the tree!",
+          "Can Gigi use his long neck to tie the pulley system for us?"
+        ],
+        "hint_sequence": [
+          "What does Pipi see in the distance that can provide shelter from the wind?",
+          "Who has a special feature that can help reach high places?",
+          "What do we need Gigi to do with his long neck?"
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The friends are building a fence, but it's not strong enough. Popo wants to make it stronger.",
+        "character_name": "Popo",
+        "player_goal": "Suggest using sticks and rocks to build the fence stronger.",
+        "model_answer": "We can use more sticks and rocks to make our fence even stronger!",
+        "similar_answers": [
+          "Let's add more sticks and rocks to make our fence stronger!",
+          "We need more sticks and rocks to build an even better fence!",
+          "Can we use more sticks and rocks to make our fence super strong?"
+        ],
+        "hint_sequence": [
+          "What do the friends use to build a fence in the meadow?",
+          "Why does Popo want to improve their fence?",
+          "What materials can they use to make the fence stronger?"
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 8,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The wind is still strong near the bird's nest.",
+        "character_name": "Momo",
+        "player_goal": "Ask for help to make a plan to lower the bird's nest safely.",
+        "model_answer": "Can we work together to find a way to put the nest down here?",
+        "similar_answers": [
+          "How can we carefully move the nest to this spot?",
+          "What do you think we should do to make it safe to lower the nest?",
+          "Can we all help figure out how to get the nest down safely?"
+        ],
+        "hint_sequence": [
+          "Look at Page 2 where Momo says 'Don't worry, I have an idea.'",
+          "Remember that the friends are working together to save the bird's nest.",
+          "Think about what Popo said on Page 5: 'I can help! We need to make it safe!'"
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The bird's nest is in a small trench, but it's not secure yet.",
+        "character_name": "Popo",
+        "player_goal": "Suggest a solution to make the bird's nest stable and safe.",
+        "model_answer": "We should put some rocks around the nest so it doesn't fall over!",
+        "similar_answers": [
+          "Maybe we can use sticks to hold the nest in place?",
+          "Can we find some leaves or branches to put under the nest for support?",
+          "I think we need to add some more dirt around the nest to keep it steady."
+        ],
+        "hint_sequence": [
+          "Look at Page 3 where Momo uses his digging skills.",
+          "Think about what happened when the friends carefully placed the nest in the trench on Page 4.",
+          "Remember that Popo said 'I can help!' on Page 5."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 9,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The friends are escaping from the ballroom after returning the baby bird.",
+        "character_name": "Popo",
+        "player_goal": "Ask for help to find a safe way out of the ballroom.",
+        "model_answer": "Can you help me find a way out of this big room?",
+        "similar_answers": [
+          "Do you know how we can get out of here?",
+          "I don't see any doors, can you show me the way?",
+          "How do we get out of this big ballroom?"
+        ],
+        "hint_sequence": [
+          "Look at Page 5 where the mother bird leads them to a garden.",
+          "Remember how Popo and friends worked together on Page 9.",
+          "Think about what the mother bird said about her baby's new home."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "The friends are trying to leave the ballroom with the handmade wooden birdhouse.",
+        "character_name": "Popo",
+        "player_goal": "Suggest a safe plan to carry the birdhouse out of the ballroom.",
+        "model_answer": "Let's carry it together, two friends on each side!",
+        "similar_answers": [
+          "We should hold hands and walk slowly with the birdhouse.",
+          "I'll carry one end and my friend can carry the other end.",
+          "Can we put it in a basket or something to make it easier?"
+        ],
+        "hint_sequence": [
+          "Look at Page 2 where the mother bird gives them the handmade wooden birdhouse.",
+          "Think about how Popo said they worked together as a team on Page 4.",
+          "Remember what the friends did to prepare the garden for the baby bird's new home."
+        ]
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 10,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "roleplay_scenarios": [
+      {
+        "scenario_id": "rp_3_1",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "You notice a safe side door while music fills the ballroom. Story context: Popo the lion stood proudly in Sunflower Meadow, looking at their newly built birdhouse.",
+        "character_name": "your story friend",
+        "player_goal": "Suggest using the side door to leave safely.",
+        "model_answer": "Let's leave safely through the side door.",
+        "similar_answers": [
+          "We can use the side door to get out.",
+          "Let's go out through that safe door.",
+          "I think we should take the side door."
+        ],
+        "hint_sequence": [
+          "Make a safe choice.",
+          "Suggest which door to use.",
+          "Start with, Let's leave safely..."
+        ]
+      },
+      {
+        "scenario_id": "rp_3_2",
+        "topic": "escape",
+        "level": 3,
+        "scene_description": "Your friend is nervous and needs help leaving the ballroom. Story context: The mother bird thanked them again with a warm hug, expressing her gratitude for their help.",
+        "character_name": "your story friend",
+        "player_goal": "Offer help and make a plan to leave together.",
+        "model_answer": "Stay with me, and we can leave together.",
+        "similar_answers": [
+          "Come with me so we can get out safely.",
+          "I will help you leave the ballroom.",
+          "Let's stay together and find the exit."
+        ],
+        "hint_sequence": [
+          "Help your worried friend.",
+          "Say you will leave together.",
+          "Start with, Stay with me..."
+        ]
+      }
+    ]
+  }
+]

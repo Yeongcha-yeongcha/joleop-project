@@ -1,0 +1,23 @@
+{
+  "generation_status": "completed",
+  "plan": "plans/test3_book_plan.json",
+  "book_id": "book1",
+  "story_title": "Popo's Brave Adventure",
+  "lesson_count_per_level": 10,
+  "artifacts": {
+    "level1_story": "outputs/run_20260903_114105_819434/qwen_judged_lessons.json",
+    "level1_accepted_text": "outputs/run_20260903_114105_819434/qwen_judged_lessons_accepted_text.json",
+    "level1_descriptions": "outputs/run_20260903_114105_819434/qwen_judged_lessons_accepted_text_descriptions.json",
+    "level1_review": "outputs/run_20260903_114105_819434/qwen_judged_lessons_accepted_text_descriptions_review.json",
+    "level1_roleplays": "outputs/run_20260903_114105_819434/qwen_judged_lessons_accepted_text_roleplays.json",
+    "level2_accepted_text": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level2_accepted_text.json",
+    "level2_descriptions": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level2_accepted_text_descriptions.json",
+    "level2_review": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level2_accepted_text_descriptions_review.json",
+    "level2_roleplays": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level2_accepted_text_roleplays.json",
+    "level3_accepted_text": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level3_accepted_text.json",
+    "level3_descriptions": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level3_accepted_text_descriptions.json",
+    "level3_review": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level3_accepted_text_descriptions_review.json",
+    "level3_roleplays": "outputs/run_20260903_114105_819434/qwen_judged_lessons_level3_accepted_text_roleplays.json",
+    "manifest": "outputs/run_20260903_114105_819434/all_content_manifest.json"
+  }
+}

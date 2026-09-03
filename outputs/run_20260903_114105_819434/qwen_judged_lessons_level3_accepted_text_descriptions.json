@@ -1,0 +1,382 @@
+[
+  {
+    "level": 3,
+    "lesson_number": 1,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 1 beginning: Popo, Toto, Pipi, Gigi, and Momo are playing together in Sunflower Meadow when they hear a faint chirping sound coming from a nearby bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "Popo approached the bush and saw a small bird trapped in thorns.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "bird",
+        "answer_sentence": "Popo sees a small bird trapped in thorns because",
+        "guide_hint": "Look at the picture."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Toto and Pipi watched as Popo carefully removed thorns from around the bird.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "help",
+        "answer_sentence": "Popo carefully removes thorns because he wants to help the little bird",
+        "guide_hint": "What was Popo saying on page 5?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "Gigi and Momo joined in, congratulating Popo on his bravery. \"You're very brave, Popo,\" said Gigi.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "bravery",
+        "answer_sentence": "Gigi and Momo think Popo is very brave because he helped the bird",
+        "guide_hint": "What did Gigi say to Popo?"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 2,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 2 development: The friends discover a lost baby bird trapped in the bush, and Popo decides to help it by carefully removing the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "Let's help our feathered friend!' exclaimed Momo, sensing something was amiss.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "feathered",
+        "answer_sentence": "Momo says 'Let's help our feathered friend!' because something was amiss.",
+        "guide_hint": "What do you think is wrong with the bird?"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Popo gently said, 'Don't worry, little one. We'll work together to free you.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "worry",
+        "answer_sentence": "Popo says 'Don't worry, little one. We'll work together to free you' because he wants to calm down the bird.",
+        "guide_hint": "How do you think the bird feels?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "I can help!' said Popo proudly as the bird flew away happily.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "proud",
+        "answer_sentence": "Popo is proud because he helped the trapped bird.",
+        "guide_hint": "What happened to the bird?"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 3,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 3 challenge: As Popo tries to free the bird, he realizes that his mane is getting tangled with the thorns, making it harder to move.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "The thorns were stuck in his own mane, making it harder to move.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "tangled",
+        "answer_sentence": "His mane is tangled because of the thorns.",
+        "guide_hint": "Look at Popo's mane on page 2."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 3,
+        "text": "Popo thoughtfully considered how to free the bird without harming himself.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "thinking",
+        "answer_sentence": "He is thinking carefully because he doesn't want to hurt himself.",
+        "guide_hint": "Read page 3 again and think about Popo's feelings."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "The thorns were finally untangled from Popo's mane and the bird was free!",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "proud",
+        "answer_sentence": "Popo feels proud because he helped the little bird together.",
+        "guide_hint": "Look at page 9 and think about how Popo feels."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 4,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 4 turning point: Toto uses her quick thinking and agility to carefully cut Popo's mane using a nearby rock, freeing him from the thorns.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "Toto the rabbit carefully picked up a nearby rock and held it out to Popo.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "rock",
+        "answer_sentence": "Toto holds a rock because she wants to help Popo.",
+        "guide_hint": "Look at what Toto picked up."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 5,
+        "text": "I'm free! Thank you, Toto!' Popo exclaimed with a happy smile.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "happy",
+        "answer_sentence": "Popo looks happy because he is free.",
+        "guide_hint": "What did Popo say to Toto?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "We make a great team,' Popo said, looking at his friends with appreciation.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "appreciation",
+        "answer_sentence": "Popo looks at his friends with appreciation because they helped him.",
+        "guide_hint": "What did Popo say to Toto?"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 5,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 5 transformation: With Popo freed, they all work together to create a makeshift pulley system using vines and sticks to lift the bird out of the bush.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "The friends were overjoyed after helping Popo escape. They wanted to do something special together.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "forward",
+        "answer_sentence": "The friends were overjoyed after helping Popo escape. They wanted to do something special together. because this action helps the story move forward.",
+        "guide_hint": "The friends were overjoyed after helping Popo esc"
+      },
+      {
+        "scene_number": 2,
+        "page_number": 2,
+        "text": "Pipi the parrot said, 'Let us find something to help each other with.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "forward",
+        "answer_sentence": "Pipi the parrot said, 'Let us find something to help each other with. because this action helps the story move forward.",
+        "guide_hint": "Pipi the parrot said, 'Let us find"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 3,
+        "text": "Toto thought for a moment and then exclaimed, 'We can build a bridge!'.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "forward",
+        "answer_sentence": "Toto thought for a moment and then exclaimed, 'We can build a bridge!'. because this action helps the story move forward.",
+        "guide_hint": "Toto thought for a moment and then "
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 6,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 6 obstacle: As they're about to reach the bird's nest, strong winds start blowing, making it difficult for them to hold onto their creation.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "Toto smiled and said, 'We must work together. We can do it! We're a team.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "smile",
+        "answer_sentence": "Toto smiles because he is happy.",
+        "guide_hint": "Look at the picture of Toto on this page."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 6,
+        "text": "Strong winds started blowing, making it hard for them to hold their creation.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "falling",
+        "answer_sentence": "Their creation is falling down because strong winds are blowing.",
+        "guide_hint": "Look at the picture on this page. What do you see?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "Popo felt happy knowing his friends were working together and supporting him.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "happy",
+        "answer_sentence": "Popo feels happy because his friends are working together.",
+        "guide_hint": "Look at the picture of Popo on this page. What does he look like?"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 7,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 7 plan: Pipi uses her sharp eyesight to spot a nearby tree with sturdy branches that can provide shelter from the wind, and Gigi uses his long neck to tie the pulley system to the branches.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "The friends looked up to see a big cloud coming towards them.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "cloud",
+        "answer_sentence": "They see a big cloud because it is coming from the sky.",
+        "guide_hint": "Look at what Pipi pointed to."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 9,
+        "text": "Gigi used his long neck to tie the pulley system to the branches of the tree.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "pulley",
+        "answer_sentence": "Gigi is tying the pulley system because he has a long neck.",
+        "guide_hint": "What special feature does Gigi have?"
+      },
+      {
+        "scene_number": 3,
+        "page_number": 13,
+        "text": "Popo said, 'We can do anything when we help each other!'.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "safe",
+        "answer_sentence": "Popo is happy because his friends are safe.",
+        "guide_hint": "What did the friends build together?"
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 8,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 8 rescue: With the wind reduced, Momo uses his digging skills to create a small trench beneath the bird's nest, allowing them to carefully lower it into place.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 4,
+        "text": "The friends carefully placed the bird's nest in the trench and said \"We're almost there!",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "carefully",
+        "answer_sentence": "They carefully placed the bird's nest in the trench because they wanted to make it safe.",
+        "guide_hint": "Look at what Momo and his friends are doing."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 7,
+        "text": "Popo beamed with pride knowing his friends helped save the bird's nest.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "beamed",
+        "answer_sentence": "Popo beamed with pride because his friends helped save the bird's nest.",
+        "guide_hint": "Look at Popo's face."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 9,
+        "text": "Momo said, 'We helped our friend in need, that's what friends are for!'.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "helped",
+        "answer_sentence": "Momo said, 'We helped our friend in need, that's what friends are for!' because they wanted to help their friend.",
+        "guide_hint": "Read what Momo said out loud."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 9,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 9 celebration: The friends successfully return the baby bird to its relieved mother, who thanks them with a special gift – the handmade wooden birdhouse.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 1,
+        "text": "Popo and friends were overjoyed to return the baby bird to its relieved mother.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "happy",
+        "answer_sentence": "They look happy because they returned the baby bird to its mother.",
+        "guide_hint": "Think about how you feel when someone helps you."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 4,
+        "text": "Popo smiled and said, 'We worked together as a team to help the baby bird.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "smiles",
+        "answer_sentence": "He smiles because they worked together as a team to help the baby bird.",
+        "guide_hint": "Think about why Popo is feeling this way."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 11,
+        "text": "The friends smiled and hugged each other, happy to have helped the mother bird.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "hug",
+        "answer_sentence": "They hug each other because they're happy to have helped the mother bird.",
+        "guide_hint": "Think about why the friends are feeling this way."
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "lesson_number": 10,
+    "story_title": "Popo's Brave Adventure",
+    "theme": "Lesson 10 ending: Popo and friends proudly display their new birdhouse in Sunflower Meadow, knowing that they've not only helped someone in need but also learned valuable lessons about teamwork and bravery.",
+    "description_scenes": [
+      {
+        "scene_number": 1,
+        "page_number": 2,
+        "text": "The mother bird thanked them again with a warm hug, expressing her gratitude for their help.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "happy",
+        "answer_sentence": "She looks happy because her friend came.",
+        "guide_hint": "The mother bird is showing gratitude."
+      },
+      {
+        "scene_number": 2,
+        "page_number": 7,
+        "text": "As they decorated, Popo exclaimed, \"Wow! It's even more beautiful now!",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "excited",
+        "answer_sentence": "He looks excited because they're making it more beautiful now.",
+        "guide_hint": "Popo is expressing his enthusiasm."
+      },
+      {
+        "scene_number": 3,
+        "page_number": 8,
+        "text": "The friends cheered and celebrated their teamwork and bravery, feeling proud of what they had accomplished.",
+        "image_path": "",
+        "desc_type": "reason",
+        "blank_word": "proud",
+        "answer_sentence": "They look proud because they helped someone in need.",
+        "guide_hint": "The friends are expressing their pride and happiness."
+      }
+    ]
+  }
+]
