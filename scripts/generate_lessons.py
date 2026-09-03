@@ -49,6 +49,9 @@ def write_checkpoint(
         "updated_at": datetime.now().astimezone().isoformat(),
         **result,
     }
+    payload["story_title"] = payload.get("story_title") or plan.get(
+        "story_title", ""
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = path.with_name(f".{path.name}.tmp")
     with temporary_path.open("w", encoding="utf-8") as file:
@@ -93,6 +96,9 @@ def append_story_draft(plan: dict[str, Any], draft: dict[str, Any]) -> None:
 
     payload["generation_status"] = "running"
     payload["updated_at"] = datetime.now().astimezone().isoformat()
+    payload["story_title"] = (
+        plan.get("story_title") or draft.get("story_title") or ""
+    )
     payload.setdefault("drafts", []).append(draft)
     payload["draft_count"] = len(payload["drafts"])
 
@@ -118,6 +124,9 @@ def set_draft_status(plan: dict[str, Any], status: str) -> None:
 
     payload["generation_status"] = status
     payload["updated_at"] = datetime.now().astimezone().isoformat()
+    payload["story_title"] = payload.get("story_title") or plan.get(
+        "story_title", ""
+    )
     temporary_path = path.with_name(f".{path.name}.tmp")
     with temporary_path.open("w", encoding="utf-8") as file:
         json.dump(payload, file, ensure_ascii=False, indent=2)
@@ -250,6 +259,7 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
     accepted = []
     rejected = []
     accepted_sentences: list[str] = []
+    story_title = str(plan.get("story_title") or "").strip() or None
 
     episode_beats = get_episode_beats(plan)
     target_lessons = get_target_lessons(plan)
@@ -282,6 +292,7 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
+            story_title=story_title,
             recurring_characters=plan.get("recurring_characters"),
             min_score=int(plan.get("min_score", 70)),
             generate_images=bool(plan.get("generate_images", False)),
@@ -315,6 +326,7 @@ async def run_single_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
         )
 
         accepted.append(finalized["result_item"])
+        story_title = story_title or lesson.story_title
         accepted_sentences.extend(finalized["sentences"])
         episode_avoid_sentences.clear()
         episode_quality_feedback.clear()
@@ -334,6 +346,17 @@ def build_level_result(
 ) -> dict[str, Any]:
     return {
         "book_id": plan["book_id"],
+        "story_title": (
+            plan.get("story_title")
+            or next(
+                (
+                    item.get("lesson", {}).get("story_title")
+                    for item in accepted
+                    if item.get("lesson", {}).get("story_title")
+                ),
+                "",
+            )
+        ),
         "level": int(plan["level"]),
         "book_structure": {
             "source_level": 1,
@@ -421,6 +444,9 @@ async def run_curriculum_plan(plan: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "book_id": plan["book_id"],
+        "story_title": (
+            plan.get("story_title") or base_result.get("story_title", "")
+        ),
         "target_lessons": target_lessons,
         "base_level": int(base_plan["level"]),
         "accepted_count": len(all_accepted),
@@ -443,6 +469,7 @@ def make_batch_plan(
         "book_id": root_plan["book_id"],
         "age": batch.get("age", root_plan["age"]),
         "protagonist": batch.get("protagonist", root_plan["protagonist"]),
+        "story_title": batch.get("story_title", root_plan.get("story_title")),
         "recurring_characters": batch.get(
             "recurring_characters", root_plan.get("recurring_characters")
         ),
@@ -475,6 +502,7 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
     accepted = []
     rejected = []
     accepted_sentences: list[str] = []
+    story_title = str(plan.get("story_title") or "").strip() or None
 
     episode_beats = get_episode_beats(plan)
     target_lessons = int(plan.get("target_lessons", DEFAULT_TARGET_LESSONS))
@@ -507,6 +535,7 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
+            story_title=story_title,
             recurring_characters=plan.get("recurring_characters"),
             min_score=int(plan.get("min_score", 70)),
             generate_images=bool(plan.get("generate_images", False)),
@@ -542,6 +571,7 @@ async def run_target_level_plan(plan: dict[str, Any]) -> dict[str, Any]:
         )
 
         accepted.append(finalized["result_item"])
+        story_title = story_title or lesson.story_title
         accepted_sentences.extend(finalized["sentences"])
         episode_avoid_sentences.clear()
         episode_quality_feedback.clear()
@@ -615,6 +645,11 @@ async def run_rewrite_level_plan(
             age=int(plan["age"]),
             theme=theme,
             protagonist=plan["protagonist"],
+            story_title=(
+                str(plan.get("story_title") or "").strip()
+                or str(base_lesson.get("story_title") or "").strip()
+                or None
+            ),
             recurring_characters=plan.get("recurring_characters"),
             min_score=int(plan.get("min_score", 70)),
             generate_images=bool(plan.get("generate_images", False)),
@@ -878,6 +913,7 @@ def write_story_text_output(result: dict[str, Any], output_path: Path) -> None:
         "# Generated Story Texts",
         "",
         f"- Book ID: {result.get('book_id', '')}",
+        f"- Story title: {result.get('story_title', '')}",
         f"- Accepted lessons: {result.get('accepted_count', len(accepted))}",
         f"- Rejected attempts: {result.get('rejected_count', 0)}",
         "",
@@ -1035,6 +1071,7 @@ async def async_main() -> None:
         plan,
         {
             "book_id": plan["book_id"],
+            "story_title": plan.get("story_title", ""),
             "accepted_count": 0,
             "rejected_count": 0,
             "accepted": [],

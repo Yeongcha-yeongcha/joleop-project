@@ -144,6 +144,7 @@ def generate_file(input_path: Path, output_path: Path | None = None) -> Path:
         {
             "level": int(lesson.get("level", 1)),
             "lesson_number": int(lesson.get("lesson_number", 0)),
+            "story_title": lesson.get("story_title", ""),
             "theme": lesson.get("theme", ""),
             "roleplay_scenarios": generate_roleplay_quizzes(lesson),
         }

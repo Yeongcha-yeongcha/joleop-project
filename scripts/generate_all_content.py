@@ -22,6 +22,7 @@ from typing import Any
 from ai.Lev23 import generate_description_quizzes_23
 from ai.Lev23 import generate_roleplay_quizzes_23
 from ai.Lev23 import story_generator_23
+from ai.Review import generate_review_data
 from scripts import generate_description_quizzes
 from scripts import generate_lessons
 from scripts import generate_roleplay_quizzes
@@ -103,6 +104,7 @@ async def generate_all(
         plan,
         {
             "book_id": plan["book_id"],
+            "story_title": plan.get("story_title", ""),
             "accepted_count": 0,
             "rejected_count": 0,
             "accepted": [],
@@ -129,11 +131,15 @@ async def generate_all(
     if write_story_text:
         generate_lessons.write_story_text_output(level1_result, level1_result_path)
 
+    level1_descriptions_path = generate_description_quizzes.generate_file(
+        level1_accepted_path
+    )
     artifacts: dict[str, str] = {
         "level1_story": str(level1_result_path),
         "level1_accepted_text": str(level1_accepted_path),
-        "level1_descriptions": str(
-            generate_description_quizzes.generate_file(level1_accepted_path)
+        "level1_descriptions": str(level1_descriptions_path),
+        "level1_review": str(
+            generate_review_data.generate_file(level1_descriptions_path)
         ),
         "level1_roleplays": str(
             generate_roleplay_quizzes.generate_file(level1_accepted_path)
@@ -154,9 +160,13 @@ async def generate_all(
         )
         story_generator_23.write_json(accepted_path, payload)
 
+        descriptions_path = generate_description_quizzes_23.generate_file(
+            accepted_path
+        )
         artifacts[f"level{level}_accepted_text"] = str(accepted_path)
-        artifacts[f"level{level}_descriptions"] = str(
-            generate_description_quizzes_23.generate_file(accepted_path)
+        artifacts[f"level{level}_descriptions"] = str(descriptions_path)
+        artifacts[f"level{level}_review"] = str(
+            generate_review_data.generate_file(descriptions_path)
         )
         artifacts[f"level{level}_roleplays"] = str(
             generate_roleplay_quizzes_23.generate_file(accepted_path)
@@ -166,6 +176,9 @@ async def generate_all(
         "generation_status": "completed",
         "plan": str(plan_path),
         "book_id": plan["book_id"],
+        "story_title": (
+            plan.get("story_title") or level1_result.get("story_title", "")
+        ),
         "lesson_count_per_level": expected_lessons,
         "artifacts": artifacts,
     }

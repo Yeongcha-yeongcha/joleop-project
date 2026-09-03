@@ -91,6 +91,7 @@ def build_review_data(payload: list[Any]) -> list[dict[str, Any]]:
         output.append({
             "level": int(lesson.get("level", 1)),
             "lesson_number": int(lesson.get("lesson_number", 0)),
+            "story_title": lesson.get("story_title", ""),
             "theme": lesson.get("theme", ""),
             "review_scenes": [normalize_scene(scene) for scene in scenes],
         })

@@ -117,6 +117,7 @@ def build_story_prompt(
     theme: str,
     protagonist: str,
     *,
+    story_title: Optional[str] = None,
     recurring_characters: Optional[list[str]] = None,
     episode: int = 1,
     total_episodes: int = 1,
@@ -126,7 +127,7 @@ def build_story_prompt(
     min_pages, max_pages = page_range_for_book(book_id)
     page_count = (min_pages + max_pages) // 2
     allowed_characters = recurring_characters or [protagonist]
-    return STORY_GENERATION_PROMPT.format(
+    prompt = STORY_GENERATION_PROMPT.format(
         age=age,
         level=level,
         theme=theme,
@@ -143,6 +144,13 @@ def build_story_prompt(
         max_pages=max_pages,
         max_words=max_words,
     )
+    if story_title:
+        prompt += (
+            "\n\n[FIXED BOOK TITLE]\n"
+            f'The title of this book is already fixed as: "{story_title}"\n'
+            "Return that exact value in story_title. Do not create or revise a title."
+        )
+    return prompt
 
 
 def build_avoid_sentences_addendum(avoid_sentences: list[str]) -> str:
@@ -802,6 +810,7 @@ async def generate_lesson(
     age: int,
     theme: str,
     protagonist: str,
+    story_title: Optional[str] = None,
     recurring_characters: Optional[list[str]] = None,
     generate_images: bool = False,
     total_episodes: int = 1,
@@ -820,6 +829,7 @@ async def generate_lesson(
         level,
         theme,
         protagonist,
+        story_title=story_title,
         recurring_characters=recurring_characters,
         episode=episode,
         total_episodes=total_episodes,
@@ -843,7 +853,7 @@ async def generate_lesson(
 
     # 후처리는 사람이 수행한다. 여기서는 구조를 검사하거나 자동 수리하지 않는다.
     sentences = extract_story_sentences(best_text)
-    story_title = extract_story_title(best_text)
+    story_title = story_title or extract_story_title(best_text)
     min_pages, max_pages = page_range_for_book(book_id)
     if not story_title:
         print("  ✗ 동화 초안에 책 제목이 없습니다")
@@ -900,6 +910,7 @@ async def generate_lesson_if_quality_passes(
     age: int,
     theme: str,
     protagonist: str,
+    story_title: Optional[str] = None,
     recurring_characters: Optional[list[str]] = None,
     min_score: int = 70,
     generate_images: bool = False,
@@ -921,6 +932,7 @@ async def generate_lesson_if_quality_passes(
         level,
         theme,
         protagonist,
+        story_title=story_title,
         recurring_characters=recurring_characters,
         episode=episode,
         total_episodes=total_episodes,
@@ -966,7 +978,8 @@ async def generate_lesson_if_quality_passes(
             continue
 
         sentences = extract_story_sentences(best_text)
-        story_title = extract_story_title(best_text)
+        generated_story_title = extract_story_title(best_text)
+        effective_story_title = story_title or generated_story_title
         min_pages, max_pages = page_range_for_book(book_id)
         page_count_valid = min_pages <= len(sentences) <= max_pages
         if on_draft:
@@ -978,7 +991,7 @@ async def generate_lesson_if_quality_passes(
                 "quality_attempt": quality_attempt,
                 "story_model": MODELS.story_model,
                 "raw_story": best_text,
-                "story_title": story_title,
+                "story_title": effective_story_title,
                 "extracted_sentences": sentences,
                 "parse_status": "valid" if sentences else "invalid",
                 "page_count": len(sentences),
@@ -1020,7 +1033,7 @@ async def generate_lesson_if_quality_passes(
             page_count_valid = min_pages <= len(sentences) <= max_pages
             print(f"  → JSON 자동 수리 완료 ({len(sentences)}문장 추출)")
 
-        if not story_title:
+        if not effective_story_title:
             best_failure = {
                 "theme": theme,
                 "accepted": False,
@@ -1031,6 +1044,10 @@ async def generate_lesson_if_quality_passes(
             }
             print(f"  초안 재생성 {quality_attempt}회차: 책 제목 누락")
             continue
+
+        # 제목은 책 전체에서 한 번만 정한다. 이미 정해진 제목이 전달된 경우
+        # 각 lesson 모델 응답이 다른 제목을 내더라도 저장 값은 바꾸지 않는다.
+        story_title = effective_story_title
 
         if not page_count_valid:
             best_failure = {

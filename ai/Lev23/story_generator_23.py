@@ -99,7 +99,7 @@ def accepted_sentences(item: dict[str, Any]) -> list[str]:
 
 def accepted_story_title(item: dict[str, Any], plan: dict[str, Any]) -> str:
 	"""Return the Level 1 title that must be preserved in every rewrite."""
-	title = item.get("story_title") or plan.get("story_title")
+	title = plan.get("story_title") or item.get("story_title")
 	return str(title).strip() if title else ""
 
 
@@ -514,6 +514,12 @@ async def generate_level_book(
 ) -> list[dict[str, Any]]:
 	"""Generate all lessons for one level so it can be saved independently."""
 	validate_episode_order(accepted, plan)
+	# 책 제목은 lesson별 값이 아니다. plan 제목을 우선 사용하고, 구형 plan에
+	# 없으면 첫 Level 1 lesson 제목을 책 전체의 고정 제목으로 삼는다.
+	fixed_story_title = accepted_story_title(accepted[0], plan)
+	if not fixed_story_title:
+		raise ValueError("The book does not contain a story_title.")
+	plan = {**plan, "story_title": fixed_story_title}
 	total_episodes = len(plan["episode_beats"])
 	level_output: list[dict[str, Any]] = []
 	rewritten_sentences: list[str] = []
