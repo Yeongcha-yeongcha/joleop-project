@@ -1,0 +1,217 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  padding: 46px 22px 32px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.34) 0 10%, transparent 11%),
+    radial-gradient(circle at 78% 76%, rgba(255, 161, 0, 0.28) 0 16%, transparent 17%),
+    linear-gradient(165deg, #ffd91a 0%, #ffbf16 54%, #ff9f1c 100%);
+  color: white;
+  overflow: hidden;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+
+.page::before {
+  width: 170px;
+  height: 170px;
+  top: 72px;
+  right: -58px;
+  transform: rotate(18deg);
+}
+
+.page::after {
+  width: 220px;
+  height: 150px;
+  left: -96px;
+  bottom: 96px;
+  transform: rotate(-18deg);
+}
+
+.settingsButton {
+  position: absolute;
+  z-index: 2;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #7b5a22;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 18px rgba(211, 121, 0, 0.2);
+}
+
+.settingsButton svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.header h1 {
+  color: white;
+  font-size: 30px;
+  font-weight: 900;
+  text-shadow: 0 4px 0 rgba(218, 123, 0, 0.2);
+}
+
+.header p {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.grid {
+  position: relative;
+  z-index: 1;
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 18px;
+}
+
+.profile,
+.addProfile {
+  min-height: 178px;
+  color: #4c320e;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.avatar,
+.addProfile span {
+  width: 126px;
+  height: 126px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow:
+    0 8px 0 rgba(202, 116, 0, 0.18),
+    0 18px 36px rgba(211, 121, 0, 0.2);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.addProfile span {
+  border: 4px dashed rgba(123, 90, 34, 0.34);
+  color: #8a641f;
+  font-size: 64px;
+  line-height: 1;
+}
+
+.addProfile strong {
+  font-size: 18px;
+}
+
+.loading {
+  grid-column: 1 / -1;
+  color: #6c4d1b;
+  text-align: center;
+}
+
+.settingsBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.settingsPanel {
+  position: relative;
+  width: min(100%, 386px);
+  padding: 22px 16px 18px;
+  border-radius: 12px;
+  background: #fff8df;
+  color: #2c2115;
+  box-shadow: 0 8px 0 rgba(126, 77, 8, 0.22);
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: white;
+  color: #7b5a22;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.settingsPanel h2 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.settingCard {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 0 #ead596;
+}
+
+.settingCard + .settingCard {
+  margin-top: 12px;
+}
+
+.settingCard strong {
+  color: #3a2612;
+  font-size: 15px;
+}
+
+.settingCard span {
+  color: #7b5a22;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.settingCard button {
+  min-height: 44px;
+  border-radius: 10px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 4px 0 #d87900;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.settingCard .dangerButton {
+  background: #e5533d;
+  box-shadow: 0 4px 0 #ad321f;
+}
