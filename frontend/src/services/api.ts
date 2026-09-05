@@ -54,6 +54,7 @@ interface BackendHomeData {
     attendanceDates?: string[]
   }
   currentBook?: BackendCurrentBook | null
+  customization?: CustomizationData | null
 }
 
 interface BackendCurrentBook {
@@ -153,6 +154,15 @@ async function patch<T>(path: string, body: unknown, token?: string | null): Pro
   return handleResponse(res, 'PATCH', path)
 }
 
+async function put<T>(path: string, body: unknown, token?: string | null): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify(body),
+  })
+  return handleResponse(res, 'PUT', path)
+}
+
 async function del<T>(path: string, token?: string | null): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'DELETE',
@@ -217,7 +227,7 @@ export async function fetchUserStats(): Promise<UserStats> {
   }
 }
 
-export async function fetchHome(): Promise<{ currentBook: Book | null; stats: UserStats }> {
+export async function fetchHome(): Promise<{ currentBook: Book | null; stats: UserStats; customization?: CustomizationData | null }> {
   if (BASE_URL && getProfileToken()) {
     const data = await get<BackendHomeData>('/home', getProfileToken())
     const maxEnergy = data.status.maxEnergy || 1
@@ -233,9 +243,49 @@ export async function fetchHome(): Promise<{ currentBook: Book | null; stats: Us
         nextEnergyInSeconds: data.status.nextEnergyInSeconds,
         attendanceDates: data.status.attendanceDates,
       },
+      customization: data.customization ?? null,
     }
   }
   return { currentBook: BOOKS.find((book) => book.status === 'reading') ?? null, stats: await fetchUserStats() }
+}
+
+export interface CustomizationData {
+  totalStars: number
+  spentStars: number
+  availableStars: number
+  selectedThemeId: string
+  unlockedThemeIds: string[]
+  selectedPopo: {
+    hat?: string
+    glasses?: string
+    necklace?: string
+    outfit?: string
+  }
+  unlockedPopoItemIds: string[]
+  unlockedAvatarIndices: number[]
+  profileImageUrl?: string | null
+  profileImageId?: number | null
+  profileColor?: string | null
+}
+
+export async function fetchCustomization(): Promise<CustomizationData> {
+  return get<CustomizationData>('/customization', getProfileToken())
+}
+
+export async function selectCustomizationTheme(themeId: string): Promise<CustomizationData> {
+  return put<CustomizationData>('/customization/theme', { themeId }, getProfileToken())
+}
+
+export async function savePopoCustomization(selectedPopo: CustomizationData['selectedPopo']): Promise<CustomizationData> {
+  return put<CustomizationData>('/customization/popo', { selectedPopo }, getProfileToken())
+}
+
+export async function saveAvatarCustomization(input: {
+  avatarIndex?: number | null
+  profileImageUrl?: string | null
+  profileColor?: string | null
+}): Promise<CustomizationData> {
+  return put<CustomizationData>('/customization/avatar', input, getProfileToken())
 }
 
 // ─── 책 목록  GET /books ────────────────────────────────

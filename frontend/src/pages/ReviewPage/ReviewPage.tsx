@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   fetchDueReviews,
+  fetchUserStats,
   fetchStoryTalk,
   sendStoryTalkMessage,
   submitReviewAttempt,
@@ -266,16 +267,6 @@ const modeIcons: Record<ReviewMode, string> = {
   STORY_TALK: 'AI',
 }
 
-const weekDays = [
-  { label: 'Mon', state: 'done' },
-  { label: 'Tue', state: 'done' },
-  { label: 'Wed', state: 'done' },
-  { label: 'Thu', state: 'today' },
-  { label: 'Fri', state: 'next' },
-  { label: 'Sat', state: 'next' },
-  { label: 'Sun', state: 'next' },
-]
-
 const smartFlowCards = [
   { label: 'Word', icon: 'A', tone: 'word' },
   { label: 'Sentence', icon: '', tone: 'sentence' },
@@ -283,6 +274,25 @@ const smartFlowCards = [
   { label: 'Sentence', icon: '', tone: 'sentence' },
   { label: 'Chat', icon: '...', tone: 'chat' },
 ]
+
+function buildWeekDays(attendanceDates: string[] = []) {
+  const today = new Date()
+  const todayIso = today.toISOString().slice(0, 10)
+  const mondayOffset = (today.getDay() + 6) % 7
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - mondayOffset)
+  const attended = new Set(attendanceDates)
+
+  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, index) => {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + index)
+    const iso = day.toISOString().slice(0, 10)
+    return {
+      label,
+      state: iso === todayIso ? 'today' : attended.has(iso) ? 'done' : 'next',
+    }
+  })
+}
 
 function starsForScore(score: number) {
   if (score >= 90) return 3
@@ -378,6 +388,7 @@ export default function ReviewPage() {
   const [storyTalk, setStoryTalk] = useState<StoryTalkData | null>(null)
   const [storyMessage, setStoryMessage] = useState('')
   const [storyReply, setStoryReply] = useState('')
+  const [attendanceDates, setAttendanceDates] = useState<string[]>([])
 
   const current = reviewQueue[index]
   const doneCount = Object.keys(results).length
@@ -388,8 +399,12 @@ export default function ReviewPage() {
     return Math.round((values.filter(Boolean).length / values.length) * 100)
   }, [results])
   const rightOptions = useMemo(() => shuffle(current.pairs?.map((pair) => pair.right) ?? []), [current])
+  const weekDays = useMemo(() => buildWeekDays(attendanceDates), [attendanceDates])
 
   useEffect(() => {
+    fetchUserStats()
+      .then((stats) => setAttendanceDates(stats.attendanceDates ?? []))
+      .catch(() => undefined)
     if (!usesBackendApi()) return
     fetchDueReviews(5, 'SMART_MIX')
       .then((data) => {

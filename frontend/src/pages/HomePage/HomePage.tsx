@@ -50,6 +50,10 @@ export default function HomePage() {
       .then((home) => {
         if (home.currentBook && !selectedBook) selectBook(home.currentBook)
         useAppStore.setState({ userStats: home.stats })
+        if (home.customization) {
+          setSelectedThemeId(home.customization.selectedThemeId)
+          setPopoCustomization(home.customization.selectedPopo)
+        }
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -64,6 +68,17 @@ export default function HomePage() {
   useEffect(() => {
     const syncSelectedTheme = () => setSelectedThemeId(readSelectedThemeId())
     const syncCustomization = () => {
+      if (usesBackendApi()) {
+        fetchHome()
+          .then((home) => {
+            if (home.customization) {
+              setSelectedThemeId(home.customization.selectedThemeId)
+              setPopoCustomization(home.customization.selectedPopo)
+            }
+          })
+          .catch(() => undefined)
+        return
+      }
       syncSelectedTheme()
       setPopoCustomization(readPopoCustomization())
     }

@@ -1,6 +1,13 @@
-import { type CSSProperties, useMemo, useState } from 'react'
+import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
+import {
+  fetchCustomization,
+  savePopoCustomization,
+  selectCustomizationTheme,
+  usesBackendApi,
+  type CustomizationData,
+} from '../../services/api'
 import {
   DEFAULT_HOME_BACKGROUND_THEME_ID,
   HOME_BACKGROUND_THEMES,
@@ -68,9 +75,10 @@ export default function CustomizePage() {
   const [previewPopo, setPreviewPopo] = useState<PopoCustomization>(() => readJson(POPO_CUSTOMIZATION_KEY, {}))
   const [popoUnlocks, setPopoUnlocks] = useState<string[]>(() => readJson(POPO_UNLOCKS_KEY, []))
   const [popoSpent, setPopoSpent] = useState(() => Number(window.localStorage.getItem(POPO_SPENT_KEY) || '0'))
+  const [customization, setCustomization] = useState<CustomizationData | null>(null)
   const [message, setMessage] = useState('')
 
-  const points = Math.max(0, userStats.hearts - themeSpent - popoSpent)
+  const points = customization?.availableStars ?? Math.max(0, userStats.hearts - themeSpent - popoSpent)
   const previewTheme = useMemo(() => (
     HOME_BACKGROUND_THEMES.find((theme) => theme.id === previewThemeId) ?? HOME_BACKGROUND_THEMES[0]
   ), [previewThemeId])
@@ -82,6 +90,21 @@ export default function CustomizePage() {
   const previewItems = popoItems.filter((item) => previewPopo[item.kind] === item.id)
   const previewCost = previewItems.reduce((sum, item) => sum + (isPopoOwned(item) ? 0 : item.price), 0)
 
+  useEffect(() => {
+    if (!usesBackendApi()) return
+    fetchCustomization()
+      .then((data) => {
+        setCustomization(data)
+        setSelectedThemeId(data.selectedThemeId)
+        setPreviewThemeId(data.selectedThemeId)
+        setThemeUnlocks(data.unlockedThemeIds)
+        setPopoCustomization(data.selectedPopo)
+        setPreviewPopo(data.selectedPopo)
+        setPopoUnlocks(data.unlockedPopoItemIds)
+      })
+      .catch(() => setMessage('Could not load style.'))
+  }, [])
+
   const persistTheme = (theme: HomeBackgroundTheme, nextUnlocks = themeUnlocks, nextSpent = themeSpent) => {
     setSelectedThemeId(theme.id)
     setPreviewThemeId(theme.id)
@@ -92,15 +115,43 @@ export default function CustomizePage() {
     window.localStorage.setItem(THEME_SPENT_KEY, String(nextSpent))
   }
 
-  const chooseTheme = (theme: HomeBackgroundTheme) => {
+  const applyCustomization = (data: CustomizationData) => {
+    setCustomization(data)
+    setSelectedThemeId(data.selectedThemeId)
+    setPreviewThemeId(data.selectedThemeId)
+    setThemeUnlocks(data.unlockedThemeIds)
+    setPopoCustomization(data.selectedPopo)
+    setPreviewPopo(data.selectedPopo)
+    setPopoUnlocks(data.unlockedPopoItemIds)
+  }
+
+  const chooseTheme = async (theme: HomeBackgroundTheme) => {
     setPreviewThemeId(theme.id)
     if (isThemeOwned(theme)) {
-      persistTheme(theme)
+      if (usesBackendApi()) {
+        try {
+          applyCustomization(await selectCustomizationTheme(theme.id))
+        } catch {
+          setMessage('Could not save this room.')
+          return
+        }
+      } else {
+        persistTheme(theme)
+      }
       setMessage(`${theme.name} is on!`)
       return
     }
     if (points < theme.price) {
       setMessage(`You need ${theme.price} stars for ${theme.name}.`)
+      return
+    }
+    if (usesBackendApi()) {
+      try {
+        applyCustomization(await selectCustomizationTheme(theme.id))
+        setMessage(`${theme.name} is yours!`)
+      } catch {
+        setMessage('Could not buy this room.')
+      }
       return
     }
     const nextUnlocks = themeUnlocks.includes(theme.id) ? themeUnlocks : [...themeUnlocks, theme.id]
@@ -125,9 +176,18 @@ export default function CustomizePage() {
       : `${item.name} is preview only. Buy it with Save Look to wear it at home.`)
   }
 
-  const savePopoLook = () => {
+  const savePopoLook = async () => {
     if (previewCost > points) {
       setMessage(`You need ${previewCost} stars to save this look.`)
+      return
+    }
+    if (usesBackendApi()) {
+      try {
+        applyCustomization(await savePopoCustomization(previewPopo))
+        setMessage(previewCost > 0 ? `Bought for ${previewCost} stars. Popo will wear this at home!` : 'Popo will wear this at home!')
+      } catch {
+        setMessage('Could not save Popo look.')
+      }
       return
     }
     const nextUnlocks = Array.from(new Set([...popoUnlocks, ...previewItems.map((item) => item.id)]))

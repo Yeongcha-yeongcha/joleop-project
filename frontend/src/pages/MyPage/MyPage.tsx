@@ -2,12 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   deleteProfile,
+  fetchCustomization,
   fetchUserStats,
   loginProfile,
   logoutProfile,
+  saveAvatarCustomization,
   updateProfile,
   updateProfilePassword,
+  usesBackendApi,
   type ChildProfile,
+  type CustomizationData,
 } from '../../services/api'
 import type { UserStats } from '../../types'
 import {
@@ -91,6 +95,7 @@ export default function MyPage() {
   })
   const [points, setPoints] = useState(0)
   const [stats, setStats] = useState<UserStats>({ streak: 0, hearts: 0, xpPercent: 0 })
+  const [, setCustomization] = useState<CustomizationData | null>(null)
   const [avatarPreview, setAvatarPreview] = useState(() => getProfileImage(initialProfile))
   const [avatarColor, setAvatarColor] = useState(() => getProfileColor(initialProfile))
 
@@ -100,6 +105,21 @@ export default function MyPage() {
       setStats(stats)
       setPoints(Math.max(0, stats.hearts - spent))
     })
+    if (usesBackendApi()) {
+      fetchCustomization()
+        .then((data) => {
+          setCustomization(data)
+          setUnlockedAvatars(new Set(data.unlockedAvatarIndices))
+          setPoints(data.availableStars)
+          if (data.profileImageUrl !== undefined) {
+            setAvatarPreview(data.profileImageUrl)
+          }
+          if (data.profileColor) {
+            setAvatarColor(data.profileColor)
+          }
+        })
+        .catch(() => undefined)
+    }
   }, [])
 
   const syncProfile = (nextProfile: ChildProfile) => {
@@ -144,6 +164,15 @@ export default function MyPage() {
     setIsSaving(true)
     setMessage('')
     try {
+      if (usesBackendApi()) {
+        const data = await saveAvatarCustomization({ avatarIndex: index, profileImageUrl: avatars[index] })
+        setCustomization(data)
+        setUnlockedAvatars(new Set(data.unlockedAvatarIndices))
+        setPoints(data.availableStars)
+        syncProfile({ ...profile, profileImageUrl: data.profileImageUrl ?? avatars[index] })
+        setMessage(isUnlocked ? 'Your picture changed!' : 'New picture unlocked!')
+        return
+      }
       if (!isUnlocked) {
         const nextUnlocked = new Set(unlockedAvatars)
         nextUnlocked.add(index)
@@ -160,24 +189,36 @@ export default function MyPage() {
     }
   }
 
-  const useSolidAvatar = () => {
+  const useSolidAvatar = async () => {
     if (!profile) return
     const color = getProfileColor(profile)
-    saveProfileColor(profile.profileId, color)
-    saveProfileImageOverride(profile.profileId, '')
+    if (usesBackendApi()) {
+      const data = await saveAvatarCustomization({ profileImageUrl: null, profileColor: color })
+      setCustomization(data)
+      setPoints(data.availableStars)
+    } else {
+      saveProfileColor(profile.profileId, color)
+      saveProfileImageOverride(profile.profileId, '')
+    }
     setAvatarPreview(null)
-    setAvatarColor(color)
     syncProfile({ ...profile, profileImageUrl: null })
+    setAvatarColor(color)
     setMessage('Simple color is on!')
   }
 
   const uploadSelfie = (file: File | null) => {
     if (!profile || !file) return
     const reader = new FileReader()
-    reader.onload = () => {
+    reader.onload = async () => {
       const imageUrl = String(reader.result || '')
       if (!imageUrl) return
-      saveProfileImageOverride(profile.profileId, imageUrl)
+      if (usesBackendApi()) {
+        const data = await saveAvatarCustomization({ profileImageUrl: imageUrl })
+        setCustomization(data)
+        setPoints(data.availableStars)
+      } else {
+        saveProfileImageOverride(profile.profileId, imageUrl)
+      }
       setAvatarPreview(imageUrl)
       syncProfile({ ...profile, profileImageUrl: imageUrl })
       setMessage('Your selfie is on!')
