@@ -27,6 +27,7 @@ OPENAPI_TAGS = [
     },
     {"name": "Learning - Roleplay", "description": "Mock roleplay course flow."},
     {"name": "Reviews", "description": "Spaced review cards and memory scheduling."},
+    {"name": "Customization", "description": "Room, Popo, and avatar customization."},
 ]
 
 

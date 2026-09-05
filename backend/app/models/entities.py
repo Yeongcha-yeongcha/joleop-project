@@ -156,6 +156,11 @@ class ChildProfile(UpdatedTimestampMixin, Base):
         back_populates="profile",
         passive_deletes=True,
     )
+    customization: Mapped["ProfileCustomization | None"] = relationship(
+        back_populates="profile",
+        passive_deletes=True,
+        uselist=False,
+    )
 
 
 class OnboardingResult(TimestampMixin, Base):
@@ -568,6 +573,54 @@ class ReviewAttempt(TimestampMixin, Base):
     next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     card: Mapped[ReviewCard] = relationship(back_populates="attempts")
+
+
+class ProfileCustomization(UpdatedTimestampMixin, Base):
+    __tablename__ = "profile_customizations"
+    __table_args__ = (
+        UniqueConstraint("profile_id", name="uq_profile_customizations_profile_id"),
+    )
+
+    customization_id: Mapped[int] = mapped_column(bigint_pk, primary_key=True)
+    profile_id: Mapped[int] = mapped_column(
+        bigint_fk,
+        ForeignKey("child_profiles.profile_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    selected_theme_id: Mapped[str] = mapped_column(
+        String,
+        server_default=text("'cream-book-room'"),
+        nullable=False,
+    )
+    unlocked_theme_ids: Mapped[list[str]] = mapped_column(
+        JSONB,
+        server_default=text("'[\"cream-book-room\"]'::jsonb"),
+        nullable=False,
+    )
+    selected_popo: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default=text("'{}'::jsonb"),
+        nullable=False,
+    )
+    unlocked_popo_item_ids: Mapped[list[str]] = mapped_column(
+        JSONB,
+        server_default=text("'[]'::jsonb"),
+        nullable=False,
+    )
+    unlocked_avatar_indices: Mapped[list[int]] = mapped_column(
+        JSONB,
+        server_default=text("'[0]'::jsonb"),
+        nullable=False,
+    )
+    profile_color: Mapped[str | None] = mapped_column(String)
+    spent_stars: Mapped[int] = mapped_column(
+        Integer,
+        server_default=text("0"),
+        nullable=False,
+    )
+
+    profile: Mapped[ChildProfile] = relationship(back_populates="customization")
 
 
 class RefreshToken(TimestampMixin, Base):

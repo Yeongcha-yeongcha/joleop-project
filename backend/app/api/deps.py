@@ -9,6 +9,7 @@ from app.db.session import get_db_session
 from app.models import ChildProfile, Parent
 from app.services.auth import AuthService
 from app.services.books import BookService
+from app.services.customizations import CustomizationService
 from app.services.learning_sessions import LearningSessionService
 from app.services.onboarding import OnboardingService
 from app.services.profiles import ProfileService
@@ -48,6 +49,12 @@ def get_learning_session_service(
 
 def get_review_service(session: AsyncSession = Depends(get_db)) -> ReviewService:
     return ReviewService(session=session)
+
+
+def get_customization_service(
+    session: AsyncSession = Depends(get_db),
+) -> CustomizationService:
+    return CustomizationService(session=session)
 
 
 def get_speech_to_text_service() -> SpeechToTextService:

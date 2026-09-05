@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppException
 from app.models import Book, ChildProfile, CourseType, Difficulty, LearningSession, LearningSessionStatus, UserBookProgress
+from app.services.customizations import CustomizationService
 from app.services.energy import EnergyService
 
 
@@ -10,11 +11,13 @@ class BookService:
     def __init__(self, *, session: AsyncSession) -> None:
         self.session = session
         self.energy_service = EnergyService()
+        self.customization_service = CustomizationService(session=session)
 
     async def home(self, *, profile: ChildProfile) -> dict:
         energy = self.energy_service.apply_recharge(profile)
         attendance_dates = await self._attendance_dates(profile.profile_id)
         progress = await self._current_progress(profile.profile_id)
+        customization = await self.customization_service.get(profile=profile)
         current_book = None
         if progress is not None:
             book = await self._book_by_id(progress.book_id)
@@ -35,6 +38,7 @@ class BookService:
                 **energy,
             },
             "currentBook": current_book,
+            "customization": customization,
         }
 
     async def list_books(self, *, profile: ChildProfile) -> dict:

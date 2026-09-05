@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import status
 from fastapi.responses import JSONResponse
 
-from app.api.v1 import auth, books, learning_sessions, onboarding, parents, profiles, reviews, users
+from app.api.v1 import auth, books, customizations, learning_sessions, onboarding, parents, profiles, reviews, users
 from app.db.session import database_is_ready
 
 api_router = APIRouter()
@@ -17,6 +17,7 @@ api_router.include_router(books.router)
 api_router.include_router(learning_sessions.book_sessions_router)
 api_router.include_router(learning_sessions.router)
 api_router.include_router(reviews.router)
+api_router.include_router(customizations.router)
 
 
 @api_router.get("/health", tags=["health"])
