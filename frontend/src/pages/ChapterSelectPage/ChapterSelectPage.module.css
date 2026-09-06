@@ -1,0 +1,146 @@
+.page {
+  width: 100%;
+  height: 100dvh;
+  padding:
+    calc(24px + env(safe-area-inset-top, 0px))
+    20px
+    calc(28px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 219, 102, 0.3), transparent 20%),
+    radial-gradient(circle at 20% 28%, rgba(115, 218, 255, 0.22), transparent 24%),
+    linear-gradient(180deg, #214f72 0%, #78b9d0 48%, #fff3ce 100%);
+  color: #fffdf4;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.backButton {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(255, 253, 244, 0.94);
+  color: #7a4a17;
+  box-shadow: 0 6px 0 rgba(83, 46, 5, 0.18);
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.header h1 {
+  color: white;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(13, 42, 67, 0.28);
+}
+
+.header p {
+  margin-top: 8px;
+  color: rgba(255, 253, 244, 0.86);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.chapterCard {
+  min-width: 0;
+  min-height: 208px;
+  padding: 12px;
+  display: grid;
+  grid-template-rows: 82px auto 1fr auto;
+  gap: 8px;
+  border: 3px solid rgba(255, 255, 255, 0.72);
+  border-radius: 14px;
+  background: rgba(255, 253, 244, 0.9);
+  color: #2f210f;
+  box-shadow: 0 7px 0 rgba(35, 57, 66, 0.24), 0 14px 24px rgba(21, 45, 58, 0.2);
+}
+
+.chapterCard:active {
+  transform: translateY(3px);
+  box-shadow: 0 4px 0 rgba(35, 57, 66, 0.24), 0 10px 20px rgba(21, 45, 58, 0.18);
+}
+
+.planet {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5) 0 10px, transparent 11px),
+    linear-gradient(135deg, #ffcf5c, #d6b584 50%, #8ab8a6);
+  box-shadow: inset -10px -12px 0 rgba(81, 64, 42, 0.12), 0 8px 12px rgba(40, 57, 59, 0.2);
+}
+
+.chapterCard strong {
+  color: #2a1c0b;
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 900;
+  text-align: center;
+}
+
+.chapterCard em {
+  color: #76552a;
+  font-size: 11px;
+  line-height: 1.25;
+  font-style: normal;
+  font-weight: 900;
+  text-align: center;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  min-height: 23px;
+  font-size: 24px;
+  line-height: 1;
+  -webkit-text-stroke: 1px #704414;
+}
+
+.starOn {
+  color: #ffbd1f;
+}
+
+.starOff {
+  color: #d5cec0;
+}
+
+.locked {
+  opacity: 0.58;
+  filter: grayscale(0.8);
+}
+
+.locked .planet {
+  background:
+    linear-gradient(135deg, rgba(0, 0, 0, 0.16), rgba(255, 255, 255, 0.18)),
+    #9a9a9a;
+}
+
+@media (max-width: 370px) {
+  .page {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .grid {
+    gap: 12px;
+  }
+
+  .chapterCard {
+    min-height: 196px;
+  }
+}

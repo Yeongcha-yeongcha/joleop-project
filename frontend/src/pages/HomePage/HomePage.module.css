@@ -1,0 +1,407 @@
+.page {
+  --home-background: none;
+  --theme-fallback:
+    radial-gradient(circle at 78% 36%, rgba(255, 201, 88, 0.28), transparent 24%),
+    linear-gradient(180deg, #fff2c3 0%, #fff8df 56%, #fffdf4 100%);
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff7dd;
+  color: #251609;
+}
+
+.header {
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
+  padding: 8px 20px 0;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 10px 18px 0;
+}
+
+.backgroundLayer {
+  position: absolute;
+  inset: -72px 0 0;
+  background-image: var(--home-background), var(--theme-fallback);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat;
+}
+
+.backgroundLayer::before {
+  content: '';
+  position: absolute;
+  left: 26px;
+  top: 108px;
+  width: 134px;
+  height: 158px;
+  border: 8px solid #ffd48a;
+  border-radius: 13px;
+  background:
+    linear-gradient(90deg, transparent 47%, rgba(255, 248, 224, 0.95) 47% 53%, transparent 53%),
+    linear-gradient(180deg, transparent 47%, rgba(255, 248, 224, 0.95) 47% 53%, transparent 53%),
+    radial-gradient(circle at 76% 25%, #ffe074 0 19px, transparent 20px),
+    radial-gradient(ellipse at 22% 60%, white 0 30px, transparent 31px),
+    linear-gradient(180deg, #92dcff 0%, #bceeff 100%);
+  box-shadow: 0 8px 18px rgba(117, 73, 20, 0.14);
+}
+
+.backgroundLayer::after {
+  content: none;
+}
+
+.mascotStage {
+  position: relative;
+  z-index: 2;
+  width: min(50vw, 214px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.mascot {
+  width: 100%;
+  height: 100%;
+  max-height: min(31dvh, 252px);
+  object-fit: contain;
+  filter: drop-shadow(0 18px 18px rgba(71, 42, 8, 0.22));
+}
+
+.popoHat,
+.popoGlasses,
+.popoNecklace,
+.popoOutfit {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  pointer-events: none;
+}
+
+.popoHat {
+  top: 3%;
+  width: 48%;
+  height: 16%;
+  border-radius: 50% 50% 12px 12px;
+  transform: translateX(-50%) rotate(-4deg);
+  background: #ffbf38;
+  box-shadow: inset 0 -7px 0 rgba(111, 62, 0, 0.14);
+}
+
+.hat_star-cap {
+  background: #7b55e8;
+}
+
+.hat_star-cap::before {
+  content: '★';
+  position: absolute;
+  left: 38%;
+  top: -52%;
+  color: #ffe76f;
+  font-size: 24px;
+}
+
+.popoGlasses {
+  top: 24%;
+  width: 40%;
+  height: 12%;
+  transform: translateX(-50%);
+}
+
+.popoGlasses::before,
+.popoGlasses::after {
+  content: '';
+  position: absolute;
+  width: 38%;
+  height: 76%;
+  border-radius: 11px;
+  background: #2d2117;
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.22);
+}
+
+.popoGlasses::before {
+  left: 4px;
+}
+
+.popoGlasses::after {
+  right: 4px;
+}
+
+.glasses_round-glasses::before,
+.glasses_round-glasses::after {
+  border-radius: 50%;
+}
+
+.popoNecklace {
+  top: 44%;
+  width: 34%;
+  height: 15%;
+  border-bottom: 5px dotted #ffe16d;
+  border-radius: 0 0 50% 50%;
+  transform: translateX(-50%);
+}
+
+.necklace_heart-necklace::after {
+  content: '♥';
+  position: absolute;
+  left: 39%;
+  bottom: -48%;
+  color: #ff6d8d;
+  font-size: 22px;
+}
+
+.popoOutfit {
+  top: 48%;
+  width: 45%;
+  height: 25%;
+  border-radius: 26px 26px 17px 17px;
+  transform: translateX(-50%);
+  background: rgba(95, 172, 255, 0.82);
+  mix-blend-mode: multiply;
+}
+
+.outfit_orange-vest {
+  background: rgba(255, 155, 49, 0.84);
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: -17px;
+  width: min(128vw, 560px);
+  height: 156px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: #8dd4ff;
+  box-shadow:
+    inset 0 -16px 0 rgba(27, 99, 150, 0.12),
+    0 14px 22px rgba(84, 49, 15, 0.12);
+}
+
+.heldBook {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 34px;
+  width: 66px;
+  height: 84px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+}
+
+.heldBook:active {
+  transform: translateX(-50%) scale(0.97);
+}
+
+.heldBook img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 8px rgba(60, 41, 14, 0.2));
+}
+
+.panel {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  padding: 14px 34px calc(98px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: linear-gradient(180deg, rgba(255, 253, 244, 0) 0%, rgba(255, 253, 244, 0.96) 16%, #fffdf7 100%);
+}
+
+.bookCard {
+  min-height: 112px;
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 2px solid rgba(231, 222, 207, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 5px 0 #e5d9c9, 0 13px 24px rgba(80, 54, 20, 0.1);
+  text-align: left;
+}
+
+.bookCard:active {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #e5d9c9, 0 9px 18px rgba(80, 54, 20, 0.1);
+}
+
+.bookCover {
+  width: 76px;
+  height: 88px;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 8px rgba(60, 41, 14, 0.18));
+}
+
+.bookMeta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bookMeta em {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  color: #777;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.bookMeta strong {
+  color: #171717;
+  font-size: 20px;
+  line-height: 1.08;
+}
+
+.bookMeta span {
+  color: #707070;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.progressTrack {
+  height: 14px;
+  border-radius: 999px;
+  background: #ede6db;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd66d, #ffbd55);
+  transition: width 0.3s ease;
+}
+
+.startButton {
+  width: 100%;
+  min-height: 62px;
+  border-radius: 12px;
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 7px 0 #d47900;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.startButton:disabled {
+  background: #bfbfbf;
+  box-shadow: 0 7px 0 #8a8a8a;
+}
+
+.startButton:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 4px 0 #d47900;
+}
+
+.theme_sky-dream-room {
+  --theme-fallback:
+    radial-gradient(circle at 75% 20%, rgba(255, 255, 255, 0.9) 0 34px, transparent 35px),
+    radial-gradient(ellipse at 30% 28%, rgba(255, 255, 255, 0.92) 0 44px, transparent 45px),
+    linear-gradient(180deg, #aee6ff 0%, #eaf9ff 54%, #fff8dd 100%);
+}
+
+.theme_forest-cozy-room {
+  --theme-fallback:
+    radial-gradient(circle at 22% 18%, rgba(116, 178, 75, 0.3), transparent 26%),
+    radial-gradient(circle at 80% 26%, rgba(82, 151, 72, 0.28), transparent 22%),
+    linear-gradient(180deg, #f3f3b9 0%, #d9edb8 52%, #fff8e1 100%);
+}
+
+.theme_sunset-lounge {
+  --theme-fallback:
+    radial-gradient(circle at 80% 20%, rgba(255, 201, 90, 0.62), transparent 18%),
+    linear-gradient(180deg, #ffb66c 0%, #ffd89a 54%, #fff5dd 100%);
+}
+
+.theme_night-star-room {
+  --theme-fallback:
+    radial-gradient(circle at 20% 18%, #ffd86b 0 8px, transparent 9px),
+    radial-gradient(circle at 72% 22%, #ffe288 0 11px, transparent 12px),
+    linear-gradient(180deg, #473184 0%, #7254ad 58%, #fff1cd 100%);
+}
+
+.theme_ocean-blue-room {
+  --theme-fallback:
+    radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.45), transparent 18%),
+    radial-gradient(circle at 80% 36%, rgba(255, 212, 82, 0.42), transparent 12%),
+    linear-gradient(180deg, #4dbce9 0%, #8de4f4 54%, #d9f7f3 100%);
+}
+
+.theme_rainbow-room {
+  --theme-fallback:
+    radial-gradient(ellipse at 66% 28%, rgba(255, 180, 220, 0.5), transparent 26%),
+    radial-gradient(ellipse at 30% 20%, rgba(177, 221, 255, 0.58), transparent 28%),
+    linear-gradient(180deg, #ffd8e9 0%, #fff0c9 52%, #f7f8ff 100%);
+}
+
+.theme_mint-garden-room {
+  --theme-fallback:
+    radial-gradient(circle at 78% 22%, rgba(116, 195, 114, 0.34), transparent 25%),
+    linear-gradient(180deg, #d8f6d2 0%, #ebf9cf 52%, #fff8df 100%);
+}
+
+.theme_winter-snow-room {
+  --theme-fallback:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.92) 0 34px, transparent 35px),
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.72) 0 26px, transparent 27px),
+    linear-gradient(180deg, #cbeaff 0%, #eaf7ff 56%, #fffdf4 100%);
+}
+
+.theme_space-adventure-room,
+.theme_book {
+  --theme-fallback:
+    radial-gradient(circle at 24% 20%, #ffd86b 0 7px, transparent 8px),
+    radial-gradient(circle at 72% 26%, #ffbd68 0 15px, transparent 16px),
+    linear-gradient(180deg, #30256e 0%, #6152aa 56%, #fff0c7 100%);
+}
+
+@media (min-width: 560px) {
+  .page {
+    max-width: 390px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-height: 780px) {
+  .mascot {
+    max-height: min(28dvh, 220px);
+  }
+
+  .mascotStage {
+    width: min(46vw, 190px);
+  }
+
+  .panel {
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .startButton {
+    min-height: 56px;
+  }
+}

@@ -1,0 +1,102 @@
+.page {
+  min-height: 100dvh;
+  padding: 52px 26px 32px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  background: #fff8df;
+  color: #2c2115;
+}
+
+.lion {
+  width: 168px;
+  height: 168px;
+  object-fit: contain;
+}
+
+.page h1 {
+  margin-top: 18px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.form {
+  width: 100%;
+  margin-top: 28px;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+}
+
+.form input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dots {
+  display: flex;
+  gap: 14px;
+}
+
+.dots span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid #f0c869;
+}
+
+.dots .filled {
+  background: #ff9700;
+  border-color: #ff9700;
+}
+
+.keypad {
+  width: min(100%, 292px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.keypad button {
+  width: 100%;
+  height: 58px;
+  border-radius: 16px;
+  background: white;
+  color: #2c2115;
+  box-shadow: 0 5px 0 #ead596;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.keypad button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #ead596;
+}
+
+.keypad .utilityKey {
+  color: #9c6a25;
+  background: #fff0c7;
+}
+
+.form p {
+  color: #c8321d;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.form > button {
+  width: 100%;
+  height: 56px;
+  border-radius: 13px;
+  background: #ff9700;
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 5px 0 #d87900;
+}
+
+.form > button:disabled {
+  opacity: 0.55;
+}

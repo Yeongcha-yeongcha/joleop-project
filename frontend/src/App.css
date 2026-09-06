@@ -1,0 +1,89 @@
+.app-shell {
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 0 40px rgba(0,0,0,0.12);
+}
+
+.app-nav-button {
+  position: absolute;
+  z-index: 50;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 14px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 253, 244, 0.94);
+  color: #704414;
+  box-shadow:
+    inset 0 -4px 0 rgba(120, 68, 0, 0.12),
+    0 8px 16px rgba(70, 42, 12, 0.16);
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.app-nav-button:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 -2px 0 rgba(120, 68, 0, 0.12),
+    0 5px 10px rgba(70, 42, 12, 0.14);
+}
+
+/* On screens narrower than the app frame, expand to full width */
+@media (max-width: 390px) {
+  .app-shell {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
+/* 페이지 진입 애니메이션 */
+.page-enter {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.page-enter-up {
+  animation-name: slideInUp;
+}
+
+.page-enter-down {
+  animation-name: slideInDown;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(48px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

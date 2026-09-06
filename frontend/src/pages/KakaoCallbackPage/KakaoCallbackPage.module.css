@@ -1,0 +1,21 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 16px;
+  background: linear-gradient(165deg, #fff7bc, #ffd35a);
+  color: #9b5a00;
+  font-weight: 900;
+  text-align: center;
+}
+
+.page img {
+  width: 132px;
+  height: 132px;
+  object-fit: contain;
+}
+
+.page p {
+  font-size: 18px;
+}
