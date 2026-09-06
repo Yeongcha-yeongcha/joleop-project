@@ -18,6 +18,46 @@ class RoleplayTopic(str, Enum):
     ESCAPE       = "escape"        # 3단계: 무도회장 탈출
 
 
+def build_roleplay_conversation_flow(
+    opening_line: str,
+    max_turns: int = 3,
+) -> list[dict]:
+    """AI 오프닝 뒤에 사용자 입력과 AI 동적 응답이 교차하는 슬롯 생성."""
+    flow: list[dict] = [{
+        "sequence": 1,
+        "turn": 0,
+        "role": "assistant",
+        "type": "opening",
+        "content": opening_line,
+    }]
+    sequence = 2
+    for turn in range(1, max_turns + 1):
+        flow.append({
+            "sequence": sequence,
+            "turn": turn,
+            "role": "user",
+            "type": "input",
+            "input_key": f"user_input_{turn}",
+            "content": None,
+        })
+        sequence += 1
+        flow.append({
+            "sequence": sequence,
+            "turn": turn,
+            "role": "assistant",
+            "type": (
+                "closing_response"
+                if turn == max_turns
+                else "generated_response"
+            ),
+            "response_key": f"ai_response_{turn}",
+            "responds_to": f"user_input_{turn}",
+            "content": None,
+        })
+        sequence += 1
+    return flow
+
+
 @dataclass
 class StoryPage:
     page_number: int
@@ -49,7 +89,11 @@ class RoleplayScenario:
     player_goal: str                 # 플레이어가 달성해야 할 목표
     model_answer: str                # 모범 답안 (LLM 판단 기준)
     similar_answers: list[str] = field(default_factory=list)  # 같은 의미의 허용 답안 3개
-    hint_sequence: list[str] = field(default_factory=list)  # 3턴 후 순차 힌트
+    hint_sequence: list[str] = field(default_factory=list)  # 실패한 턴별 순차 힌트
+    character_personality: str = ""  # 장면에서 유지할 성격·동기·말투
+    opening_line: str = ""           # 캐릭터가 사용자에게 직접 건네는 첫 대사
+    max_turns: int = 3               # 사용자 발화 + 캐릭터 응답 기준 최대 턴
+    conversation_flow: list[dict] = field(default_factory=list)  # AI/사용자 입력 순서
 
 
 @dataclass

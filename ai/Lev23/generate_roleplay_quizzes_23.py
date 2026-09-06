@@ -15,7 +15,7 @@ from typing import Any
 
 from ai.llm_client import generate_text
 from scripts.generate_description_quizzes import extract_pages, parse_json_object
-from shared.models import RoleplayTopic
+from shared.models import RoleplayTopic, build_roleplay_conversation_flow
 from shared.settings import LEVEL_CONFIGS
 
 
@@ -24,8 +24,9 @@ LEVEL_RULES = {
         "Create one short situational roleplay focused on talking with a friend, "
         "expressing a feeling, or asking for simple help. Frame it as asking a "
         "friendly hunter for directions. The child should produce one short, "
-        "natural request or feeling sentence. Keep the task concrete and solvable "
-        "in a single speaking turn."
+        "natural request or feeling sentence at a time. Keep the task concrete, "
+        "and give the hunter enough scene context to sustain three connected "
+        "exchanges with the child."
     ),
     3: (
         "Create two short story-based roleplays that include a simple problem and "
@@ -49,8 +50,27 @@ Requirements:
 - Ground each mission in the supplied story's characters, emotions, objects, or
   events while using the required roleplay frame.
 - Encourage empathy, helping, confidence, choice, and natural speaking.
-- Do not require an exact sentence, a long conversation, abstract reasoning, or
-  frightening conflict.
+- Do not require an exact sentence, abstract reasoning, or frightening conflict.
+- Design each mission for three connected turns, not as a standalone prompt and
+  answer. One turn means one child utterance followed by one character reply. The
+  child may achieve the goal on any turn; after that, keep the remaining exchanges
+  naturally related to the same scene and goal.
+- The speaking order is fixed: AI opening_line, user input 1, AI response 1, user
+  input 2, AI response 2, user input 3, then the AI's closing response.
+- Describe the conversation partner in character_personality using 2-3 concrete
+  traits, their motivation in this scene, and a recognizable speaking style. Base
+  the personality on story evidence and the required roleplay frame rather than
+  using only generic traits such as "nice" or "friendly."
+- Make opening_line a short in-character line (maximum 15 words) spoken directly
+  to the child. It must end with one simple question that invites a real user
+  response, without narration, model_answer, or solving the mission for them.
+- During the conversation, the character must react to the child's latest meaning,
+  consistently show the specified personality, and use one short question or
+  gentle nudge when another reply is needed. Do not lecture, break character,
+  introduce a new mission, or reveal the answer. On the third turn, respond warmly
+  and close the scene instead of asking the child to continue.
+- Keep each child response and character reply to 1-2 short sentences. This is a
+  brief interactive version of the same mission, not a long conversation.
 - Make model_answer directly achieve mission_goal and match expected_intent.
 - Provide exactly three unique similar_answers for every mission. They must
   express the same intent as model_answer with natural but different wording.
@@ -62,6 +82,9 @@ Return ONLY valid JSON:
     {{
       "situation_summary": "...",
       "character_name": "...",
+      "character_personality": "2-3 traits, scene motivation, and speaking style",
+      "opening_line": "direct in-character question to the child, max 15 words",
+      "max_turns": 3,
       "mission_goal": "...",
       "expected_intent": "...",
       "model_answer": "one clear model response",
@@ -117,6 +140,15 @@ def fallback_roleplays(
                 f"the story: {pages[0][1]}"
             ),
             "character_name": "friendly hunter",
+            "character_personality": (
+                "Patient, practical, and quietly playful, the hunter wants the "
+                "child to find a safe path and speaks in brief, reassuring clues."
+            ),
+            "opening_line": "Hello, young traveler! Where are you trying to go?",
+            "max_turns": 3,
+            "conversation_flow": build_roleplay_conversation_flow(
+                "Hello, young traveler! Where are you trying to go?"
+            ),
             "player_goal": "Ask the hunter how to get there.",
             "model_answer": "Can you show me the way, please?",
             "similar_answers": [
@@ -135,6 +167,11 @@ def fallback_roleplays(
         {
             "scene": "You notice a safe side door while music fills the ballroom.",
             "character": "your story friend",
+            "personality": (
+                "Alert, brave, and cooperative, your friend wants everyone to "
+                "leave safely and speaks in calm, decisive questions."
+            ),
+            "opening": "This room is crowded. What safe way out do you see?",
             "goal": "Suggest using the side door to leave safely.",
             "answer": "Let's leave safely through the side door.",
             "similar": [
@@ -151,6 +188,11 @@ def fallback_roleplays(
         {
             "scene": "Your friend is nervous and needs help leaving the ballroom.",
             "character": "your story friend",
+            "personality": (
+                "Cautious, loyal, and honest about feeling nervous, your friend "
+                "wants to stay together and speaks in soft, hopeful sentences."
+            ),
+            "opening": "I feel nervous here. What should we do together?",
             "goal": "Offer help and make a plan to leave together.",
             "answer": "Stay with me, and we can leave together.",
             "similar": [
@@ -175,6 +217,10 @@ def fallback_roleplays(
                 f"{pages[min(index - 1, len(pages) - 1)][1]}"
             ),
             "character_name": stage["character"],
+            "character_personality": stage["personality"],
+            "opening_line": stage["opening"],
+            "max_turns": 3,
+            "conversation_flow": build_roleplay_conversation_flow(stage["opening"]),
             "player_goal": stage["goal"],
             "model_answer": stage["answer"],
             "similar_answers": stage["similar"],
@@ -212,7 +258,7 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
     try:
         response = generate_text(
             [{"role": "user", "content": prompt}],
-            max_tokens=1600,
+            max_tokens=2000,
             temperature=0.2,
         )
         missions = parse_json_object(response).get("missions", [])
@@ -227,7 +273,20 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
                 or (legacy_answers[0] if legacy_answers else expected)
             ).strip()
             similar_answers = normalize_similar_answers(mission, model_answer)
-            if not model_answer or len(similar_answers) != 3:
+            character_personality = str(
+                mission.get("character_personality") or ""
+            ).strip()
+            opening_line = str(mission.get("opening_line") or "").strip()
+            valid_opening_line = (
+                opening_line.endswith("?")
+                and len(opening_line.split()) <= 15
+            )
+            if (
+                not model_answer
+                or len(similar_answers) != 3
+                or not character_personality
+                or not valid_opening_line
+            ):
                 continue
             hints = [
                 str(mission.get(f"hint_{number}") or "").strip()
@@ -243,6 +302,10 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
                 "character_name": str(
                     mission.get("character_name") or "a story character"
                 ).strip(),
+                "character_personality": character_personality,
+                "opening_line": opening_line,
+                "max_turns": 3,
+                "conversation_flow": build_roleplay_conversation_flow(opening_line),
                 "player_goal": str(mission.get("mission_goal") or "").strip(),
                 "model_answer": model_answer,
                 "similar_answers": similar_answers,

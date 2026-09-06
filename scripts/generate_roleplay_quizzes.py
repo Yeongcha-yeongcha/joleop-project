@@ -14,7 +14,7 @@ from typing import Any
 
 from ai.llm_client import generate_text
 from scripts.generate_description_quizzes import extract_pages, parse_json_object
-from shared.models import RoleplayTopic
+from shared.models import RoleplayTopic, build_roleplay_conversation_flow
 from shared.settings import LEVEL_CONFIGS
 
 
@@ -23,10 +23,31 @@ You are creating speaking roleplay missions for Korean children ages 5-9 from
 an existing story lesson. Create exactly {mission_count} warm, short missions
 for English Level {level}. Infer the recurring characters from the story pages.
 
-Encourage empathy, helping, confidence, and natural speaking. Do not require an
-exact sentence, long conversation, abstract reasoning, or frightening conflict.
-For every mission, provide exactly three unique similar_answers. They must express
-the same intent as model_answer with natural but different wording.
+Requirements:
+- Encourage empathy, helping, confidence, and natural speaking. Do not require an
+  exact sentence, abstract reasoning, or frightening conflict.
+- Design each mission for three connected turns, not as a standalone prompt and
+  answer. One turn means one child utterance followed by one character reply. The
+  child may achieve the goal on any turn; after that, keep the remaining exchanges
+  naturally related to the same scene and goal.
+- The speaking order is fixed: AI opening_line, user input 1, AI response 1, user
+  input 2, AI response 2, user input 3, then the AI's closing response.
+- Choose a recurring story character the child can naturally talk with. Describe
+  that character in character_personality using 2-3 concrete personality traits,
+  their motivation in this scene, and a recognizable speaking style. Base it on
+  the story rather than using only generic traits such as "nice" or "friendly."
+- Make opening_line a short in-character line (maximum 15 words) spoken directly
+  to the child. It must end with one simple question that invites a real user
+  response, without narration, model_answer, or solving the mission for them.
+- During the conversation, the character should react to the child's latest
+  meaning, consistently show the specified personality, and use one short question
+  or gentle nudge when another reply is needed. Do not lecture, break character,
+  introduce a new mission, or reveal the answer. On the third turn, respond warmly
+  and close the scene instead of asking the child to continue.
+- Keep each child response and character reply to 1-2 short sentences. This is a
+  brief interactive version of the same mission, not a long conversation.
+- For every mission, provide exactly three unique similar_answers. They must
+  express the same intent as model_answer with natural but different wording.
 
 Return ONLY valid JSON:
 {{
@@ -34,6 +55,9 @@ Return ONLY valid JSON:
     {{
       "situation_summary": "...",
       "character_name": "...",
+      "character_personality": "2-3 traits, scene motivation, and speaking style",
+      "opening_line": "direct in-character question to the child, max 15 words",
+      "max_turns": 3,
       "mission_goal": "...",
       "expected_intent": "...",
       "model_answer": "one clear model response",
@@ -75,7 +99,7 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
     try:
         response = generate_text(
             [{"role": "user", "content": prompt}],
-            max_tokens=1200,
+            max_tokens=1600,
             temperature=0.2,
         )
         missions = parse_json_object(response).get("missions", [])
@@ -100,7 +124,20 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
                 for answer in similar_answers
                 if str(answer).strip() and str(answer).strip() != model_answer
             ))[:3]
-            if not model_answer or len(similar_answers) != 3:
+            character_personality = str(
+                mission.get("character_personality") or ""
+            ).strip()
+            opening_line = str(mission.get("opening_line") or "").strip()
+            valid_opening_line = (
+                opening_line.endswith("?")
+                and len(opening_line.split()) <= 15
+            )
+            if (
+                not model_answer
+                or len(similar_answers) != 3
+                or not character_personality
+                or not valid_opening_line
+            ):
                 continue
             hints = [mission.get(f"hint_{number}", "") for number in (1, 2, 3)]
             results.append({
@@ -109,6 +146,10 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
                 "level": level,
                 "scene_description": mission.get("situation_summary", ""),
                 "character_name": mission.get("character_name", "a story character"),
+                "character_personality": character_personality,
+                "opening_line": opening_line,
+                "max_turns": 3,
+                "conversation_flow": build_roleplay_conversation_flow(opening_line),
                 "player_goal": mission.get("mission_goal", ""),
                 "model_answer": model_answer,
                 "similar_answers": similar_answers,
@@ -125,6 +166,15 @@ def generate_roleplay_quizzes(lesson: dict[str, Any]) -> list[dict[str, Any]]:
         "level": level,
         "scene_description": pages[0][1],
         "character_name": "a friendly story character",
+        "character_personality": (
+            "Kind and observant, the character wants everyone to feel safe and "
+            "speaks in cheerful, gentle questions."
+        ),
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": build_roleplay_conversation_flow(
+            "You look thoughtful. What would you like to say?"
+        ),
         "player_goal": "Say something kind and helpful.",
         "model_answer": "I can help you.",
         "similar_answers": [

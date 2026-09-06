@@ -2,9 +2,11 @@
 롤플레잉 모듈
 - Claude Haiku가 캐릭터 역할 수행
 - 정답 여부 LLM 판단
-- 3턴 초과 시 힌트 순차 제공
+- 캐릭터 성격과 목표를 유지하며 최대 3턴 대화
+- 임시 텍스트 입력과 기존 음성 입력을 모두 지원
+- 실패한 턴에는 힌트를 대화에 자연스럽게 반영
 - 10초 무음 감지 → 라이온 등장 (프론트엔드 연동용 이벤트 발행)
-- 언제든 정답을 말하면 패스
+- 목표 달성을 기억하고 3턴 대화가 끝나면 최종 판정
 """
 
 import json
@@ -15,7 +17,11 @@ from typing import Optional, Generator
 
 from shared.settings import ANTHROPIC_API_KEY, MODELS
 from ai.llm_client import generate_text
-from shared.models import RoleplayScenario, RoleplayTurn
+from shared.models import (
+    RoleplayScenario,
+    RoleplayTurn,
+    build_roleplay_conversation_flow,
+)
 from ai.pronunciation import transcribe_audio
 
 
@@ -25,9 +31,13 @@ class RoleplaySession:
     def __init__(self, scenario: RoleplayScenario):
         self.scenario = scenario
         self.turn_count = 0
+        self.max_turns = min(max(int(scenario.max_turns or 3), 1), 3)
+        self.goal_achieved = False
+        self.completed = False
         self.passed = False
         self.turns: list[RoleplayTurn] = []
         self.conversation_history: list[dict] = []
+        self.opening_line: Optional[str] = None
         self.last_speak_time = time.time()
         self.SILENCE_TIMEOUT = 10  # 초
 
@@ -39,37 +49,64 @@ class RoleplaySession:
         return f"""You are {s.character_name} in a children's fairy tale English learning game.
 
 Scene: {s.scene_description}
+Your personality, motivation, and speaking style: {s.character_personality}
 The child's goal: {s.player_goal}
 Model answer the child should eventually say: "{s.model_answer}"
 Other acceptable examples: {s.similar_answers}
+This conversation has exactly {self.max_turns} child-character exchanges unless
+the available user input ends early. One exchange is a child utterance followed
+by your response.
 
 Rules:
 - Stay in character as {s.character_name}
+- Consistently express the personality, motivation, and speaking style above
+- Treat every new child message as the next part of the same scene
+- Directly react to the meaning of the child's latest message before continuing
+- Keep the scene and the child's goal unchanged throughout the conversation
 - Use simple, friendly English appropriate for young learners (level {s.level})
 - Keep responses SHORT (1-2 sentences max)
 - Be encouraging and warm
 - Do NOT give away the answer directly
-- If the child is close, give a small nudge
-- React naturally to what the child says"""
+- If the child is close, give a small in-character nudge
+- If the child achieves the goal early, acknowledge it in character and continue
+  the same scene with one easy related question until the final exchange
+- On the final exchange, respond to the child and close the scene warmly; do not
+  ask another question or request more input"""
 
 
 # ─── AI 캐릭터 응답 생성 ─────────────────────────────────────
 
-def get_character_response(session: RoleplaySession, user_input: str) -> str:
+def get_character_response(
+    session: RoleplaySession,
+    user_input: str,
+    *,
+    is_final_turn: bool,
+) -> str:
     """Claude Haiku가 캐릭터로 응답"""
-    # 힌트 추가 여부 결정
+    # 목표를 아직 달성하지 못한 경우 현재 실패 턴에 맞는 힌트를 사용한다.
     hint_text = ""
-    if session.turn_count >= 3 and session.turn_count - 3 < len(session.scenario.hint_sequence):
-        hint_idx = session.turn_count - 3
+    hint_idx = session.turn_count - 1
+    if (
+        not session.goal_achieved
+        and hint_idx < len(session.scenario.hint_sequence)
+    ):
         hint_text = f"\n[HINT TO WORK IN NATURALLY: {session.scenario.hint_sequence[hint_idx]}]"
 
     # 대화 기록 업데이트
     session.conversation_history.append({"role": "user", "content": user_input})
 
     messages_to_send = session.conversation_history.copy()
-    if hint_text:
-        # 힌트는 마지막 user 메시지 뒤에 시스템 지시로 삽입
-        messages_to_send[-1]["content"] += hint_text
+    turn_instruction = (
+        f"\n[INTERNAL TURN CONTEXT: exchange {session.turn_count} of "
+        f"{session.max_turns}; goal_achieved={session.goal_achieved}; "
+        f"final_exchange={is_final_turn}. Follow the system rules and do not "
+        f"mention this context.]"
+    )
+    # 내부 지시는 저장된 원문 대신 전송용 복사본에만 추가한다.
+    messages_to_send[-1] = {
+        **messages_to_send[-1],
+        "content": messages_to_send[-1]["content"] + hint_text + turn_instruction,
+    }
 
     response = generate_text(
         messages_to_send,
@@ -79,6 +116,17 @@ def get_character_response(session: RoleplaySession, user_input: str) -> str:
     session.conversation_history.append({"role": "assistant", "content": response})
 
     return response
+
+
+def start_roleplay_session(session: RoleplaySession) -> str:
+    """첫 대사를 한 번만 만들고 이후 사용자 입력의 대화 문맥에 포함한다."""
+    if session.opening_line is None:
+        session.opening_line = _get_opening_line(session.scenario)
+        session.conversation_history.append({
+            "role": "assistant",
+            "content": session.opening_line,
+        })
+    return session.opening_line
 
 
 # ─── 정답 판단 ───────────────────────────────────────────────
@@ -186,38 +234,62 @@ def process_roleplay_turn(
     session: RoleplaySession,
     audio_bytes: bytes,
 ) -> RoleplayTurn:
+    """음성을 텍스트로 변환한 뒤 공통 텍스트 턴 처리기로 전달한다."""
+    user_text = transcribe_audio(audio_bytes)
+    return process_roleplay_text_turn(session, user_text)
+
+
+def process_roleplay_text_turn(
+    session: RoleplaySession,
+    user_text: str,
+) -> RoleplayTurn:
     """
-    한 턴 처리:
-    1. STT
-    2. 정답 판단
-    3. 통과 or AI 캐릭터 응답 (힌트 포함)
+    사용자 텍스트 한 턴 처리:
+    1. 현재 입력의 목표 달성 여부 판단 및 누적
+    2. 캐릭터 성격과 전체 대화 문맥을 유지한 응답 생성
+    3. 세 번째 턴에서 세션 완료
     """
+    if session.completed:
+        raise RuntimeError("Roleplay session has already reached its turn limit.")
+    user_text = user_text.strip()
+    if not user_text:
+        raise ValueError("Roleplay user input must not be empty.")
+
+    # 시작 API가 따로 호출되지 않아도 첫 대사를 대화 기록에 보존한다.
+    start_roleplay_session(session)
     session.last_speak_time = time.time()
     session.turn_count += 1
 
-    # STT
-    user_text = transcribe_audio(audio_bytes)
     print(f"\n  [롤플레잉 턴 {session.turn_count}] 사용자: '{user_text}'")
 
-    # 정답 판단 (매 턴)
-    passed, reason = judge_answer(session.scenario, user_text)
-    hint_given = session.turn_count > 3
+    # 한 번 달성한 목표는 기억하되, 대화는 세 번째 턴까지 이어간다.
+    achieved_this_turn, reason = judge_answer(session.scenario, user_text)
+    session.goal_achieved = session.goal_achieved or achieved_this_turn
+    is_final_turn = session.turn_count >= session.max_turns
+    hint_given = (
+        not session.goal_achieved
+        and session.turn_count <= len(session.scenario.hint_sequence)
+    )
+    ai_response = get_character_response(
+        session,
+        user_text,
+        is_final_turn=is_final_turn,
+    )
 
-    if passed:
-        session.passed = True
-        ai_response = f"Great job! {reason} You did it! 🎉"
-        print(f"  ✓ 패스: {reason}")
-    else:
-        ai_response = get_character_response(session, user_text)
-        if hint_given:
-            print(f"  힌트 제공 중 (턴 {session.turn_count})")
-        print(f"  AI 캐릭터: '{ai_response}'")
+    if achieved_this_turn:
+        print(f"  ✓ 목표 달성 기억: {reason}")
+    if hint_given:
+        print(f"  힌트 제공 중 (턴 {session.turn_count})")
+    print(f"  AI 캐릭터: '{ai_response}'")
+
+    session.completed = is_final_turn
+    session.passed = session.completed and session.goal_achieved
 
     turn = RoleplayTurn(
         turn_number=session.turn_count,
         user_utterance=user_text,
         ai_response=ai_response,
-        passed=passed,
+        passed=session.passed,
         hint_given=hint_given,
     )
     session.turns.append(turn)
@@ -229,7 +301,7 @@ def process_roleplay_turn(
 def run_roleplay_session(
     scenario: RoleplayScenario,
     audio_bytes_stream: list[bytes],  # 각 턴의 오디오
-    max_turns: int = 15,
+    max_turns: Optional[int] = None,
 ) -> list[RoleplayTurn]:
     """
     롤플레잉 세션 전체 처리
@@ -245,32 +317,47 @@ def run_roleplay_session(
     print(f"장면: {scenario.scene_description}")
     print(f"{'='*40}")
 
-    # 캐릭터 오프닝 멘트
-    opening = _get_opening_line(scenario)
+    # 캐릭터 오프닝 멘트를 실제 대화 기록의 첫 메시지로 저장한다.
+    opening = start_roleplay_session(session)
     print(f"  캐릭터 오프닝: '{opening}'")
 
-    for audio_bytes in audio_bytes_stream[:max_turns]:
+    requested_turns = session.max_turns if max_turns is None else max_turns
+    turn_limit = min(max(requested_turns, 0), session.max_turns)
+    for audio_bytes in audio_bytes_stream[:turn_limit]:
         turn = process_roleplay_turn(session, audio_bytes)
 
-        if session.passed:
-            print("\n  ✓ 롤플레잉 완료!")
+        if session.completed:
+            if session.passed:
+                print("\n  ✓ 3턴 롤플레잉 완료!")
+            else:
+                print("\n  3턴 롤플레잉 종료")
             break
 
         # 무음 감지 시뮬레이션 (실제는 프론트엔드에서 타이머로 처리)
         if check_silence(session):
             print("  [10초 무음] 라이온 이벤트 발행 → 프론트엔드에서 버튼 표시")
 
-    if not session.passed:
+    if session.completed and not session.passed:
         print(f"\n  [최대 턴 도달] 모범답안 공개: '{scenario.model_answer}'")
+    elif not session.completed:
+        print(f"\n  [입력 종료] 남은 턴: {session.max_turns - session.turn_count}")
 
     return session.turns
 
 
 def _get_opening_line(scenario: RoleplayScenario) -> str:
-    """캐릭터 첫 등장 대사"""
-    prompt = f"""You are {scenario.character_name}. Say one short greeting line (max 15 words) 
-to start the scene: "{scenario.scene_description}". 
-Keep it simple for young English learners."""
+    """캐릭터가 사용자에게 직접 말을 거는 첫 대사를 반환한다."""
+    if scenario.opening_line.strip():
+        return scenario.opening_line.strip()
+
+    prompt = f"""You are {scenario.character_name}.
+Personality, motivation, and speaking style: {scenario.character_personality}
+Scene: {scenario.scene_description}
+The child's goal: {scenario.player_goal}
+
+Speak directly to the child in character. Say one short opening line of no more
+than 15 words and end with one simple question that invites the child to answer.
+Do not narrate the scene, reveal the model answer, or complete the goal yourself."""
 
     return generate_text([{"role": "user", "content": prompt}], max_tokens=60)
 
@@ -291,24 +378,75 @@ class RoleplayWebSocketHandler:
     def __init__(self, scenario: RoleplayScenario):
         self.session = RoleplaySession(scenario)
 
+    def get_opening_event(self) -> dict:
+        """사용자 입력을 받기 전에 캐릭터의 첫 질문을 반환한다."""
+        opening_line = start_roleplay_session(self.session)
+        conversation_flow = (
+            self.session.scenario.conversation_flow
+            or build_roleplay_conversation_flow(
+                opening_line,
+                self.session.max_turns,
+            )
+        )
+        return {
+            "type": "roleplay_started",
+            "character_name": self.session.scenario.character_name,
+            "opening_line": opening_line,
+            "max_turns": self.session.max_turns,
+            "player_goal": self.session.scenario.player_goal,
+            "conversation_flow": conversation_flow,
+            "next_expected_role": "user",
+            "input_required": True,
+        }
+
     async def handle_audio_chunk(self, audio_bytes: bytes) -> dict:
         """오디오 수신 시 처리 → 이벤트 반환"""
-        turn = process_roleplay_turn(self.session, audio_bytes)
+        if self.session.completed:
+            return self._session_complete_event()
 
-        event = {
-            "type": "turn_result",
+        turn = process_roleplay_turn(self.session, audio_bytes)
+        return self._turn_event(turn)
+
+    async def handle_text_input(self, user_text: str) -> dict:
+        """임시 텍스트 입력을 음성 입력과 동일한 대화 흐름으로 처리한다."""
+        if self.session.completed:
+            return self._session_complete_event()
+
+        turn = process_roleplay_text_turn(self.session, user_text)
+        return self._turn_event(turn)
+
+    def _session_complete_event(self) -> dict:
+        return {
+            "type": "session_complete",
+            "turn": self.session.turn_count,
+            "passed": self.session.passed,
+            "goal_achieved": self.session.goal_achieved,
+            "session_passed": self.session.passed,
+            "remaining_turns": 0,
+            "next_expected_role": None,
+            "input_required": False,
+        }
+
+    def _turn_event(self, turn: RoleplayTurn) -> dict:
+        return {
+            "type": (
+                "session_complete"
+                if self.session.completed
+                else "turn_result"
+            ),
             "turn": turn.turn_number,
             "user_text": turn.user_utterance,
             "ai_response": turn.ai_response,
             "passed": turn.passed,
             "hint_given": turn.hint_given,
+            "goal_achieved": self.session.goal_achieved,
             "session_passed": self.session.passed,
+            "remaining_turns": self.session.max_turns - self.session.turn_count,
+            "next_expected_role": (
+                None if self.session.completed else "user"
+            ),
+            "input_required": not self.session.completed,
         }
-
-        if self.session.passed:
-            event["type"] = "session_complete"
-
-        return event
 
     def get_silence_event(self) -> dict:
         """10초 무음 감지 이벤트"""

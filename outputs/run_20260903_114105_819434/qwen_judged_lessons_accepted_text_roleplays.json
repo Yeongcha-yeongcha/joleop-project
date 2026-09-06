@@ -9,19 +9,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Popo heard a faint chirping sound coming from a nearby bush.",
-        "character_name": "Popo",
-        "player_goal": "Encourage Popo to help the bird in need.",
+        "scene_description": "Popo is helping a trapped bird in Sunflower Meadow.",
+        "character_name": "Popo the lion",
+        "character_personality": "brave, gentle, encouraging",
+        "opening_line": "I heard a faint chirping sound. Can you help me find it?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "I heard a faint chirping sound. Can you help me find it?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Encourage the child to express empathy and concern for the trapped bird.",
         "model_answer": "I want to help the little bird!",
         "similar_answers": [
-          "Let me go save the birdie!",
-          "I'll go see what's making that noise!",
-          "Can I help the bird get out?"
+          "The bird needs our help, right?",
+          "We should go see what's wrong with the bird.",
+          "Let's go help the bird together!"
         ],
         "hint_sequence": [
-          "Remember, Popo is a kind and brave lion.",
-          "The bird is trapped in thorns, so it needs help.",
-          "Use your own words to express kindness and willingness to help."
+          "Look at the picture of Popo on page 4.",
+          "Remember how Popo helped the bird in the story.",
+          "What would you do if you heard a friend was stuck?"
         ]
       }
     ]
@@ -36,19 +99,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Popo and his friends found a baby bird trapped in the bush.",
+        "scene_description": "Popo and friends found a lost baby bird trapped in the bush.",
         "character_name": "Popo",
-        "player_goal": "Encourage Popo to help the baby bird by speaking kindly.",
-        "model_answer": "Don't worry, little one. We'll work together to free you.",
+        "character_personality": "Gentle, caring, encouraging; motivated to help the bird; speaks clearly and reassuringly.",
+        "opening_line": "Don't worry, little one. Can you tell me what's wrong?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "Don't worry, little one. Can you tell me what's wrong?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "The child should express concern for the baby bird's safety.",
+        "model_answer": "It's stuck in the thorns!",
         "similar_answers": [
-          "It's okay, little bird. Let us help you get out of here.",
-          "We're here to help you, don't be scared!",
-          "Don't worry, we'll take care of you and set you free."
+          "The bird is caught in the bush!",
+          "The little bird is trapped!",
+          "The bird is stuck!"
         ],
         "hint_sequence": [
-          "Look at page 6 for Popo's kind words.",
-          "Remember what Momo said on page 4: 'Let's help our feathered friend!'",
-          "Think about how you would feel if you were the baby bird."
+          "Look at the picture on page 5.",
+          "Remember what Momo said on page 4?",
+          "What do you think Popo and friends are doing to help?"
         ]
       }
     ]
@@ -63,19 +189,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Popo's mane is tangled with thorns, making it hard to move.",
+        "scene_description": "Popo is trying to free a bird from thorns, but his mane is getting tangled.",
         "character_name": "Popo",
-        "player_goal": "Express empathy and help for the bird",
-        "model_answer": "Don't worry, little one. I'll try to untangle my mane so we can free you.",
+        "character_personality": "Gentle, proud, encouraging - Popo speaks softly and encourages others with phrases like 'I can help!' and 'Don't worry, little one.'",
+        "opening_line": "My mane is all tangled! Can you help me untangle it?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "My mane is all tangled! Can you help me untangle it?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "The child helps Popo untangle his mane so he can continue freeing the bird.",
+        "model_answer": "I can help you, Popo! Let me try to untangle your mane!",
         "similar_answers": [
-          "It's okay, little bird. Let me help you with some friends.",
-          "We need to get these thorns out of my mane so we can set you free.",
-          "Don't worry, I'm here to help you and untangle my mane too."
+          "Can I help you with that, Popo?",
+          "Let's work together to get the thorns out of your mane!",
+          "I'll help you untangle it, okay?"
         ],
         "hint_sequence": [
-          "Look at Page 2 where Popo's mane is tangled.",
-          "Remember how Popo helped the bird on Page 1?",
-          "What did Popo say in Page 4 when he was working with his friends?"
+          "Look at Page 2 and see what's happening to Popo's mane.",
+          "Remember how Popo said 'I can help!' on Page 4?",
+          "Think about how the bird is feeling in this situation."
         ]
       }
     ]
@@ -90,19 +279,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Popo is stuck in thorns and needs help from Toto.",
-        "character_name": "Toto",
-        "player_goal": "Express empathy and offer to help Popo.",
-        "model_answer": "Don't worry, I can help!",
+        "scene_description": "Toto the rabbit carefully picked up a nearby rock.",
+        "character_name": "a friendly story character",
+        "character_personality": "Kind and observant, the character wants everyone to feel safe and speaks in cheerful, gentle questions.",
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "You look thoughtful. What would you like to say?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Say something kind and helpful.",
+        "model_answer": "I can help you.",
         "similar_answers": [
-          "Don't be scared, I'll help you out!",
-          "You're stuck! Let me cut the thorns for you.",
-          "I see you're in trouble. Can I help?"
+          "Let me help you.",
+          "Can I help you?",
+          "I will help you."
         ],
         "hint_sequence": [
-          "Look at Page 3 to remember what Toto said to Popo.",
-          "Think about how you would feel if you were stuck like Popo.",
-          "Use a kind and gentle tone when speaking."
+          "Say something kind.",
+          "Offer help.",
+          "Say, I can help you."
         ]
       }
     ]
@@ -117,19 +369,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Pipi's friends are excited to work on a new project together.",
-        "character_name": "Toto",
-        "player_goal": "Encourage Toto to share his idea with Pipi and the others.",
-        "model_answer": "I have an idea! We can build something special together!",
+        "scene_description": "The friends are building a makeshift pulley system to lift a bird out of a bush.",
+        "character_name": "Pipi",
+        "character_personality": "Curious, enthusiastic, and encouraging",
+        "opening_line": "Hey there! What's your idea for helping our friend Popo?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "Hey there! What's your idea for helping our friend Popo?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Encourage the child to share their idea for helping Popo.",
+        "model_answer": "We can use vines and sticks to make a pulley system!",
         "similar_answers": [
-          "Let's work on a project that we all can do together!",
-          "I think I know what we can make! It'll be so much fun!",
-          "We should make something cool, and I'm sure we can do it!"
+          "Let's use some strong vines to lift the bird out!",
+          "I think we can build a special machine with sticks and rocks.",
+          "Can we use our skills to create something that will help Popo?"
         ],
         "hint_sequence": [
-          "Think about what Toto said in Page 3.",
-          "Remember how happy Pipi was to find a way for them to help each other.",
-          "What did Toto say he wanted to build?"
+          "Think about what you've learned from helping Popo before.",
+          "Remember how Momo helped with the path across the river?",
+          "What do you think would be helpful for lifting the bird out of the bush?"
         ]
       }
     ]
@@ -144,19 +459,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "The friends are building a bridge, but strong winds make it difficult to hold onto their creation.",
-        "character_name": "Pipi",
-        "player_goal": "Encourage Pipi to help the friends by suggesting a way to secure the bridge against the wind.",
-        "model_answer": "We can use some sticks and rocks to weigh down the bridge so it doesn't blow away!",
+        "scene_description": "The friends stood at the river, looking for a way to cross.",
+        "character_name": "a friendly story character",
+        "character_personality": "Kind and observant, the character wants everyone to feel safe and speaks in cheerful, gentle questions.",
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "You look thoughtful. What would you like to say?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Say something kind and helpful.",
+        "model_answer": "I can help you.",
         "similar_answers": [
-          "Let's put some heavy things on the bridge to keep it from moving!",
-          "We should tie some big rocks to the bridge so it stays steady!",
-          "Can we put some sticks across the bridge to hold it in place?"
+          "Let me help you.",
+          "Can I help you?",
+          "I will help you."
         ],
         "hint_sequence": [
-          "Think about what you can use to weigh down the bridge.",
-          "Remember how Pipi helped earlier with sticks and rocks?",
-          "What do you think would happen if the bridge blows away?"
+          "Say something kind.",
+          "Offer help.",
+          "Say, I can help you."
         ]
       }
     ]
@@ -171,19 +549,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Pipi and Gigi are building a fence to protect their friends from the wind.",
-        "character_name": "Pipi",
-        "player_goal": "Ask Pipi's friend if they need help with tying the pulley system.",
-        "model_answer": "Do you need my help?",
+        "scene_description": "The sun was shining brightly in Sunflower Meadow.",
+        "character_name": "a friendly story character",
+        "character_personality": "Kind and observant, the character wants everyone to feel safe and speaks in cheerful, gentle questions.",
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "You look thoughtful. What would you like to say?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Say something kind and helpful.",
+        "model_answer": "I can help you.",
         "similar_answers": [
-          "Can I tie that for you?",
-          "Do you want me to help with that?",
-          "May I assist you?"
+          "Let me help you.",
+          "Can I help you?",
+          "I will help you."
         ],
         "hint_sequence": [
-          "Look at the picture of Pipi and Gigi working together.",
-          "Remember what Gigi said, 'we can use our sticks and rocks to build a fence!'.",
-          "Think about how you would feel if someone offered to help you."
+          "Say something kind.",
+          "Offer help.",
+          "Say, I can help you."
         ]
       }
     ]
@@ -199,18 +640,81 @@
         "topic": "self_intro",
         "level": 1,
         "scene_description": "Momo is digging a trench for the bird's nest.",
-        "character_name": "Popo",
-        "player_goal": "Encourage Popo to help Momo with the task.",
-        "model_answer": "I can dig too!",
+        "character_name": "Momo",
+        "character_personality": "determined, helpful, uses simple words like 'okay' or 'let's go'",
+        "opening_line": "Hey, can you help me make this trench deeper?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "Hey, can you help me make this trench deeper?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Encourage the child to suggest a way to make the trench deeper.",
+        "model_answer": "We can use rocks or sticks to make it bigger!",
         "similar_answers": [
-          "Let me help you, Momo!",
-          "Can I use my shovel to help?",
-          "I want to help you make a safe place!"
+          "Let's add some more dirt to make it wider!",
+          "Can we use a big rock to make the trench deeper?",
+          "I think we need to dig a little bit more!"
         ],
         "hint_sequence": [
-          "Look at what Momo is doing.",
-          "We need to work together to save the bird's nest.",
-          "What can Popo do to help Momo?"
+          "Think about what Momo used to create the trench in Page 1.",
+          "Remember how the friends worked together on Page 5.",
+          "What would make it easier for the bird's nest to fit?"
         ]
       }
     ]
@@ -225,19 +729,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "The friends are helping the mother bird prepare her baby's new home.",
-        "character_name": "Popo",
-        "player_goal": "Express gratitude to the mother bird for letting them help with the garden and birdhouse.",
-        "model_answer": "Thank you so much for letting us help! We're happy we could make your baby's new home special!",
+        "scene_description": "The mother bird thanked them with a special gift – a handmade wooden birdhouse.",
+        "character_name": "a friendly story character",
+        "character_personality": "Kind and observant, the character wants everyone to feel safe and speaks in cheerful, gentle questions.",
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "You look thoughtful. What would you like to say?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Say something kind and helpful.",
+        "model_answer": "I can help you.",
         "similar_answers": [
-          "We really appreciate that you let us help with the garden and birdhouse. It was fun to work together!",
-          "Thanks for trusting us to help with your baby's new home. We had a great time making it cozy!",
-          "You're so kind to let us help. We feel happy knowing we could make a difference for your baby!"
+          "Let me help you.",
+          "Can I help you?",
+          "I will help you."
         ],
         "hint_sequence": [
-          "Remember what the mother bird said about her baby's new home?",
-          "Think about how you felt when someone helped you with something important.",
-          "Use words that show appreciation and gratitude, like 'thank you' or 'we're happy'."
+          "Say something kind.",
+          "Offer help.",
+          "Say, I can help you."
         ]
       }
     ]
@@ -252,19 +819,82 @@
         "scenario_id": "rp_1_1",
         "topic": "self_intro",
         "level": 1,
-        "scene_description": "Popo and friends are decorating Sunflower Meadow for their celebration.",
-        "character_name": "Popo",
-        "player_goal": "Describe what you see when you look at the decorated meadow.",
-        "model_answer": "Wow, it's so beautiful now! I love all the colorful streamers!",
+        "scene_description": "Popo the lion looked at the birdhouse they built.",
+        "character_name": "a friendly story character",
+        "character_personality": "Kind and observant, the character wants everyone to feel safe and speaks in cheerful, gentle questions.",
+        "opening_line": "You look thoughtful. What would you like to say?",
+        "max_turns": 3,
+        "conversation_flow": [
+          {
+            "sequence": 1,
+            "turn": 0,
+            "role": "assistant",
+            "type": "opening",
+            "content": "You look thoughtful. What would you like to say?"
+          },
+          {
+            "sequence": 2,
+            "turn": 1,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 3,
+            "turn": 1,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_1",
+            "responds_to": "user_input_1",
+            "content": null
+          },
+          {
+            "sequence": 4,
+            "turn": 2,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 5,
+            "turn": 2,
+            "role": "assistant",
+            "type": "generated_response",
+            "response_key": "ai_response_2",
+            "responds_to": "user_input_2",
+            "content": null
+          },
+          {
+            "sequence": 6,
+            "turn": 3,
+            "role": "user",
+            "type": "input",
+            "input_key": "user_input_3",
+            "content": null
+          },
+          {
+            "sequence": 7,
+            "turn": 3,
+            "role": "assistant",
+            "type": "closing_response",
+            "response_key": "ai_response_3",
+            "responds_to": "user_input_3",
+            "content": null
+          }
+        ],
+        "player_goal": "Say something kind and helpful.",
+        "model_answer": "I can help you.",
         "similar_answers": [
-          "It looks amazing with all these colorful streamers!",
-          "I'm so happy to see our meadow looking so pretty!",
-          "This is even more fun than before! Look at all the decorations!"
+          "Let me help you.",
+          "Can I help you?",
+          "I will help you."
         ],
         "hint_sequence": [
-          "Look at the picture and think about what you see.",
-          "Use words like 'beautiful', 'colorful', and 'fun' to describe your feelings.",
-          "Remember, we're celebrating our teamwork and bravery."
+          "Say something kind.",
+          "Offer help.",
+          "Say, I can help you."
         ]
       }
     ]
