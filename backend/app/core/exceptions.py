@@ -146,6 +146,15 @@ class BookLockedException(AppException):
         )
 
 
+class InsufficientEnergyException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="에너지가 부족합니다.",
+            code="INSUFFICIENT_ENERGY",
+        )
+
+
 class SessionNotFoundException(AppException):
     def __init__(self) -> None:
         super().__init__(

@@ -40,11 +40,19 @@ export default function ChapterSelectPage() {
     navigate(`/learn/${book.id}?chapter=${chapterNumber}`)
   }
 
-  if (isLoading || error || !book) {
+  if (isLoading) {
+    return (
+      <main className={styles.page}>
+        <StatusScreen isLoading />
+      </main>
+    )
+  }
+
+  if (error || !book) {
     return (
       <main className={styles.page}>
         <button className={styles.backButton} onClick={() => navigate('/home')} aria-label="Go home">←</button>
-        <StatusScreen isLoading={isLoading} error={error} onRetry={() => window.location.reload()} />
+        <StatusScreen error={error} onRetry={() => window.location.reload()} />
       </main>
     )
   }

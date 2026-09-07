@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { UserStats } from '../../types'
+import { fetchPointHistory, type PointHistoryEntry } from '../../services/api'
 import styles from './StatsBar.module.css'
 
 interface Props {
@@ -87,8 +88,37 @@ function buildCalendarDays(attendanceDates: string[]) {
   })
 }
 
+function consecutiveLearningDays(attendanceDates: string[], fallback: number) {
+  if (!attendanceDates.length) return Math.max(0, fallback)
+  const attended = new Set(attendanceDates)
+  const today = new Date()
+  let count = 0
+  for (let offset = 0; offset < 30; offset += 1) {
+    const iso = localDateIso(addDays(today, -offset))
+    if (!attended.has(iso)) break
+    count += 1
+  }
+  return count || Math.max(0, fallback)
+}
+
+function formatHistoryDate(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) {
   const [showAttendance, setShowAttendance] = useState(false)
+  const [showPoints, setShowPoints] = useState(false)
+  const [showEnergy, setShowEnergy] = useState(false)
+  const [pointHistory, setPointHistory] = useState<PointHistoryEntry[]>([])
+  const [isPointHistoryLoading, setIsPointHistoryLoading] = useState(false)
+  const [hasLoadedPointHistory, setHasLoadedPointHistory] = useState(false)
   const [remainingSeconds, setRemainingSeconds] = useState(
     stats.nextEnergyInSeconds ?? (stats.energyRechargeMinutes ?? 15) * 60,
   )
@@ -101,6 +131,7 @@ export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) 
     return attendanceDays(stats.streak)
   }, [stats.attendanceDates, stats.streak])
   const calendarDays = useMemo(() => buildCalendarDays(days), [days])
+  const displayStreak = useMemo(() => consecutiveLearningDays(days, stats.streak), [days, stats.streak])
   const monthLabel = useMemo(() => (
     new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   ), [])
@@ -117,40 +148,47 @@ export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) 
     return () => window.clearInterval(timer)
   }, [energy, maxEnergy, remainingSeconds])
 
-  const energyLabel = energy >= maxEnergy
-    ? 'Full'
-    : `+1 in ${formatTimer(remainingSeconds)}`
+  useEffect(() => {
+    if (!showPoints || hasLoadedPointHistory || isPointHistoryLoading) return
+    setIsPointHistoryLoading(true)
+    fetchPointHistory()
+      .then(setPointHistory)
+      .catch(() => setPointHistory([]))
+      .finally(() => {
+        setHasLoadedPointHistory(true)
+        setIsPointHistoryLoading(false)
+      })
+  }, [hasLoadedPointHistory, isPointHistoryLoading, showPoints])
 
   return (
     <div className={`${styles.bar} ${tone === 'dark' ? styles.dark : ''}`} data-tour="stats">
       <button className={`${styles.stat} ${styles.streak}`} onClick={() => setShowAttendance(true)} aria-label="Open attendance calendar">
         <span className={styles.icon}><StatIcon type="streak" /></span>
         <span className={styles.meta}>
-          <strong>{stats.streak}</strong>
+          <strong>{displayStreak}</strong>
           <em>Days</em>
         </span>
       </button>
-      <div className={`${styles.stat} ${styles.rewards}`}>
+      <button className={`${styles.stat} ${styles.rewards}`} onClick={() => setShowPoints(true)} aria-label="Open star history">
         <span className={styles.icon}><StatIcon type="points" /></span>
         <span className={styles.meta}>
           <strong>{stats.hearts}</strong>
           <em>Stars</em>
         </span>
-      </div>
-      <div className={`${styles.stat} ${styles.energy}`}>
+      </button>
+      <button className={`${styles.stat} ${styles.energy}`} onClick={() => setShowEnergy(true)} aria-label="Open energy status">
         <span className={styles.icon}><StatIcon type="energy" /></span>
         <span className={styles.meta}>
           <strong>{energy}/{maxEnergy}</strong>
           <em>Energy</em>
-          <small>{energyLabel}</small>
         </span>
-      </div>
+      </button>
       {showAttendance && (
         <div className={styles.attendanceOverlay} role="dialog" aria-modal="true" aria-label="Attendance calendar">
           <section className={styles.attendancePanel}>
             <button className={styles.closeButton} onClick={() => setShowAttendance(false)} aria-label="Close attendance calendar">x</button>
             <span>Learning Days</span>
-            <h2>{stats.streak} day streak</h2>
+            <h2>{displayStreak} day streak</h2>
             <strong className={styles.monthLabel}>{monthLabel}</strong>
             <div className={styles.calendarGrid}>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -172,6 +210,52 @@ export default function StatsBar({ stats, tone = 'light', onCustomize }: Props) 
               ))}
             </div>
             <p>One finished lesson marks today as a learning day.</p>
+          </section>
+        </div>
+      )}
+      {showPoints && (
+        <div className={styles.attendanceOverlay} role="dialog" aria-modal="true" aria-label="Star history">
+          <section className={styles.infoPanel}>
+            <button className={styles.closeButton} onClick={() => setShowPoints(false)} aria-label="Close star history">x</button>
+            <span>Stars</span>
+            <h2>{stats.hearts} stars</h2>
+            <div className={styles.historyList}>
+              {isPointHistoryLoading && <p>Loading history...</p>}
+              {!isPointHistoryLoading && pointHistory.length === 0 && <p>No star history yet.</p>}
+              {!isPointHistoryLoading && pointHistory.map((entry) => (
+                <div key={entry.id} className={styles.historyItem}>
+                  <span>
+                    <strong>{entry.label}</strong>
+                    <em>{formatHistoryDate(entry.occurredAt)}</em>
+                  </span>
+                  <b className={entry.amount >= 0 ? styles.earnedPoints : styles.spentPoints}>
+                    {entry.amount >= 0 ? '+' : ''}{entry.amount}
+                  </b>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+      {showEnergy && (
+        <div className={styles.attendanceOverlay} role="dialog" aria-modal="true" aria-label="Energy status">
+          <section className={styles.infoPanel}>
+            <button className={styles.closeButton} onClick={() => setShowEnergy(false)} aria-label="Close energy status">x</button>
+            <span>Energy</span>
+            <h2>{energy}/{maxEnergy}</h2>
+            <div className={styles.energyMeter}>
+              <i style={{ width: `${Math.min(100, Math.max(0, (energy / maxEnergy) * 100))}%` }} />
+            </div>
+            <p>
+              {energy >= maxEnergy
+                ? 'Energy is full.'
+                : `Next energy in ${formatTimer(remainingSeconds)}.`}
+            </p>
+            {energy < maxEnergy && (
+              <em className={styles.rechargeNote}>
+                One energy recharges every {stats.energyRechargeMinutes ?? 15} minutes.
+              </em>
+            )}
           </section>
         </div>
       )}

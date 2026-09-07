@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     PROFILE_IMAGE_BASE_URL: str = "https://cdn.example.com/profiles"
     MAX_AUDIO_UPLOAD_BYTES: int = 10 * 1024 * 1024
     COMPLETION_REWARD_HEARTS: int = 10
-    COMPLETION_REWARD_ENERGY: int = 1
+    COMPLETION_REWARD_ENERGY: int = 0
     ENERGY_RECHARGE_MINUTES: int = 15
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen3:8b"

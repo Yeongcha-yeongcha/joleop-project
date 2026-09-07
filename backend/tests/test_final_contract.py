@@ -17,10 +17,13 @@ from app.models import (
     Book,
     ChildProfile,
     CourseType,
+    DescriptionQuestion,
     Difficulty,
     LearningAttempt,
     LearningSession,
     LearningSessionStatus,
+    PointTransaction,
+    ReviewCard,
     RoleplayMessage,
     RoleplayMission,
     UserBookProgress,
@@ -49,6 +52,9 @@ class FakeResult:
     def scalar_one_or_none(self):
         return self.value
 
+    def scalar_one(self):
+        return self.value
+
     def scalars(self):
         return FakeScalarResult(self.values or [])
 
@@ -73,6 +79,7 @@ class FakeRoleplayStore:
             session_id=128,
             profile_id=101,
             book_id=1,
+            chapter_number=1,
             status=LearningSessionStatus.IN_PROGRESS,
             current_course=CourseType.ROLEPLAY,
             current_course_number=4,
@@ -108,6 +115,8 @@ class FakeRoleplayStore:
             required_turns=3,
         )
         self.messages: list[RoleplayMessage] = []
+        self.review_cards: list[ReviewCard] = []
+        self.point_transactions: list[PointTransaction] = []
         self.attempts: list[LearningAttempt] = [
             LearningAttempt(
                 attempt_id=1,
@@ -173,8 +182,14 @@ class FakeRoleplayStore:
                     if attempt.session_id == params["session_id_1"]
                 ]
             )
+        if entity is DescriptionQuestion:
+            return FakeResult(values=[])
+        if entity is ReviewCard:
+            return FakeResult(None)
         if entity is UserBookProgress:
             return FakeResult(self.progress)
+        if "reading_chunks" in str(statement):
+            return FakeResult(1)
         raise AssertionError(f"Unexpected query: {statement}")
 
     def add(self, instance) -> None:
@@ -184,7 +199,19 @@ class FakeRoleplayStore:
             instance.created_at = datetime.now(UTC)
             self.messages.append(instance)
             return
+        if isinstance(instance, PointTransaction):
+            self.point_transactions.append(instance)
+            return
+        if isinstance(instance, ReviewCard):
+            instance.card_id = len(self.review_cards) + 1
+            instance.created_at = datetime.now(UTC)
+            instance.updated_at = datetime.now(UTC)
+            self.review_cards.append(instance)
+            return
         raise AssertionError(f"Unexpected add: {instance}")
+
+    async def scalar(self, statement):
+        return (await self.execute(statement)).scalar_one_or_none()
 
     async def flush(self) -> None:
         return None
@@ -245,6 +272,7 @@ def test_required_endpoints_exist() -> None:
         ("POST", "/api/v1/learning-sessions/{sessionId}/exit"),
         ("POST", "/api/v1/learning-sessions/{sessionId}/complete"),
         ("GET", "/api/v1/learning-sessions/{sessionId}/result"),
+        ("POST", "/api/v1/reviews/story-talk/roleplay/messages"),
     }
     assert expected.issubset(actual)
 
@@ -353,7 +381,7 @@ async def test_exit_complete_result_and_recomplete_block(roleplay_context) -> No
     assert complete_response["data"]["status"] == "COMPLETED"
     assert complete_response["data"]["totalScore"] == 91
     assert complete_response["data"]["stars"] == 3
-    assert complete_response["data"]["rewards"] == {"hearts": 10, "energy": 1}
+    assert complete_response["data"]["rewards"] == {"hearts": 10, "energy": 0}
     assert roleplay_context["store"].progress.completed is True
     assert roleplay_context["store"].progress.progress == 100
 

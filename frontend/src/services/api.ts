@@ -1,8 +1,7 @@
 /**
  * API 클라이언트
  *
- * VITE_API_BASE_URL 환경 변수가 설정되면 실제 API를,
- * 없으면 src/data/ 목업 데이터를 자동으로 사용합니다.
+ * VITE_API_BASE_URL 환경 변수로 실제 API를 연결합니다.
  *
  * 연동 방법:
  *   1. .env.example → .env.local 복사
@@ -10,9 +9,7 @@
  *   3. npm run dev
  */
 
-import type { Book, Lesson, UserStats } from '../types'
-import { BOOKS } from '../data/books'
-import { LESSONS } from '../data/lessons'
+import type { Book, UserStats } from '../types'
 
 const BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? ''
 const KAKAO_CLIENT_ID: string = import.meta.env.VITE_KAKAO_CLIENT_ID ?? ''
@@ -215,16 +212,7 @@ function profileImageUrl(id?: number | null): string {
 
 export async function fetchUserStats(): Promise<UserStats> {
   if (BASE_URL && getProfileToken()) return get('/users/me/stats', getProfileToken())
-  return {
-    streak: 0,
-    hearts: 0,
-    xpPercent: 1,
-    energy: 5,
-    maxEnergy: 5,
-    energyRechargeMinutes: 15,
-    nextEnergyInSeconds: 0,
-    attendanceDates: [],
-  }
+  throw new Error('Backend API is required to load user stats.')
 }
 
 export async function fetchHome(): Promise<{ currentBook: Book | null; stats: UserStats; customization?: CustomizationData | null }> {
@@ -246,7 +234,7 @@ export async function fetchHome(): Promise<{ currentBook: Book | null; stats: Us
       customization: data.customization ?? null,
     }
   }
-  return { currentBook: BOOKS.find((book) => book.status === 'reading') ?? null, stats: await fetchUserStats() }
+  throw new Error('Backend API is required to load home data.')
 }
 
 export interface CustomizationData {
@@ -268,8 +256,24 @@ export interface CustomizationData {
   profileColor?: string | null
 }
 
+export interface PointHistoryEntry {
+  id: string
+  type: 'earned' | 'spent'
+  amount: number
+  occurredAt: string
+  label: string
+}
+
 export async function fetchCustomization(): Promise<CustomizationData> {
   return get<CustomizationData>('/customization', getProfileToken())
+}
+
+export async function fetchPointHistory(): Promise<PointHistoryEntry[]> {
+  if (BASE_URL && getProfileToken()) {
+    const data = await get<{ entries: PointHistoryEntry[] }>('/users/me/points-history', getProfileToken())
+    return data.entries
+  }
+  return []
 }
 
 export async function selectCustomizationTheme(themeId: string): Promise<CustomizationData> {
@@ -293,37 +297,9 @@ export async function saveAvatarCustomization(input: {
 export async function fetchBooks(): Promise<Book[]> {
   if (BASE_URL && getProfileToken()) {
     const data = await get<BackendBookListData>('/books', getProfileToken())
-    return hydrateBackendBooks(data.books.map(toFrontendBook))
+    return data.books.map(toFrontendBook)
   }
-  return BOOKS
-}
-
-function normalizeBookTitle(title: string): string {
-  return title.toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]/g, '')
-}
-
-function localBookFor(book: Book): Book | undefined {
-  const normalizedTitle = normalizeBookTitle(book.title)
-  return BOOKS.find((localBook) => (
-    localBook.id === book.id ||
-    normalizeBookTitle(localBook.title) === normalizedTitle
-  ))
-}
-
-function hydrateBackendBooks(backendBooks: Book[]): Book[] {
-  return backendBooks.map((book) => {
-    const localBook = localBookFor(book)
-    if (!localBook) return book
-    return {
-      ...localBook,
-      ...book,
-      title: localBook.title,
-      coverColor: book.coverColor ?? localBook.coverColor,
-      coverImage: book.coverImage ?? localBook.coverImage,
-      totalLessons: book.totalLessons,
-      currentText: book.currentText ?? localBook.currentText,
-    }
-  })
+  throw new Error('Backend API is required to load books.')
 }
 
 function publicCoverImageUrl(url?: string | null): string | undefined {
@@ -358,41 +334,18 @@ function toFrontendBook(book: BackendBook): Book {
 
 function toFrontendCurrentBook(book: BackendCurrentBook): Book {
   const progress = Math.max(0, Math.min(1, book.progress / 100))
-  const localBook = localBookFor({
+  return {
     id: String(book.bookId),
     title: book.title,
     coverColor: book.coverColor ?? '#ffbd54',
+    coverImage: publicCoverImageUrl(book.coverImageUrl),
     level: 1,
-    totalLessons: 4,
-    currentLesson: 1,
-    progress,
-    status: 'reading',
-  })
-  return {
-    id: String(book.bookId),
-    title: localBook?.title ?? book.title,
-    coverColor: book.coverColor ?? localBook?.coverColor ?? '#ffbd54',
-    coverImage: publicCoverImageUrl(book.coverImageUrl) ?? localBook?.coverImage,
-    level: localBook?.level ?? 1,
     totalLessons: 10,
     currentLesson: Math.max(1, Math.min(10, Math.floor(progress * 10) + 1)),
     progress,
     status: progress >= 1 ? 'done' : progress > 0 ? 'reading' : 'available',
-    currentText: book.lessonName ?? localBook?.currentText ?? 'Keep reading',
+    currentText: book.lessonName ?? 'Keep reading',
   }
-}
-
-// ─── 로컬 목업 레슨 콘텐츠 ───────────────────────────────
-
-export async function fetchLesson(bookId: string, lessonId: string): Promise<Lesson | undefined> {
-  return LESSONS.find((l) => l.bookId === bookId && l.id === lessonId)
-}
-
-// ─── 로컬 목업 학습 진도 저장 ────────────────────────────
-
-export async function postProgress(bookId: string, lessonId: string): Promise<void> {
-  void bookId
-  void lessonId
 }
 
 // ─── 보호자 계정 / 프로필 ────────────────────────────────
@@ -567,8 +520,8 @@ export async function fetchParentReport(profileId: number, days = 7): Promise<Pa
       learnedWords: [],
       learnedExpressions: [],
       strengths: [],
-      needsPractice: ['Try 5 review cards or one story chapter.'],
-      comment: 'No finished lesson yet.',
+      needsPractice: [],
+      comment: '아직 완료한 학습이 없습니다.',
     }
   })
   return {
@@ -585,7 +538,7 @@ export async function fetchParentReport(profileId: number, days = 7): Promise<Pa
     summary: {
       averageScore: null,
       completedChapters: 0,
-      comment: 'No completed chapters in this period yet.',
+      comment: '이번 기간에는 아직 완료한 챕터가 없습니다.',
     },
     days: reportDays,
   }
@@ -895,6 +848,7 @@ export interface RoleplayData {
     playerGoal?: string | null
     hints?: string[]
     requiredTurns?: number
+    childRole?: string
   }
   character: {
     name: string
@@ -904,6 +858,19 @@ export interface RoleplayData {
     speaker: string
     text: string
   }
+  messages?: Array<{
+    messageId: number
+    turn: number
+    user: {
+      transcript: string
+    }
+    character: {
+      speaker: string
+      text: string
+    }
+    score: number
+    missionCompleted: boolean
+  }>
 }
 
 export interface RoleplayMessageData {
@@ -917,6 +884,7 @@ export interface RoleplayMessageData {
     text: string
   }
   score: number
+  source?: 'llm' | 'fallback' | string | null
   missionCompleted: boolean
   courseProgress: number
   totalProgress: number
@@ -946,6 +914,19 @@ export interface ReviewCardData {
   memoryScore: number
   reviewCount: number
   nextReviewAt: string
+  roleplayMissionId?: number
+  roleplay?: {
+    missionId: number
+    title: string
+    description: string
+    openingMessage: string
+    playerGoal?: string | null
+    childRole: string
+    aiCharacter: string
+    requiredTurns: number
+    hints: string[]
+    imageUrl?: string | null
+  }
 }
 
 export interface ReviewDueData {
@@ -985,6 +966,15 @@ export interface StoryTalkMessageData {
   source: 'OLLAMA' | 'MOCK'
   targetWords: string[]
   cards: ReviewCardData[]
+}
+
+export interface ReviewRoleplayMessageData {
+  userTranscript: string
+  characterText: string
+  score: number
+  source?: 'llm' | 'fallback' | string | null
+  missionCompleted: boolean
+  card: ReviewCardData
 }
 
 export interface ReviewAttemptData {
@@ -1057,10 +1047,13 @@ export async function fetchDescriptionCourse(sessionId: number): Promise<Descrip
   return get<DescriptionData>(`/learning-sessions/${sessionId}/description`, getProfileToken())
 }
 
-export async function createDescriptionAttempt(sessionId: number, questionId: number, audio: Blob): Promise<AttemptData> {
+export async function createDescriptionAttempt(sessionId: number, questionId: number, audio: Blob, transcript?: string): Promise<AttemptData> {
   const form = new FormData()
   form.append('audio', audio, 'recording.webm')
   form.append('questionId', String(questionId))
+  if (transcript?.trim()) {
+    form.append('transcript', transcript.trim())
+  }
   return postForm<AttemptData>(`/learning-sessions/${sessionId}/description/attempts`, form, getProfileToken())
 }
 
@@ -1076,10 +1069,16 @@ export async function fetchRoleplayCourse(sessionId: number): Promise<RoleplayDa
   return get<RoleplayData>(`/learning-sessions/${sessionId}/roleplay`, getProfileToken())
 }
 
-export async function createRoleplayMessage(sessionId: number, missionId: number, audio: Blob): Promise<RoleplayMessageData> {
+export async function createRoleplayMessage(
+  sessionId: number,
+  missionId: number,
+  audio: Blob,
+  transcript?: string,
+): Promise<RoleplayMessageData> {
   const form = new FormData()
   form.append('audio', audio, 'recording.webm')
   form.append('missionId', String(missionId))
+  if (transcript?.trim()) form.append('transcript', transcript.trim())
   return postForm<RoleplayMessageData>(`/learning-sessions/${sessionId}/roleplay/messages`, form, getProfileToken())
 }
 
@@ -1110,4 +1109,18 @@ export async function fetchStoryTalk(limit = 5): Promise<StoryTalkData> {
 
 export async function sendStoryTalkMessage(cardIds: number[], message: string): Promise<StoryTalkMessageData> {
   return post<StoryTalkMessageData>('/reviews/story-talk/messages', { cardIds, message }, getProfileToken())
+}
+
+export async function sendReviewRoleplayMessage(
+  cardId: number,
+  audio: Blob,
+  transcript?: string,
+  history: Array<{ user: string; npc: string }> = [],
+): Promise<ReviewRoleplayMessageData> {
+  const form = new FormData()
+  form.append('audio', audio, 'recording.webm')
+  form.append('cardId', String(cardId))
+  form.append('historyJson', JSON.stringify(history))
+  if (transcript?.trim()) form.append('transcript', transcript.trim())
+  return postForm<ReviewRoleplayMessageData>('/reviews/story-talk/roleplay/messages', form, getProfileToken())
 }

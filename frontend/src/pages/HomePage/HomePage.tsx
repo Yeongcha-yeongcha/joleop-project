@@ -7,10 +7,7 @@ import {
   DEFAULT_HOME_BACKGROUND_THEME_ID,
   HOME_BACKGROUND_THEMES,
 } from '../../data/homeBackgroundThemes'
-import {
-  fallbackCoverImage,
-  resolveHeroBackgroundImage,
-} from '../../utils/bookAssets'
+import { resolveHeroBackgroundImage } from '../../utils/bookAssets'
 import styles from './HomePage.module.css'
 
 const HOME_THEME_KEY = 'yeongcha:home-background-theme'
@@ -37,13 +34,13 @@ function readPopoCustomization(): PopoCustomization {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { selectedBook, userStats, loadUserStats, selectBook } = useAppStore()
+  const { selectedBook, userStats, selectBook } = useAppStore()
   const [selectedThemeId, setSelectedThemeId] = useState(readSelectedThemeId)
   const [popoCustomization, setPopoCustomization] = useState(readPopoCustomization)
 
   useEffect(() => {
     if (!usesBackendApi()) {
-      loadUserStats()
+      navigate('/profiles', { replace: true })
       return
     }
     fetchHome()
@@ -61,9 +58,9 @@ export default function HomePage() {
           navigate('/profiles', { replace: true })
           return
         }
-        loadUserStats()
+        console.warn('Could not load DB home data.', err)
       })
-  }, [loadUserStats, navigate, selectBook, selectedBook])
+  }, [navigate, selectBook, selectedBook])
 
   useEffect(() => {
     const syncSelectedTheme = () => setSelectedThemeId(readSelectedThemeId())
@@ -95,7 +92,7 @@ export default function HomePage() {
     HOME_BACKGROUND_THEMES[0]
   ), [selectedThemeId])
 
-  const selectedBookCover = selectedBook?.coverImage ?? fallbackCoverImage(selectedBook?.title)
+  const selectedBookCover = selectedBook?.coverImage
   const bookBackground = resolveHeroBackgroundImage(selectedBook)
   const activeBackground = bookBackground ?? selectedTheme.background
   const activeThemeClass = bookBackground ? styles.theme_book : styles[`theme_${selectedTheme.id}`]

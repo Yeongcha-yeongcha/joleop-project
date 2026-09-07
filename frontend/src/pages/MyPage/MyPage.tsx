@@ -115,9 +115,13 @@ function emptyReportDay(date: string): ParentReportDay {
     learnedWords: [],
     learnedExpressions: [],
     strengths: [],
-    needsPractice: ['Try 5 review cards or one story chapter.'],
-    comment: 'No finished lesson yet.',
+    needsPractice: [],
+    comment: '아직 완료한 학습이 없습니다.',
   }
+}
+
+function isFutureDate(date: string) {
+  return date > localDateIso()
 }
 
 export default function MyPage() {
@@ -227,7 +231,7 @@ export default function MyPage() {
     setPinError('')
     const verified = await verifyProfilePin(pin)
     if (!verified) {
-      setPinError('That PIN is not right.')
+      setPinError('PIN이 올바르지 않습니다.')
       return
     }
     setIsGuardianUnlocked(true)
@@ -240,7 +244,7 @@ export default function MyPage() {
           setParentReport(report)
           setSelectedReportDate(report.range.to)
         })
-        .catch(() => setMessage('Could not load the parent report.'))
+        .catch(() => setMessage('부모 리포트를 불러오지 못했습니다.'))
         .finally(() => setIsReportLoading(false))
     }
   }
@@ -446,79 +450,90 @@ export default function MyPage() {
           <span><LineIcon type="lock" /></span>
           <strong>Parent Settings</strong>
         </div>
-        <div className={styles.childLevelCard}>
-          <span>{profile?.nickname ?? 'Friend'}'s Level</span>
-          <strong>{profileLevelLabel(profile?.difficulty)}</strong>
-        </div>
-        <section className={styles.parentReport}>
-          {isReportLoading && <p className={styles.reportLoading}>Loading report...</p>}
-          {parentReport?.summary.comment && (
-            <div className={styles.reportComment}>
-              {parentReport.summary.comment}
+        {isGuardianUnlocked ? (
+          <>
+            <div className={styles.childLevelCard}>
+              <span>{profile?.nickname ?? 'Friend'}'s Level</span>
+              <strong>{profileLevelLabel(profile?.difficulty)}</strong>
             </div>
-          )}
-          <div className={styles.reportBlock}>
-            <strong>Did Well</strong>
-            <ul>
-              {selectedReport.strengths.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-          <div className={styles.reportBlock}>
-            <strong>Needs Practice</strong>
-            <ul>
-              {selectedReport.needsPractice.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-          <div className={styles.weekReport} aria-label="Weekly learning report">
-            <strong>This Week</strong>
-            <div>
-              {reportWeekDays.map((day) => (
-                <button
-                  key={day.date}
-                  className={`${styles.weekDay} ${styles[`weekDay_${day.state}`]} ${selectedReportDay?.date === day.date ? styles.selectedWeekDay : ''}`}
-                  onClick={() => setSelectedReportDate(day.date)}
-                  type="button"
-                >
-                  <span>{day.state === 'done' ? '✓' : ''}</span>
-                  <b>{day.label}</b>
-                </button>
-              ))}
-            </div>
-          </div>
-          <article className={styles.dailyFeedback}>
-            <span>
-              {selectedReportDay?.label ?? 'Today'} · {selectedReport.sessionCount > 0 ? `${selectedReport.sessionCount} lesson` : 'No session'}
-            </span>
-            <div>
-              <strong>New Words</strong>
-              <p>{selectedReport.learnedWords.length ? selectedReport.learnedWords.join(', ') : 'No new words saved.'}</p>
-            </div>
-            <div>
-              <strong>Expressions</strong>
-              <p>{selectedReport.learnedExpressions.length ? selectedReport.learnedExpressions.join(' / ') : 'No expression practice yet.'}</p>
-            </div>
-            {selectedReport.breakdown && (
-              <div>
-                <strong>Scores</strong>
-                <p>
-                  Repeat {selectedReport.breakdown.repeat ?? '-'} · Quiz {selectedReport.breakdown.description ?? '-'} · Roleplay {selectedReport.breakdown.roleplay ?? '-'}
-                </p>
+            <section className={styles.parentReport}>
+              {isReportLoading && <p className={styles.reportLoading}>리포트를 불러오는 중...</p>}
+              {parentReport?.summary.comment && (
+                <div className={styles.reportComment}>
+                  {parentReport.summary.comment}
+                </div>
+              )}
+              <div className={styles.reportBlock}>
+                <strong>잘한 점</strong>
+                <ul>
+                  {selectedReport.strengths.length
+                    ? selectedReport.strengths.map((item) => <li key={item}>{item}</li>)
+                    : <li>아직 표시할 학습 기록이 없습니다.</li>}
+                </ul>
               </div>
-            )}
-            <em>{selectedReport.comment}</em>
-          </article>
-        </section>
-        <button onClick={changePassword} disabled={!profile || isSaving}>
-          Change PIN
-        </button>
-        <button onClick={leaveProfile} disabled={isSaving}>
-          Switch User
-        </button>
-        <button className={styles.dangerButton} onClick={removeProfile} disabled={!profile || isSaving}>
-          Delete User
-        </button>
-        {!isGuardianUnlocked && (
-          <button className={styles.guardianOverlay} onClick={unlockGuardianPanel}>
+              {selectedReport.sessionCount > 0 && selectedReport.needsPractice.length > 0 && (
+                <div className={styles.reportBlock}>
+                  <strong>개선이 필요한 부분</strong>
+                  <ul>
+                    {selectedReport.needsPractice.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+              )}
+              <div className={styles.weekReport} aria-label="Weekly learning report">
+                <strong>이번 주</strong>
+                <div>
+                  {reportWeekDays.map((day) => (
+                    <button
+                      key={day.date}
+                      className={`${styles.weekDay} ${styles[`weekDay_${day.state}`]} ${selectedReportDay?.date === day.date ? styles.selectedWeekDay : ''}`}
+                      onClick={() => setSelectedReportDate(day.date)}
+                      type="button"
+                    >
+                      <span>{day.state === 'done' ? '✓' : ''}</span>
+                      <b>{day.label}</b>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <article className={styles.dailyFeedback}>
+                <span>
+                  {selectedReportDay?.label ?? 'Today'} · {
+                    selectedReport.sessionCount > 0
+                      ? `${selectedReport.sessionCount}회 학습`
+                      : isFutureDate(selectedReport.date) ? '예정된 날짜' : '학습 없음'
+                  }
+                </span>
+                <div>
+                  <strong>새로 배운 단어</strong>
+                  <p>{selectedReport.learnedWords.length ? selectedReport.learnedWords.join(', ') : '아직 저장된 새 단어가 없습니다.'}</p>
+                </div>
+                <div>
+                  <strong>연습한 표현</strong>
+                  <p>{selectedReport.learnedExpressions.length ? selectedReport.learnedExpressions.join(' / ') : '아직 연습한 표현이 없습니다.'}</p>
+                </div>
+                {selectedReport.breakdown && (
+                  <div>
+                    <strong>점수</strong>
+                    <p>
+                      Repeat {selectedReport.breakdown.repeat ?? '-'} · Quiz {selectedReport.breakdown.description ?? '-'} · Roleplay {selectedReport.breakdown.roleplay ?? '-'}
+                    </p>
+                  </div>
+                )}
+                <em>{selectedReport.comment}</em>
+              </article>
+            </section>
+            <button onClick={changePassword} disabled={!profile || isSaving}>
+              Change PIN
+            </button>
+            <button onClick={leaveProfile} disabled={isSaving}>
+              Switch User
+            </button>
+            <button className={styles.dangerButton} onClick={removeProfile} disabled={!profile || isSaving}>
+              Delete User
+            </button>
+          </>
+        ) : (
+          <button className={styles.guardianLockCard} onClick={unlockGuardianPanel}>
             <span><LineIcon type="lock" /></span>
             <strong>Parent Area</strong>
             <em>Enter PIN</em>

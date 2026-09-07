@@ -24,6 +24,7 @@ from app.models import (
     LearningSession,
     LearningSessionStatus,
     LearningAttempt,
+    PointTransaction,
     ReadingChunk,
     RepeatQuestion,
     RoleplayMessage,
@@ -31,11 +32,17 @@ from app.models import (
     UserBookProgress,
 )
 from app.services.evaluation import DescriptionEvaluationService, RepeatEvaluationService
+from app.services.energy import EnergyService
 from app.services.final_score import FinalScoreService
 from app.services.progress import ProgressService
 from app.services.rewards import RewardService
 from app.services.reviews import ReviewService
-from app.services.roleplay import MockRoleplayService, RoleplayService
+from app.services.roleplay import (
+    AIRoleplayService,
+    RoleplayService,
+    clean_roleplay_transcript,
+    roleplay_runtime_context,
+)
 
 
 class LearningSessionService:
@@ -47,6 +54,7 @@ class LearningSessionService:
         repeat_evaluation_service: RepeatEvaluationService | None = None,
         description_evaluation_service: DescriptionEvaluationService | None = None,
         roleplay_service: RoleplayService | None = None,
+        energy_service: EnergyService | None = None,
         final_score_service: FinalScoreService | None = None,
         reward_service: RewardService | None = None,
     ) -> None:
@@ -58,7 +66,8 @@ class LearningSessionService:
         self.description_evaluation_service = (
             description_evaluation_service or DescriptionEvaluationService()
         )
-        self.roleplay_service = roleplay_service or MockRoleplayService()
+        self.roleplay_service = roleplay_service or AIRoleplayService(session=session)
+        self.energy_service = energy_service or EnergyService()
         self.final_score_service = final_score_service or FinalScoreService()
         self.reward_service = reward_service or RewardService()
         self.review_service = ReviewService(session=session)
@@ -82,6 +91,7 @@ class LearningSessionService:
         now = datetime.now(UTC)
 
         if learning_session is None:
+            self.energy_service.consume_for_learning(profile, now=now)
             learning_session = LearningSession(
                 profile_id=profile.profile_id,
                 book_id=book_id,
@@ -98,6 +108,7 @@ class LearningSessionService:
             await self.session.flush()
         else:
             if restart:
+                self.energy_service.consume_for_learning(profile, now=now)
                 await self.session.execute(
                     delete(RoleplayMessage).where(
                         RoleplayMessage.session_id == learning_session.session_id
@@ -477,10 +488,13 @@ class LearningSessionService:
         )
         self._ensure_course(learning_session, CourseType.ROLEPLAY)
         mission = await self._roleplay_mission(learning_session.book_id, learning_session.chapter_number)
-        message_count = await self._roleplay_message_count(learning_session.session_id)
+        roleplay_messages = await self._roleplay_messages(learning_session.session_id)
+        message_count = len(roleplay_messages)
+        roleplay_context = roleplay_runtime_context(mission)
+        required_turns = roleplay_context["required_turns"]
         course_progress = self.progress_service.course_progress(
             current_step=message_count,
-            total_steps=mission.required_turns,
+            total_steps=required_turns,
         )
         return {
             "courseType": CourseType.ROLEPLAY.value,
@@ -490,19 +504,35 @@ class LearningSessionService:
             "mission": {
                 "missionId": mission.mission_id,
                 "title": mission.title,
-                "description": mission.description,
-                "playerGoal": mission.player_goal,
+                "description": roleplay_context["situation"],
+                "playerGoal": roleplay_context["player_goal"],
                 "hints": mission.hint_sequence or [],
-                "requiredTurns": mission.required_turns,
+                "requiredTurns": required_turns,
+                "childRole": roleplay_context["child_role"],
             },
             "character": {
-                "name": mission.character_name,
+                "name": roleplay_context["ai_character"],
                 "imageUrl": mission.character_image_url,
             },
             "openingMessage": {
-                "speaker": mission.character_name.upper(),
-                "text": mission.opening_message,
+                "speaker": roleplay_context["ai_character"].upper(),
+                "text": roleplay_context["opening_message"],
             },
+            "messages": [
+                {
+                    "messageId": message.message_id,
+                    "turn": message.turn,
+                    "user": {"transcript": message.user_transcript},
+                    "character": {
+                        "speaker": roleplay_context["ai_character"].upper(),
+                        "text": message.character_response,
+                    },
+                    "score": message.score,
+                    "missionCompleted": message.mission_completed,
+                }
+                for message in roleplay_messages
+                if message.mission_id == mission.mission_id
+            ],
         }
 
     async def create_roleplay_message(
@@ -523,18 +553,21 @@ class LearningSessionService:
         if mission.mission_id != mission_id:
             raise QuestionNotFoundException()
 
+        transcript = clean_roleplay_transcript(mission, transcript)
         turn = await self._roleplay_message_count(learning_session.session_id) + 1
         roleplay_result = await self.roleplay_service.respond(
             mission=mission,
+            session_id=learning_session.session_id,
             transcript=transcript,
             turn=turn,
         )
         character_response = roleplay_result["text"]
-        mission_completed = turn >= mission.required_turns
+        required_turns = roleplay_runtime_context(mission)["required_turns"]
+        mission_completed = turn >= required_turns
         total_progress = self.progress_service.total_progress(
             course_type=CourseType.ROLEPLAY,
-            current_step=min(turn, mission.required_turns),
-            total_steps=mission.required_turns,
+            current_step=min(turn, required_turns),
+            total_steps=required_turns,
         )
         message = RoleplayMessage(
             session_id=learning_session.session_id,
@@ -566,10 +599,11 @@ class LearningSessionService:
                 "text": character_response,
             },
             "score": message.score,
+            "source": roleplay_result.get("source"),
             "missionCompleted": mission_completed,
             "courseProgress": self.progress_service.course_progress(
-                current_step=min(turn, mission.required_turns),
-                total_steps=mission.required_turns,
+                current_step=min(turn, required_turns),
+                total_steps=required_turns,
             ),
             "totalProgress": total_progress,
         }
@@ -619,6 +653,16 @@ class LearningSessionService:
         learning_session.total_progress = max(learning_session.total_progress, 100)
         learning_session.total_score = score_result["totalScore"]
         learning_session.stars = score_result["stars"]
+        self.session.add(
+            PointTransaction(
+                profile_id=profile.profile_id,
+                transaction_type="earned",
+                amount=rewards["hearts"],
+                label=f"Chapter {learning_session.chapter_number} completed",
+                reference_type="learning_session",
+                reference_id=learning_session.session_id,
+            )
+        )
 
         progress = await self._get_or_create_book_progress(
             profile_id=profile.profile_id,
@@ -768,21 +812,7 @@ class LearningSessionService:
         mission = result.scalars().first()
         if mission is not None:
             return mission
-
-        book = await self._book(book_id)
-        fallback_result = await self.session.execute(
-            select(RoleplayMission)
-            .join(Book, Book.book_id == RoleplayMission.book_id)
-            .where(
-                Book.difficulty == book.difficulty,
-                RoleplayMission.chapter_number == chapter_number,
-            )
-            .order_by(Book.display_order, Book.book_id, RoleplayMission.mission_id)
-        )
-        fallback_mission = fallback_result.scalars().first()
-        if fallback_mission is None:
-            raise QuestionNotFoundException()
-        return fallback_mission
+        raise QuestionNotFoundException()
 
     async def _roleplay_message_count(self, session_id: int) -> int:
         result = await self.session.execute(
@@ -792,7 +822,9 @@ class LearningSessionService:
 
     async def _roleplay_messages(self, session_id: int) -> list[RoleplayMessage]:
         result = await self.session.execute(
-            select(RoleplayMessage).where(RoleplayMessage.session_id == session_id)
+            select(RoleplayMessage)
+            .where(RoleplayMessage.session_id == session_id)
+            .order_by(RoleplayMessage.turn, RoleplayMessage.message_id)
         )
         return list(result.scalars().all())
 

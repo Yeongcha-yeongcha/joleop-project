@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppException
-from app.models import ChildProfile, ProfileCustomization
+from app.models import ChildProfile, PointTransaction, ProfileCustomization
 
 DEFAULT_THEME_ID = "cream-book-room"
 
@@ -48,7 +48,7 @@ class CustomizationService:
         customization = await self._get_or_create(profile)
         unlocked = self._string_list(customization.unlocked_theme_ids)
         if theme_id not in unlocked:
-            self._spend(profile, customization, THEME_PRICES[theme_id])
+            self._spend(profile, customization, THEME_PRICES[theme_id], label=f"Room theme: {theme_id}")
             unlocked.append(theme_id)
             customization.unlocked_theme_ids = unlocked
         customization.selected_theme_id = theme_id
@@ -70,7 +70,7 @@ class CustomizationService:
         new_items = [item_id for item_id in normalized.values() if item_id not in unlocked]
         cost = sum(POPO_ITEMS[item_id][1] for item_id in new_items)
         if cost:
-            self._spend(profile, customization, cost)
+            self._spend(profile, customization, cost, label="Popo style items")
             unlocked.extend(new_items)
             customization.unlocked_popo_item_ids = list(dict.fromkeys(unlocked))
         customization.selected_popo = normalized
@@ -90,7 +90,7 @@ class CustomizationService:
 
         if avatar_index is not None:
             if avatar_index not in unlocked:
-                self._spend(profile, customization, AVATAR_COST)
+                self._spend(profile, customization, AVATAR_COST, label="Profile avatar")
                 unlocked.append(avatar_index)
                 customization.unlocked_avatar_indices = sorted(set(unlocked))
             profile.profile_image_id = avatar_index + 1
@@ -153,9 +153,18 @@ class CustomizationService:
             return []
         return [item for item in value if isinstance(item, int)]
 
-    @staticmethod
-    def _spend(profile: ChildProfile, customization: ProfileCustomization, amount: int) -> None:
+    def _spend(self, profile: ChildProfile, customization: ProfileCustomization, amount: int, *, label: str) -> None:
         available = max(0, (profile.hearts or 0) - (customization.spent_stars or 0))
         if amount > available:
             raise AppException(status_code=400, detail="Not enough stars.")
         customization.spent_stars = (customization.spent_stars or 0) + amount
+        self.session.add(
+            PointTransaction(
+                profile_id=profile.profile_id,
+                transaction_type="spent",
+                amount=-amount,
+                label=label,
+                reference_type="customization",
+                reference_id=customization.customization_id,
+            )
+        )

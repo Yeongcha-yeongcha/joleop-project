@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   fetchDueReviews,
   fetchUserStats,
   fetchStoryTalk,
-  sendStoryTalkMessage,
+  sendReviewRoleplayMessage,
+  synthesizeSpeech,
   submitReviewAttempt,
   usesBackendApi,
   type ReviewCardData,
   type ReviewMode,
-  type StoryTalkData,
 } from '../../services/api'
+import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
+import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
+import type { ChapterResult } from '../../utils/chapterProgress'
 import styles from './ReviewPage.module.css'
 
-type ReviewKind = 'pick' | 'keyword' | 'match' | 'order' | 'picture' | 'chat'
+type ReviewKind = 'word' | 'sentenceOrder' | 'sentenceRepeat' | 'chat'
 
 interface ReviewItem {
   id: string
@@ -25,254 +29,31 @@ interface ReviewItem {
   answer: string
   options: string[]
   memory: number
-  pairs?: Array<{ left: string; right: string }>
-}
-
-const fallbackReviewQueue: ReviewItem[] = [
-  {
-    id: 'chirping-pick',
-    kind: 'pick',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Pick the missing word.',
-    sentence: 'They heard a faint ____ sound coming from a nearby bush.',
-    answer: 'chirping',
-    options: ['chirping', 'jumping', 'sleeping', 'painting'],
-    memory: 42,
-  },
-  {
-    id: 'bird-picture',
-    kind: 'picture',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Which card matches the story?',
-    sentence: 'They saw a tiny bird trapped inside.',
-    answer: 'tiny bird',
-    options: ['tiny bird', 'big moon', 'red cake', 'blue boat'],
-    memory: 51,
-  },
-  {
-    id: 'kind-match',
-    kind: 'match',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 2,
-    prompt: 'Connect each word to its friend.',
-    sentence: 'Match the story words.',
-    answer: 'all',
-    options: [],
-    memory: 36,
-    pairs: [
-      { left: 'bird', right: 'wings' },
-      { left: 'bush', right: 'leaves' },
-      { left: 'song', right: 'music' },
-    ],
-  },
-  {
-    id: 'team-order',
-    kind: 'order',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 3,
-    prompt: 'Build the sentence.',
-    sentence: 'We make a great team',
-    answer: 'We make a great team',
-    options: ['team', 'We', 'great', 'make', 'a'],
-    memory: 64,
-  },
-  {
-    id: 'thinking-keyword',
-    kind: 'keyword',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 4,
-    prompt: 'Tap the important word.',
-    sentence: 'Toto used quick thinking to help Popo.',
-    answer: 'thinking',
-    options: ['Toto', 'used', 'quick', 'thinking', 'help', 'Popo'],
-    memory: 58,
-  },
-]
-
-const icons: Record<string, string> = {
-  'tiny bird': '🐤',
-  'big moon': '🌕',
-  'red cake': '🍰',
-  'blue boat': '⛵',
-  bush: '🌿',
-  song: '🎵',
-  friend: '🤝',
-  meadow: '🌻',
-  help: '👐',
-  team: '⭐',
-}
-
-const wordPlaygroundQueue: ReviewItem[] = [
-  {
-    id: 'word-spell-bird',
-    kind: 'order',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Spell the story word.',
-    sentence: 'A tiny bird was in the bush.',
-    answer: 'bird',
-    options: ['r', 'b', 'd', 'i'],
-    memory: 42,
-  },
-  {
-    id: 'word-picture-bush',
-    kind: 'picture',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Pick the picture word.',
-    sentence: 'They walked toward the bush.',
-    answer: 'bush',
-    options: ['bush', 'song', 'friend', 'team'],
-    memory: 46,
-  },
-  {
-    id: 'word-match-story',
-    kind: 'match',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 2,
-    prompt: 'Connect each word to its clue.',
-    sentence: 'Match the story words.',
-    answer: 'all',
-    options: [],
-    memory: 38,
-    pairs: [
-      { left: 'bird', right: 'small animal with wings' },
-      { left: 'bush', right: 'green leaves' },
-      { left: 'song', right: 'sweet sound' },
-    ],
-  },
-  {
-    id: 'word-tap-help',
-    kind: 'keyword',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 2,
-    prompt: 'Tap the important word.',
-    sentence: 'Popo gently helped the tiny bird.',
-    answer: 'helped',
-    options: ['Popo', 'gently', 'helped', 'tiny', 'bird'],
-    memory: 55,
-  },
-  {
-    id: 'word-pick-team',
-    kind: 'pick',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 3,
-    prompt: 'Pick the missing word.',
-    sentence: 'We make a great ____.',
-    answer: 'team',
-    options: ['team', 'moon', 'cake', 'boat'],
-    memory: 61,
-  },
-]
-
-const sentenceQuestQueue: ReviewItem[] = [
-  {
-    id: 'sentence-pick-chirping',
-    kind: 'pick',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Pick the missing word.',
-    sentence: 'They heard a faint ____ sound.',
-    answer: 'chirping',
-    options: ['chirping', 'sleeping', 'painting', 'jumping'],
-    memory: 43,
-  },
-  {
-    id: 'sentence-order-friends',
-    kind: 'order',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Put the words in order.',
-    sentence: 'They all walked together',
-    answer: 'They all walked together',
-    options: ['walked', 'together', 'They', 'all'],
-    memory: 50,
-  },
-  {
-    id: 'sentence-pick-careful',
-    kind: 'pick',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 2,
-    prompt: 'Pick the missing word.',
-    sentence: 'Popo was ____ with the little bird.',
-    answer: 'careful',
-    options: ['careful', 'angry', 'sleepy', 'noisy'],
-    memory: 57,
-  },
-  {
-    id: 'sentence-order-help',
-    kind: 'order',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 3,
-    prompt: 'Build the sentence.',
-    sentence: 'I can help you',
-    answer: 'I can help you',
-    options: ['help', 'I', 'you', 'can'],
-    memory: 62,
-  },
-  {
-    id: 'sentence-keyword-kind',
-    kind: 'keyword',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 4,
-    prompt: 'Tap the kind action.',
-    sentence: 'The friends cheered and hugged each other.',
-    answer: 'hugged',
-    options: ['friends', 'cheered', 'hugged', 'other'],
-    memory: 66,
-  },
-]
-
-const storyTalkQueue: ReviewItem[] = [
-  {
-    id: 'story-talk-bird',
-    kind: 'chat',
-    bookTitle: 'Popo Meadow Story',
-    chapterNumber: 1,
-    prompt: 'Talk about the story.',
-    sentence: 'Popo and friends found a tiny bird.',
-    answer: 'bird',
-    options: [],
-    memory: 48,
-  },
-]
-
-const fallbackStoryTalk: StoryTalkData = {
-  mode: 'STORY_TALK',
-  topic: {
-    title: 'Story Talk',
-    opening: 'Popo found a tiny bird. What would you say to help?',
-    targetWords: ['bird', 'help', 'bush', 'friend'],
-    starterQuestions: [
-      'I can help you!',
-      'Where is the bird?',
-      'Let us be careful.',
-    ],
-  },
-  cards: [],
+  roleplay?: RoleplayMission
 }
 
 const modeCards: Array<{ mode: ReviewMode; title: string; description: string }> = [
-  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Spelling, match, find' },
-  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Fill in blanks, order' },
-  { mode: 'STORY_TALK', title: 'Story Talk', description: 'Short AI chat' },
+  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'See a word, then find it in the choices.' },
+  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Build 3 sentences, then say 2 sentences.' },
+  { mode: 'STORY_TALK', title: 'Story Talk', description: 'Replay finished roleplays at the right time.' },
 ]
 
 const modeIcons: Record<ReviewMode, string> = {
   SMART_MIX: '▶',
   WORD_PLAYGROUND: 'ABC',
   SENTENCE_QUEST: '☰',
-  STORY_TALK: 'AI',
+  STORY_TALK: '🎭',
 }
+
+const MAX_ORDER_WORDS = 6
+const MIN_ORDER_WORDS = 3
 
 const smartFlowCards = [
   { label: 'Word', icon: 'A', tone: 'word' },
   { label: 'Sentence', icon: '', tone: 'sentence' },
   { label: 'Word', icon: 'B', tone: 'word' },
   { label: 'Sentence', icon: '', tone: 'sentence' },
-  { label: 'Chat', icon: '...', tone: 'chat' },
+  { label: 'Roleplay', icon: '🎭', tone: 'chat' },
 ]
 
 function activeProfileKey() {
@@ -338,61 +119,147 @@ function starsForScore(score: number) {
 }
 
 function shuffle<T>(items: T[]): T[] {
-  return [...items].sort((a, b) => String(a).localeCompare(String(b)))
+  return [...items].sort((a, b) => {
+    const left = String(a)
+    const right = String(b)
+    return left.length === right.length ? left.localeCompare(right) : left.length - right.length
+  })
 }
 
 function normalizeBuiltAnswer(value: string) {
   return value.replace(/\s+/g, '').toLowerCase()
 }
 
-function mockQueueForMode(mode: ReviewMode) {
-  if (mode === 'WORD_PLAYGROUND') return wordPlaygroundQueue
-  if (mode === 'SENTENCE_QUEST') return sentenceQuestQueue
-  if (mode === 'STORY_TALK') return storyTalkQueue
-  return fallbackReviewQueue
+function normalizeSpokenSentence(value: string) {
+  return value.replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+function wordUseCount(words: string[], target: string) {
+  return words.filter((word) => word === target).length
+}
+
+function recognizeSentence(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    if (!Recognition) {
+      reject(new Error('Speech recognition is not available.'))
+      return
+    }
+    const recognition = new Recognition()
+    let transcript = ''
+    let settled = false
+    const timer = window.setTimeout(() => {
+      if (settled) return
+      settled = true
+      recognition.stop()
+      resolve(transcript.trim())
+    }, 5500)
+
+    recognition.lang = 'en-US'
+    recognition.interimResults = true
+    recognition.continuous = false
+    recognition.onresult = (event) => {
+      transcript = ''
+      for (let index = 0; index < event.results.length; index += 1) {
+        transcript = `${transcript} ${event.results[index][0]?.transcript ?? ''}`.trim()
+      }
+      if (event.results[event.results.length - 1]?.isFinal && !settled) {
+        settled = true
+        window.clearTimeout(timer)
+        recognition.stop()
+        resolve(transcript.trim())
+      }
+    }
+    recognition.onerror = () => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      reject(new Error('Speech recognition failed.'))
+    }
+    recognition.onend = () => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      resolve(transcript.trim())
+    }
+    recognition.start()
+  })
+}
+
+function cleanSentenceWords(sentence: string) {
+  return sentence
+    .replace(/[“”]/g, '"')
+    .split(/\s+/)
+    .map((word) => word.replace(/[.,!?;:'"]/g, ''))
+    .filter(Boolean)
 }
 
 function cardKind(card: ReviewCardData, index: number): ReviewKind {
-  if (card.cardType === 'SENTENCE') return index % 2 === 0 ? 'pick' : 'order'
   if (card.cardType === 'CHAT') return 'chat'
-  return (['keyword', 'picture', 'match'] as ReviewKind[])[index % 3]
+  if (card.cardType === 'SENTENCE') return index % 5 >= 3 ? 'sentenceRepeat' : 'sentenceOrder'
+  return 'word'
+}
+
+function uniqueWords(cards: ReviewCardData[]) {
+  return cards
+    .map((item) => item.keyword.trim())
+    .filter((word) => word && !word.startsWith('roleplay:'))
+    .filter((word, index, words) => words.findIndex((candidate) => candidate.toLowerCase() === word.toLowerCase()) === index)
+}
+
+function wordOptions(card: ReviewCardData, cards: ReviewCardData[]) {
+  const answer = card.keyword.trim()
+  const distractors = uniqueWords(cards).filter((word) => word.toLowerCase() !== answer.toLowerCase()).slice(0, 3)
+  return shuffle([answer, ...distractors]).slice(0, Math.max(1, Math.min(4, 1 + distractors.length)))
+}
+
+function sentenceForOrder(card: ReviewCardData) {
+  const sentence = (card.sourceSentence || card.clozeSentence).trim()
+  const words = cleanSentenceWords(sentence)
+  if (words.length >= MIN_ORDER_WORDS && words.length <= MAX_ORDER_WORDS) {
+    return words.join(' ')
+  }
+  const keywordIndex = words.findIndex((word) => word.toLowerCase() === card.keyword.toLowerCase())
+  const start = keywordIndex >= 0
+    ? Math.max(0, Math.min(keywordIndex - 2, words.length - MAX_ORDER_WORDS))
+    : 0
+  return words.slice(start, start + MAX_ORDER_WORDS).join(' ')
+}
+
+function roleplayCardToMission(card: ReviewCardData): RoleplayMission | undefined {
+  if (!card.roleplay) return undefined
+  const requiredTurns = Math.max(3, card.roleplay.requiredTurns || 3)
+  return {
+    thumbnailColor: '#C4D4B8',
+    thumbnailUrl: card.roleplay.imageUrl ?? undefined,
+    mission: card.roleplay.playerGoal || card.roleplay.description,
+    missionSummary: card.roleplay.description,
+    turns: Array.from({ length: requiredTurns }, (_, index) => ({
+      npc: index === 0
+        ? card.roleplay?.openingMessage ?? 'Hi! What should we do?'
+        : card.roleplay?.hints?.[index - 1] ?? 'What else can you say?',
+      user: '',
+    })),
+    history: [],
+    finalNpc: 'Great job!',
+  }
 }
 
 function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: number): ReviewItem {
   const kind = cardKind(card, index)
-  const otherWords = cards
-    .map((item) => item.keyword)
-    .filter((word) => word && word !== card.keyword)
-    .slice(0, 3)
-  const words = card.sourceSentence.split(/\s+/).map((word) => word.replace(/[.,!?;:'"]/g, '')).filter(Boolean)
-  if (kind === 'order') {
+  if (kind === 'sentenceOrder' || kind === 'sentenceRepeat') {
+    const sentence = sentenceForOrder(card)
     return {
       id: `review-${card.cardId}`,
       cardId: card.cardId,
       kind,
       bookTitle: card.bookTitle || 'Story',
       chapterNumber: card.chapterNumber,
-      prompt: 'Build the sentence.',
-      sentence: card.sourceSentence,
-      answer: card.sourceSentence.replace(/[.!?]$/, ''),
-      options: shuffle(words).slice(0, 8),
+      prompt: kind === 'sentenceRepeat' ? 'Say the sentence.' : 'Build the sentence.',
+      sentence,
+      answer: sentence,
+      options: kind === 'sentenceRepeat' ? [] : shuffle(cleanSentenceWords(sentence)),
       memory: card.memoryScore,
-    }
-  }
-  if (kind === 'match') {
-    const pairCards = [card, ...cards.filter((item) => item.cardId !== card.cardId)].slice(0, 3)
-    return {
-      id: `review-${card.cardId}`,
-      cardId: card.cardId,
-      kind,
-      bookTitle: card.bookTitle || 'Story',
-      chapterNumber: card.chapterNumber,
-      prompt: 'Connect each word to its story clue.',
-      sentence: 'Match the story words.',
-      answer: 'all',
-      options: [],
-      memory: card.memoryScore,
-      pairs: pairCards.map((item) => ({ left: item.keyword, right: item.sourceSentence.split(/\s+/).slice(0, 4).join(' ') })),
     }
   }
   return {
@@ -401,43 +268,52 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     kind,
     bookTitle: card.bookTitle || 'Story',
     chapterNumber: card.chapterNumber,
-    prompt: kind === 'chat' ? 'Talk about the story.' : kind === 'picture' ? 'Which word matches the story?' : 'Pick the missing word.',
-    sentence: card.clozeSentence || card.sourceSentence,
+    prompt: kind === 'chat' ? 'Replay the roleplay.' : 'Find the word.',
+    sentence: kind === 'chat' ? card.sourceSentence : card.keyword,
     answer: card.keyword,
-    options: shuffle([card.keyword, ...otherWords, 'story', 'friend']).slice(0, 4),
+    options: kind === 'chat' ? [] : wordOptions(card, cards),
     memory: card.memoryScore,
+    roleplay: roleplayCardToMission(card),
   }
 }
 
 export default function ReviewPage() {
+  const location = useLocation()
   const [started, setStarted] = useState(false)
   const [index, setIndex] = useState(0)
   const [results, setResults] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState('')
   const [builtWords, setBuiltWords] = useState<string[]>([])
-  const [matchLeft, setMatchLeft] = useState('')
-  const [matches, setMatches] = useState<Record<string, string>>({})
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | ''>('')
   const [showHelp, setShowHelp] = useState(false)
-  const [reviewQueue, setReviewQueue] = useState<ReviewItem[]>(fallbackReviewQueue)
+  const [reviewQueue, setReviewQueue] = useState<ReviewItem[]>([])
   const [selectedMode, setSelectedMode] = useState<ReviewMode>('SMART_MIX')
-  const [storyTalk, setStoryTalk] = useState<StoryTalkData | null>(null)
-  const [storyMessage, setStoryMessage] = useState('')
-  const [storyReply, setStoryReply] = useState('')
+  const [reviewRoleplayHistory, setReviewRoleplayHistory] = useState<RoleplayHistoryTurn[]>([])
   const [attendanceDates, setAttendanceDates] = useState<string[]>([])
+  const [isListening, setIsListening] = useState(false)
+  const [spokenTranscript, setSpokenTranscript] = useState('')
 
   const current = reviewQueue[index]
   const doneCount = Object.keys(results).length
-  const isFinished = started && doneCount >= reviewQueue.length
+  const isFinished = started && reviewQueue.length > 0 && doneCount >= reviewQueue.length
   const resultScore = useMemo(() => {
     const values = Object.values(results)
     if (!values.length) return 0
     return Math.round((values.filter(Boolean).length / values.length) * 100)
   }, [results])
-  const rightOptions = useMemo(() => shuffle(current.pairs?.map((pair) => pair.right) ?? []), [current])
   const weekDays = useMemo(() => buildWeekDays(attendanceDates), [attendanceDates])
 
   useEffect(() => {
+    setStarted(false)
+    setIndex(0)
+    setResults({})
+    setSelected('')
+    setBuiltWords([])
+    setFeedback('')
+    setIsListening(false)
+    setSpokenTranscript('')
+    setSelectedMode('SMART_MIX')
+    setReviewRoleplayHistory([])
     fetchUserStats()
       .then((stats) => {
         setAttendanceDates(Array.from(new Set([...(stats.attendanceDates ?? []), ...readReviewAttendanceDates()])))
@@ -446,12 +322,10 @@ export default function ReviewPage() {
     if (!usesBackendApi()) return
     fetchDueReviews(5, 'SMART_MIX')
       .then((data) => {
-        if (data.cards.length) {
-          setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
-        }
+        setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
       })
       .catch(() => undefined)
-  }, [])
+  }, [location.key])
 
   useEffect(() => {
     if (!isFinished) return
@@ -465,19 +339,18 @@ export default function ReviewPage() {
     setResults({})
     setSelected('')
     setBuiltWords([])
-    setMatchLeft('')
-    setMatches({})
     setFeedback('')
-    setStoryReply('')
+    setIsListening(false)
+    setSpokenTranscript('')
+    setReviewRoleplayHistory([])
     if (mode === 'STORY_TALK') {
-      setStoryTalk(await fetchStoryTalk(5))
+      const data = await fetchStoryTalk(5)
+      setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
       setStarted(true)
       return
     }
     const data = await fetchDueReviews(5, mode)
-    if (data.cards.length) {
-      setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
-    }
+    setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
     setStarted(true)
   }
 
@@ -487,25 +360,19 @@ export default function ReviewPage() {
     setResults({})
     setSelected('')
     setBuiltWords([])
-    setMatchLeft('')
-    setMatches({})
     setFeedback('')
-    setStoryReply('')
-    setStoryMessage('')
-    if (!usesBackendApi()) {
-      setReviewQueue(mockQueueForMode(mode))
-      setStoryTalk(mode === 'STORY_TALK' ? fallbackStoryTalk : null)
-      setStarted(true)
-      return
-    }
+    setIsListening(false)
+    setSpokenTranscript('')
+    setReviewRoleplayHistory([])
+    if (!usesBackendApi()) return
     void loadMode(mode).catch(() => {
-      setReviewQueue(mockQueueForMode(mode))
-      setStoryTalk(mode === 'STORY_TALK' ? fallbackStoryTalk : null)
+      setReviewQueue([])
       setStarted(true)
     })
   }
 
   const moveNext = (isCorrect: boolean) => {
+    if (!current) return
     setResults((prev) => ({ ...prev, [current.id]: isCorrect }))
     if (current.cardId && usesBackendApi()) {
       void submitReviewAttempt(current.cardId, isCorrect ? 'GOOD' : 'AGAIN', isCorrect, isCorrect ? 100 : 40)
@@ -515,20 +382,22 @@ export default function ReviewPage() {
       setIndex((value) => Math.min(value + 1, reviewQueue.length - 1))
       setSelected('')
       setBuiltWords([])
-      setMatchLeft('')
-      setMatches({})
       setFeedback('')
+      setIsListening(false)
+      setSpokenTranscript('')
     }, 620)
   }
 
   const chooseOption = (option: string) => {
+    if (!current) return
     if (feedback) return
     setSelected(option)
     moveNext(option === current.answer)
   }
 
   const addWord = (word: string) => {
-    if (feedback || builtWords.includes(word)) return
+    if (!current) return
+    if (feedback) return
     const next = [...builtWords, word]
     setBuiltWords(next)
     if (next.length === current.options.length) {
@@ -536,19 +405,9 @@ export default function ReviewPage() {
     }
   }
 
-  const chooseMatchRight = (right: string) => {
-    if (!matchLeft || feedback) return
-    const pair = current.pairs?.find((item) => item.left === matchLeft)
-    const next = { ...matches, [matchLeft]: right }
-    setMatches(next)
-    setMatchLeft('')
-    if (pair?.right !== right) {
-      moveNext(false)
-      return
-    }
-    if (Object.keys(next).length === current.pairs?.length) {
-      moveNext(true)
-    }
+  const removeBuiltWord = (wordIndex: number) => {
+    if (feedback) return
+    setBuiltWords((words) => words.filter((_, index) => index !== wordIndex))
   }
 
   const restart = () => {
@@ -557,35 +416,91 @@ export default function ReviewPage() {
     setResults({})
     setSelected('')
     setBuiltWords([])
-    setMatchLeft('')
-    setMatches({})
     setFeedback('')
-    setStoryTalk(null)
-    setStoryMessage('')
-    setStoryReply('')
+    setIsListening(false)
+    setSpokenTranscript('')
+    setReviewRoleplayHistory([])
   }
 
-  const sendStoryMessage = async () => {
-    if (!storyMessage.trim()) return
-    const message = storyMessage.trim()
-    setStoryMessage('')
-    if (!usesBackendApi()) {
-      setStoryReply(`Nice idea! You used story words. Can you say one more thing about ${current?.answer ?? 'the story'}?`)
-      if (current?.kind === 'chat') {
-        window.setTimeout(() => moveNext(true), 900)
+  const handleSentenceRepeat = async () => {
+    if (!current || feedback || isListening) return
+    setIsListening(true)
+    setSpokenTranscript('')
+    try {
+      const transcript = await recognizeSentence()
+      setSpokenTranscript(transcript)
+      const expected = normalizeSpokenSentence(current.answer)
+      const spoken = normalizeSpokenSentence(transcript)
+      moveNext(Boolean(spoken) && spoken === expected)
+    } catch {
+      setSpokenTranscript('')
+      moveNext(false)
+    } finally {
+      setIsListening(false)
+    }
+  }
+
+  const speakReviewText = async (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    if (usesBackendApi()) {
+      try {
+        const audio = await synthesizeSpeech(trimmed, 'normal')
+        const audioUrl = URL.createObjectURL(audio)
+        const player = new Audio(audioUrl)
+        player.onended = () => URL.revokeObjectURL(audioUrl)
+        player.onerror = () => URL.revokeObjectURL(audioUrl)
+        await player.play()
+        return
+      } catch (error) {
+        console.warn('Review TTS failed. Falling back to browser speech.', error)
       }
+    }
+    if (!('speechSynthesis' in window)) return
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.pitch = 1.25
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const recordReviewRoleplay = async (audio: Blob, transcript?: string) => {
+    if (!current?.cardId) throw new Error('Missing review roleplay card.')
+    const result = await sendReviewRoleplayMessage(current.cardId, audio, transcript, reviewRoleplayHistory)
+    setReviewRoleplayHistory((prev) => [...prev, {
+      user: result.userTranscript,
+      npc: result.characterText,
+    }])
+    return result
+  }
+
+  const completeReviewRoleplay = async (): Promise<ChapterResult | null> => {
+    if (!current?.cardId) return null
+    await submitReviewAttempt(current.cardId, 'GOOD', true, 100)
+    setResults((prev) => ({ ...prev, [current.id]: true }))
+    return {
+      bookId: String(current.bookTitle || current.cardId),
+      chapterNumber: current.chapterNumber,
+      message: 'Review Done!',
+      stars: 3,
+      totalScore: 100,
+      completedAt: new Date().toISOString(),
+      breakdown: {
+        repeat: null,
+        description: null,
+        roleplay: 100,
+      },
+    }
+  }
+
+  const exitReviewRoleplay = () => {
+    setReviewRoleplayHistory([])
+    if (index < reviewQueue.length - 1) {
+      setIndex((value) => value + 1)
       return
     }
-    if (current?.kind === 'chat' && current.cardId && usesBackendApi()) {
-      const result = await sendStoryTalkMessage([current.cardId], message)
-      setStoryReply(result.reply)
-      window.setTimeout(() => moveNext(true), 900)
-      return
-    }
-    if (storyTalk) {
-      const result = await sendStoryTalkMessage(storyTalk.cards.map((card) => card.cardId), message)
-      setStoryReply(result.reply)
-    }
+    restart()
   }
 
   if (isFinished) {
@@ -627,11 +542,36 @@ export default function ReviewPage() {
               <section className={styles.helpPanel}>
                 <button onClick={() => setShowHelp(false)} aria-label="Close help">x</button>
                 <h2>How Review Works</h2>
-                <p>Words and sentences come from chapters you finished.</p>
-                <p>You play 5 quick cards at a time.</p>
-                <p>Hard cards come back sooner. Easy cards wait longer.</p>
-                <p>Word games help you remember meaning. Sentence quests help you use the words.</p>
-                <p>Your stars and answers are saved for your learning report.</p>
+                <div className={styles.memoryPath} aria-label="Memory schedule">
+                  <span>Learn</span>
+                  <i />
+                  <span>Review</span>
+                  <i />
+                  <span>Grow</span>
+                </div>
+                <div className={styles.memoryCurve}>
+                  <b>memory</b>
+                  <i />
+                  <strong>Review pops up before words fade.</strong>
+                </div>
+                <div className={styles.helpModes}>
+                  <article>
+                    <b>A</b>
+                    <strong>Word Playground</strong>
+                    <p>A word appears first. Find the same word among saved DB words.</p>
+                  </article>
+                  <article>
+                    <b>□</b>
+                    <strong>Sentence Quest</strong>
+                    <p>First build 3 short sentences. Then say 2 sentences out loud.</p>
+                  </article>
+                  <article>
+                    <b>🎭</b>
+                    <strong>Story Talk</strong>
+                    <p>Replay a finished roleplay when memory needs a boost.</p>
+                  </article>
+                </div>
+                <p className={styles.helpNote}>Hard cards visit sooner. Easy cards sleep longer.</p>
               </section>
             </div>
           )}
@@ -654,7 +594,7 @@ export default function ReviewPage() {
               <img src="/images/onboarding/lion-headphones.png" alt="" />
               <div>
                 <h2>Start Smart Mix</h2>
-                <p>5 mixed review cards from saved chapter words, sentences, and story talk.</p>
+                <p>5 mixed review cards from saved words, sentences, and finished roleplays.</p>
               </div>
             </div>
 
@@ -671,6 +611,7 @@ export default function ReviewPage() {
             <button className={styles.smartButton} onClick={() => beginMode('SMART_MIX')}>
               Start Smart Mix
             </button>
+            {!usesBackendApi() && <p className={styles.emptyHint}>Connect the backend to load saved review cards.</p>}
           </section>
 
           <section className={styles.modeArea} aria-label="Practice modes">
@@ -686,6 +627,28 @@ export default function ReviewPage() {
             </div>
           </section>
         </>
+      ) : !current ? (
+        <section className={styles.emptyReview}>
+          <span>All Clear</span>
+          <h2>{selectedMode === 'STORY_TALK' ? 'No roleplays ready.' : 'No review cards ready.'}</h2>
+          <p>
+            {selectedMode === 'STORY_TALK'
+              ? 'Finish a main roleplay first. Then it will return here on the memory schedule.'
+              : 'Finish a chapter first. Then words and sentences from the review DB will appear here at the right time.'}
+          </p>
+          <button onClick={restart}>Back to Review</button>
+        </section>
+      ) : current.roleplay ? (
+        <section className={styles.reviewRoleplayShell}>
+          <RoleplayScreen
+            roleplay={{ ...current.roleplay, history: reviewRoleplayHistory }}
+            onProgressChange={() => undefined}
+            onFinish={completeReviewRoleplay}
+            onExit={exitReviewRoleplay}
+            onSpeakText={speakReviewText}
+            onRecord={recordReviewRoleplay}
+          />
+        </section>
       ) : selectedMode === 'WORD_PLAYGROUND' ? (
         <section className={`${styles.playMode} ${styles.wordMode} ${feedback ? styles[feedback] : ''}`}>
           <div className={styles.modeHeader}>
@@ -699,83 +662,17 @@ export default function ReviewPage() {
 
           <article className={styles.wordStage}>
             <small>{current.bookTitle} · Chapter {current.chapterNumber}</small>
-            {current.kind === 'picture' ? (
-              <p>Find <strong>{current.answer}</strong></p>
-            ) : current.kind === 'match' ? (
-              <p>Connect story words.</p>
-            ) : (
-              <p>{current.sentence}</p>
-            )}
+            <span className={styles.wordCueLabel}>Find this word</span>
+            <p><strong>{current.answer}</strong></p>
           </article>
 
-          {current.kind === 'order' && (
-            <>
-              <div className={styles.spellSlots}>
-                {current.answer.split('').map((_, letterIndex) => (
-                  <span key={`${current.id}-slot-${letterIndex}`}>{builtWords[letterIndex] ?? ''}</span>
-                ))}
-              </div>
-              <div className={styles.letterTiles}>
-                {current.options.map((word) => (
-                  <button key={word} disabled={builtWords.includes(word)} onClick={() => addWord(word)}>
-                    {word}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {current.kind === 'picture' && (
-            <div className={styles.wordPictureGrid}>
-              {current.options.map((option) => (
-                <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
-                  <span>{icons[option] ?? '⭐'}</span>
-                  <strong>{option}</strong>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {current.kind === 'match' && current.pairs && (
-            <div className={styles.matchGame}>
-              <svg viewBox="0 0 100 200" aria-hidden="true">
-                {current.pairs.map((pair, pairIndex) => {
-                  const rightIndex = rightOptions.indexOf(matches[pair.left])
-                  if (rightIndex < 0) return null
-                  return <line key={pair.left} x1="28" y1={32 + pairIndex * 58} x2="72" y2={32 + rightIndex * 58} />
-                })}
-              </svg>
-              <div className={styles.matchColumn}>
-                {current.pairs.map((pair) => (
-                  <button
-                    key={pair.left}
-                    className={matchLeft === pair.left || matches[pair.left] ? styles.picked : ''}
-                    disabled={Boolean(matches[pair.left])}
-                    onClick={() => setMatchLeft(pair.left)}
-                  >
-                    {pair.left}
-                  </button>
-                ))}
-              </div>
-              <div className={styles.matchColumn}>
-                {rightOptions.map((right) => (
-                  <button key={right} disabled={Object.values(matches).includes(right)} onClick={() => chooseMatchRight(right)}>
-                    {right}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(current.kind === 'pick' || current.kind === 'keyword') && (
-            <div className={styles.wordTokenGrid}>
-              {current.options.map((option) => (
-                <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
-                  {option}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className={styles.wordTokenGrid}>
+            {current.options.map((option) => (
+              <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
+                {option}
+              </button>
+            ))}
+          </div>
 
           {feedback && <div className={styles.feedback}>{feedback === 'correct' ? 'Great!' : `Oops! ${current.answer}`}</div>}
         </section>
@@ -795,49 +692,49 @@ export default function ReviewPage() {
             <p>{current.sentence}</p>
           </article>
 
-          {current.kind === 'order' ? (
+          {current.kind === 'sentenceRepeat' ? (
+            <div className={styles.repeatPanel}>
+              <button disabled={isListening || Boolean(feedback)} onClick={handleSentenceRepeat}>
+                {isListening ? 'Listening...' : 'Tap and say it'}
+              </button>
+              <span>{spokenTranscript || 'Your voice will appear here.'}</span>
+            </div>
+          ) : (
             <>
               <div className={styles.sentenceTray}>
-                {builtWords.length ? builtWords.map((word) => <span key={word}>{word}</span>) : <em>Build the sentence</em>}
-              </div>
-              <div className={styles.sentenceTiles}>
-                {current.options.map((word) => (
-                  <button key={word} disabled={builtWords.includes(word)} onClick={() => addWord(word)}>
+                {builtWords.length ? builtWords.map((word, wordIndex) => (
+                  <button
+                    key={`${word}-${wordIndex}`}
+                    type="button"
+                    onClick={() => removeBuiltWord(wordIndex)}
+                    aria-label={`Remove ${word}`}
+                  >
                     {word}
                   </button>
-                ))}
+                )) : <em>Build the sentence</em>}
+              </div>
+              <div className={styles.sentenceTiles}>
+                {current.options.map((word, optionIndex) => {
+                  const sameWordBefore = current.options.slice(0, optionIndex + 1).filter((option) => option === word).length
+                  const isUsed = wordUseCount(builtWords, word) >= sameWordBefore
+                  return (
+                  <button key={`${word}-${optionIndex}`} disabled={isUsed} onClick={() => addWord(word)}>
+                    {word}
+                  </button>
+                  )
+                })}
               </div>
             </>
-          ) : (
-            <div className={styles.sentenceChoices}>
-              {current.options.map((option) => (
-                <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
-                  {option}
-                </button>
-              ))}
-            </div>
           )}
 
           {feedback && <div className={styles.feedback}>{feedback === 'correct' ? 'Great!' : `Oops! ${current.answer}`}</div>}
         </section>
       ) : selectedMode === 'STORY_TALK' ? (
-        <section className={styles.storyTalk}>
+        <section className={styles.emptyReview}>
           <span>Story Talk</span>
-          <h2>{storyTalk?.topic.title ?? 'Story Talk'}</h2>
-          <p>{storyReply || storyTalk?.topic.opening || 'Tell me one thing you remember.'}</p>
-          <div className={styles.wordChips}>
-            {(storyTalk?.topic.targetWords ?? []).map((word) => <b key={word}>{word}</b>)}
-          </div>
-          <div className={styles.starterQuestions}>
-            {(storyTalk?.topic.starterQuestions ?? []).map((question) => (
-              <button key={question} onClick={() => setStoryMessage(question)}>{question}</button>
-            ))}
-          </div>
-          <div className={styles.storyInput}>
-            <input value={storyMessage} onChange={(event) => setStoryMessage(event.target.value)} placeholder="Type your idea" />
-            <button onClick={sendStoryMessage}>Send</button>
-          </div>
-          <button className={styles.startButton} onClick={restart}>Back</button>
+          <h2>No roleplay review ready.</h2>
+          <p>Completed roleplays will appear here when the memory schedule says it is time to practice again.</p>
+          <button onClick={restart}>Back to Review</button>
         </section>
       ) : (
         <section className={`${styles.quiz} ${feedback ? styles[feedback] : ''}`}>
@@ -852,8 +749,8 @@ export default function ReviewPage() {
             <p>{current.sentence}</p>
           </article>
 
-          {(current.kind === 'pick' || current.kind === 'keyword') && (
-            <div className={current.kind === 'keyword' ? styles.wordCloud : styles.choiceGrid}>
+          {current.kind === 'word' && (
+            <div className={styles.choiceGrid}>
               {current.options.map((option) => (
                 <button
                   key={option}
@@ -866,95 +763,44 @@ export default function ReviewPage() {
             </div>
           )}
 
-          {current.kind === 'picture' && (
-            <div className={styles.pictureGrid}>
-              {current.options.map((option) => (
-                <button
-                  key={option}
-                  className={selected === option ? styles.picked : ''}
-                  onClick={() => chooseOption(option)}
-                >
-                  <span>{icons[option] ?? '⭐'}</span>
-                  <strong>{option}</strong>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {current.kind === 'order' && (
+          {current.kind === 'sentenceOrder' && (
             <>
               <div className={styles.buildTray}>
-                {builtWords.length ? builtWords.map((word) => <span key={word}>{word}</span>) : <em>Tap words in order</em>}
+                {builtWords.length ? builtWords.map((word, wordIndex) => (
+                  <button
+                    key={`${word}-${wordIndex}`}
+                    type="button"
+                    onClick={() => removeBuiltWord(wordIndex)}
+                    aria-label={`Remove ${word}`}
+                  >
+                    {word}
+                  </button>
+                )) : <em>Tap words in order</em>}
               </div>
               <div className={styles.wordCloud}>
-                {current.options.map((word) => (
+                {current.options.map((word, optionIndex) => {
+                  const sameWordBefore = current.options.slice(0, optionIndex + 1).filter((option) => option === word).length
+                  const isUsed = wordUseCount(builtWords, word) >= sameWordBefore
+                  return (
                   <button
-                    key={word}
-                    disabled={builtWords.includes(word)}
+                    key={`${word}-${optionIndex}`}
+                    disabled={isUsed}
                     onClick={() => addWord(word)}
                   >
                     {word}
                   </button>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
 
-          {current.kind === 'match' && current.pairs && (
-            <div className={styles.matchGame}>
-              <svg viewBox="0 0 100 200" aria-hidden="true">
-                {current.pairs.map((pair, pairIndex) => {
-                  const rightIndex = rightOptions.indexOf(matches[pair.left])
-                  if (rightIndex < 0) return null
-                  return (
-                    <line
-                      key={pair.left}
-                      x1="28"
-                      y1={32 + pairIndex * 58}
-                      x2="72"
-                      y2={32 + rightIndex * 58}
-                    />
-                  )
-                })}
-              </svg>
-              <div className={styles.matchColumn}>
-                {current.pairs.map((pair) => (
-                  <button
-                    key={pair.left}
-                    className={matchLeft === pair.left || matches[pair.left] ? styles.picked : ''}
-                    disabled={Boolean(matches[pair.left])}
-                    onClick={() => setMatchLeft(pair.left)}
-                  >
-                    {pair.left}
-                  </button>
-                ))}
-              </div>
-              <div className={styles.matchColumn}>
-                {rightOptions.map((right) => (
-                  <button
-                    key={right}
-                    disabled={Object.values(matches).includes(right)}
-                    onClick={() => chooseMatchRight(right)}
-                  >
-                    {right}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {current.kind === 'chat' && (
-            <div className={styles.chatCard}>
-              <span>Use this word</span>
-              <strong>{current.answer}</strong>
-              <p>{storyReply || 'Tell Popo one thing you remember from this story moment.'}</p>
-              <div className={styles.storyInput}>
-                <input value={storyMessage} onChange={(event) => setStoryMessage(event.target.value)} placeholder="Type a short answer" />
-                <button onClick={sendStoryMessage}>Send</button>
-              </div>
-              {!usesBackendApi() && (
-                <button className={styles.chatSkip} onClick={() => moveNext(true)}>Done</button>
-              )}
+          {current.kind === 'sentenceRepeat' && (
+            <div className={styles.repeatPanel}>
+              <button disabled={isListening || Boolean(feedback)} onClick={handleSentenceRepeat}>
+                {isListening ? 'Listening...' : 'Tap and say it'}
+              </button>
+              <span>{spokenTranscript || 'Your voice will appear here.'}</span>
             </div>
           )}
 

@@ -170,13 +170,18 @@ async def create_description_attempt(
     sessionId: int,
     audio: UploadFile = File(...),
     question_id: int = Form(..., alias="questionId"),
+    transcript: str | None = Form(default=None),
     current_profile: ChildProfile = Depends(get_current_profile),
     learning_session_service: LearningSessionService = Depends(
         get_learning_session_service
     ),
     speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
 ) -> dict:
-    transcript = await speech_to_text_service.transcribe(audio)
+    transcript = (
+        transcript.strip()
+        if transcript and transcript.strip()
+        else await speech_to_text_service.transcribe(audio)
+    )
     return success_response(
         await learning_session_service.create_description_attempt(
             profile=current_profile,
@@ -226,13 +231,19 @@ async def create_roleplay_message(
     sessionId: int,
     audio: UploadFile = File(...),
     mission_id: int = Form(..., alias="missionId"),
+    transcript: str | None = Form(default=None),
     current_profile: ChildProfile = Depends(get_current_profile),
     learning_session_service: LearningSessionService = Depends(
         get_learning_session_service
     ),
     speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
 ) -> dict:
-    transcript = await speech_to_text_service.transcribe(audio)
+    submitted_transcript = transcript if isinstance(transcript, str) else None
+    transcript = (
+        submitted_transcript.strip()
+        if submitted_transcript and submitted_transcript.strip()
+        else await speech_to_text_service.transcribe(audio)
+    )
     return success_response(
         await learning_session_service.create_roleplay_message(
             profile=current_profile,

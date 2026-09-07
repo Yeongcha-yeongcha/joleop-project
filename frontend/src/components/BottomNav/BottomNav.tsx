@@ -49,7 +49,10 @@ export default function BottomNav() {
             key={item.path}
             className={`${styles.item} ${isActive ? styles.active : ''} ${item.path === '/home' ? styles.home : ''}`}
             data-tour={item.tourId}
-            onClick={() => navigate(item.path)}
+            onClick={() => navigate(item.path, {
+              replace: isActive,
+              state: isActive ? { resetAt: Date.now() } : undefined,
+            })}
             aria-current={isActive ? 'page' : undefined}
             aria-label={item.label}
             title={item.label}

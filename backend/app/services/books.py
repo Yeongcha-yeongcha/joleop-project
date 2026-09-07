@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppException
 from app.models import Book, ChildProfile, CourseType, Difficulty, LearningSession, LearningSessionStatus, UserBookProgress
+from app.services.attendance import current_learning_streak
 from app.services.customizations import CustomizationService
 from app.services.energy import EnergyService
 
@@ -32,7 +33,7 @@ class BookService:
                 "difficulty": profile.difficulty.value if profile.difficulty else None,
             },
             "status": {
-                "streakDays": profile.streak_days,
+                "streakDays": current_learning_streak(attendance_dates),
                 "hearts": profile.hearts,
                 "attendanceDates": attendance_dates,
                 **energy,

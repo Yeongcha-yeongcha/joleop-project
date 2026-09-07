@@ -10,12 +10,16 @@ from app.models import (
     Book,
     ChildProfile,
     DescriptionQuestion,
+    LearningSession,
+    LearningSessionStatus,
     ReviewAttempt,
     ReviewCard,
     ReviewCardType,
     ReviewMode,
     ReviewRating,
+    RoleplayMission,
 )
+from app.services.roleplay import AIRoleplayService, MockRoleplayService, clean_roleplay_transcript, roleplay_runtime_context
 from app.services.story_talk import StoryTalkService
 
 
@@ -34,6 +38,7 @@ class ReviewService:
         ReviewCardType.SENTENCE,
         ReviewCardType.CHAT,
     )
+    ROLEPLAY_KEYWORD_PREFIX = "roleplay:"
 
     def __init__(self, *, session: AsyncSession) -> None:
         self.session = session
@@ -79,6 +84,31 @@ class ReviewService:
                     due_at=due_at,
                 ):
                     created += 1
+
+        missions = list((
+            await self.session.execute(
+                select(RoleplayMission)
+                .where(
+                    RoleplayMission.book_id == book_id,
+                    RoleplayMission.chapter_number == chapter_number,
+                )
+                .order_by(RoleplayMission.mission_id)
+            )
+        ).scalars().all())
+        for mission in missions:
+            context = roleplay_runtime_context(mission)
+            if await self._create_card_if_missing(
+                profile_id=profile_id,
+                book_id=book_id,
+                chapter_number=chapter_number,
+                card_type=ReviewCardType.CHAT,
+                source_question_id=-mission.mission_id,
+                source_sentence=context["situation"],
+                cloze_sentence=context["opening_message"],
+                keyword=f"{self.ROLEPLAY_KEYWORD_PREFIX}{mission.mission_id}",
+                due_at=due_at,
+            ):
+                created += 1
         return created
 
     async def due_cards(
@@ -89,12 +119,15 @@ class ReviewService:
         mode: ReviewMode = ReviewMode.SMART_MIX,
     ) -> dict:
         now = datetime.now(UTC)
+        if mode in {ReviewMode.SMART_MIX, ReviewMode.STORY_TALK}:
+            await self._ensure_roleplay_review_cards(profile=profile, now=now)
         cards = await self._due_cards_by_mode(
             profile_id=profile.profile_id,
             limit=limit,
             mode=mode,
             now=now,
         )
+        await self._attach_roleplay_payloads(cards)
         return {
             "generatedAt": now.isoformat(),
             "dueCount": await self._due_count(profile.profile_id, now, mode=mode),
@@ -151,6 +184,7 @@ class ReviewService:
 
     async def story_talk_prompt(self, *, profile: ChildProfile, limit: int = 5) -> dict:
         now = datetime.now(UTC)
+        await self._ensure_roleplay_review_cards(profile=profile, now=now)
         cards = await self._due_cards_by_mode(
             profile_id=profile.profile_id,
             limit=limit,
@@ -158,11 +192,71 @@ class ReviewService:
             now=now,
         )
         if not cards:
-            cards = await self._recent_cards(profile_id=profile.profile_id, limit=limit)
+            cards = await self._recent_cards(
+                profile_id=profile.profile_id,
+                limit=limit,
+                card_types=[ReviewCardType.CHAT],
+                roleplay_only=True,
+            )
+        await self._attach_roleplay_payloads(cards)
         return {
             "mode": ReviewMode.STORY_TALK.value,
             "topic": self._fallback_story_topic(cards),
             "cards": [self.card_response(card, now=now) for card in cards],
+        }
+
+    async def story_roleplay_reply(
+        self,
+        *,
+        profile: ChildProfile,
+        card_id: int,
+        message: str,
+        history: list[dict],
+    ) -> dict:
+        card = await self.session.scalar(
+            select(ReviewCard).where(
+                ReviewCard.profile_id == profile.profile_id,
+                ReviewCard.card_id == card_id,
+                ReviewCard.card_type == ReviewCardType.CHAT,
+            )
+        )
+        if not card:
+            raise QuestionNotFoundException()
+        mission_id = self._roleplay_mission_id(card)
+        if mission_id is None:
+            raise QuestionNotFoundException()
+        mission = await self.session.scalar(
+            select(RoleplayMission).where(RoleplayMission.mission_id == mission_id)
+        )
+        if not mission:
+            raise QuestionNotFoundException()
+
+        transcript = clean_roleplay_transcript(mission, message)
+        turn = min(len(history) + 1, roleplay_runtime_context(mission)["required_turns"])
+        service = AIRoleplayService(session=self.session)
+        try:
+            result = await service.respond(
+                mission=mission,
+                session_id=-card.card_id,
+                transcript=transcript,
+                turn=turn,
+                history=history,
+            )
+        except Exception:
+            result = await MockRoleplayService().respond(
+                mission=mission,
+                session_id=-card.card_id,
+                transcript=transcript,
+                turn=turn,
+            )
+        required_turns = roleplay_runtime_context(mission)["required_turns"]
+        return {
+            "userTranscript": transcript,
+            "characterText": result.get("text") or "Great job. Keep going.",
+            "score": result.get("score", 70),
+            "source": result.get("source", "llm"),
+            "missionCompleted": turn >= required_turns,
+            "card": self.card_response(card, now=datetime.now(UTC)),
         }
 
     async def story_talk_reply(
@@ -374,38 +468,53 @@ class ReviewService:
             ReviewMode.SENTENCE_QUEST: [ReviewCardType.SENTENCE],
             ReviewMode.STORY_TALK: [ReviewCardType.CHAT],
         }[mode]
-        return await self._due_cards(profile_id=profile_id, limit=limit, now=now, card_types=card_types)
+        return await self._due_cards(
+            profile_id=profile_id,
+            limit=limit,
+            now=now,
+            card_types=card_types,
+            roleplay_only=mode == ReviewMode.STORY_TALK,
+        )
 
     async def _smart_mix_cards(self, *, profile_id: int, limit: int, now: datetime) -> list[ReviewCard]:
         selected: list[ReviewCard] = []
         seen: set[int] = set()
+        seen_sources: set[int] = set()
         for card_type in self.SMART_MIX_PLAN[:limit]:
-            card = await self._first_due_card(
+            card = await self._first_review_card(
                 profile_id=profile_id,
                 now=now,
                 card_type=card_type,
                 exclude_ids=seen,
+                exclude_source_question_ids=seen_sources,
+                roleplay_only=card_type == ReviewCardType.CHAT,
             )
             if card:
                 selected.append(card)
                 seen.add(card.card_id)
+                if card.source_question_id is not None:
+                    seen_sources.add(card.source_question_id)
         if len(selected) < limit:
-            rest = await self._due_cards(
+            rest = await self._review_cards(
                 profile_id=profile_id,
                 limit=limit - len(selected),
                 now=now,
+                card_types=[ReviewCardType.WORD, ReviewCardType.SENTENCE],
                 exclude_ids=seen,
+                exclude_source_question_ids=seen_sources,
             )
             selected.extend(rest)
         return selected
 
-    async def _first_due_card(
+    async def _first_review_card(
         self,
         *,
         profile_id: int,
         now: datetime,
         card_type: ReviewCardType,
         exclude_ids: set[int],
+        exclude_source_question_ids: set[int],
+        roleplay_only: bool = False,
     ) -> ReviewCard | None:
         stmt = (
             select(ReviewCard)
@@ -413,13 +522,16 @@ class ReviewService:
             .where(
                 ReviewCard.profile_id == profile_id,
                 ReviewCard.card_type == card_type,
-                ReviewCard.next_review_at <= now,
             )
             .order_by(ReviewCard.next_review_at, ReviewCard.card_id)
             .limit(1)
         )
         if exclude_ids:
             stmt = stmt.where(ReviewCard.card_id.not_in(exclude_ids))
+        if exclude_source_question_ids:
+            stmt = stmt.where(ReviewCard.source_question_id.not_in(exclude_source_question_ids))
+        if roleplay_only:
+            stmt = stmt.where(ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"))
         return await self.session.scalar(stmt)
 
     async def _due_cards(
@@ -430,6 +542,8 @@ class ReviewService:
         now: datetime,
         card_types: list[ReviewCardType] | None = None,
         exclude_ids: set[int] | None = None,
+        exclude_source_question_ids: set[int] | None = None,
+        roleplay_only: bool = False,
     ) -> list[ReviewCard]:
         stmt = (
             select(ReviewCard)
@@ -439,23 +553,120 @@ class ReviewService:
                 ReviewCard.next_review_at <= now,
             )
             .order_by(ReviewCard.next_review_at, ReviewCard.card_id)
+            .limit(limit * 4)
+        )
+        if card_types:
+            stmt = stmt.where(ReviewCard.card_type.in_(card_types))
+        if roleplay_only:
+            stmt = stmt.where(ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"))
+        if exclude_ids:
+            stmt = stmt.where(ReviewCard.card_id.not_in(exclude_ids))
+        due_cards = self._diverse_cards(
+            list((await self.session.execute(stmt)).scalars().all()),
+            limit=limit,
+            exclude_source_question_ids=exclude_source_question_ids,
+        )
+        if len(due_cards) >= limit:
+            return due_cards
+        seen = {card.card_id for card in due_cards}
+        if exclude_ids:
+            seen.update(exclude_ids)
+        seen_sources = {card.source_question_id for card in due_cards if card.source_question_id is not None}
+        if exclude_source_question_ids:
+            seen_sources.update(exclude_source_question_ids)
+        upcoming_cards = await self._review_cards(
+            profile_id=profile_id,
+            limit=limit - len(due_cards),
+            now=now,
+            card_types=card_types,
+            exclude_ids=seen,
+            exclude_source_question_ids=seen_sources,
+            roleplay_only=roleplay_only,
+        )
+        return due_cards + upcoming_cards
+
+    async def _review_cards(
+        self,
+        *,
+        profile_id: int,
+        limit: int,
+        now: datetime,
+        card_types: list[ReviewCardType] | None = None,
+        exclude_ids: set[int] | None = None,
+        exclude_source_question_ids: set[int] | None = None,
+        roleplay_only: bool = False,
+    ) -> list[ReviewCard]:
+        stmt = (
+            select(ReviewCard)
+            .options(selectinload(ReviewCard.book))
+            .where(ReviewCard.profile_id == profile_id)
+            .order_by(ReviewCard.next_review_at, ReviewCard.card_id)
+            .limit(limit * 4)
+        )
+        if card_types:
+            stmt = stmt.where(ReviewCard.card_type.in_(card_types))
+        if roleplay_only:
+            stmt = stmt.where(ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"))
+        if exclude_ids:
+            stmt = stmt.where(ReviewCard.card_id.not_in(exclude_ids))
+        return self._diverse_cards(
+            list((await self.session.execute(stmt)).scalars().all()),
+            limit=limit,
+            exclude_source_question_ids=exclude_source_question_ids,
+        )
+
+    @staticmethod
+    def _diverse_cards(
+        cards: list[ReviewCard],
+        *,
+        limit: int,
+        exclude_source_question_ids: set[int] | None = None,
+    ) -> list[ReviewCard]:
+        excluded_sources = exclude_source_question_ids or set()
+        selected: list[ReviewCard] = []
+        deferred: list[ReviewCard] = []
+        seen_sources: set[int] = set()
+        for card in cards:
+            source_id = card.source_question_id
+            if source_id is not None and source_id in excluded_sources:
+                deferred.append(card)
+                continue
+            if source_id is not None and source_id in seen_sources:
+                deferred.append(card)
+                continue
+            selected.append(card)
+            if source_id is not None:
+                seen_sources.add(source_id)
+            if len(selected) >= limit:
+                return selected
+        for card in deferred:
+            if card not in selected:
+                selected.append(card)
+            if len(selected) >= limit:
+                break
+        return selected
+
+    async def _recent_cards(
+        self,
+        *,
+        profile_id: int,
+        limit: int,
+        card_types: list[ReviewCardType] | None = None,
+        roleplay_only: bool = False,
+    ) -> list[ReviewCard]:
+        stmt = (
+            select(ReviewCard)
+            .options(selectinload(ReviewCard.book))
+            .where(ReviewCard.profile_id == profile_id)
+            .order_by(ReviewCard.created_at.desc(), ReviewCard.card_id.desc())
             .limit(limit)
         )
         if card_types:
             stmt = stmt.where(ReviewCard.card_type.in_(card_types))
-        if exclude_ids:
-            stmt = stmt.where(ReviewCard.card_id.not_in(exclude_ids))
-        return list((await self.session.execute(stmt)).scalars().all())
-
-    async def _recent_cards(self, *, profile_id: int, limit: int) -> list[ReviewCard]:
+        if roleplay_only:
+            stmt = stmt.where(ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"))
         return list((
-            await self.session.execute(
-                select(ReviewCard)
-                .options(selectinload(ReviewCard.book))
-                .where(ReviewCard.profile_id == profile_id)
-                .order_by(ReviewCard.created_at.desc(), ReviewCard.card_id.desc())
-                .limit(limit)
-            )
+            await self.session.execute(stmt)
         ).scalars().all())
 
     async def _due_count(
@@ -474,11 +685,14 @@ class ReviewService:
         elif mode == ReviewMode.SENTENCE_QUEST:
             stmt = stmt.where(ReviewCard.card_type == ReviewCardType.SENTENCE)
         elif mode == ReviewMode.STORY_TALK:
-            stmt = stmt.where(ReviewCard.card_type == ReviewCardType.CHAT)
+            stmt = stmt.where(
+                ReviewCard.card_type == ReviewCardType.CHAT,
+                ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"),
+            )
         return await self.session.scalar(stmt) or 0
 
     def card_response(self, card: ReviewCard, *, now: datetime) -> dict:
-        return {
+        response = {
             "cardId": card.card_id,
             "bookId": card.book_id,
             "bookTitle": card.book.title if card.book else "",
@@ -491,6 +705,88 @@ class ReviewService:
             "reviewCount": card.review_count,
             "nextReviewAt": card.next_review_at.isoformat(),
         }
+        roleplay = getattr(card, "_roleplay_payload", None)
+        if roleplay:
+            response["roleplayMissionId"] = roleplay["missionId"]
+            response["roleplay"] = roleplay
+        return response
+
+    async def _attach_roleplay_payloads(self, cards: list[ReviewCard]) -> None:
+        mission_ids = [mission_id for card in cards if (mission_id := self._roleplay_mission_id(card)) is not None]
+        if not mission_ids:
+            return
+        missions = {
+            mission.mission_id: mission
+            for mission in (
+                await self.session.execute(
+                    select(RoleplayMission).where(RoleplayMission.mission_id.in_(mission_ids))
+                )
+            ).scalars().all()
+        }
+        for card in cards:
+            mission_id = self._roleplay_mission_id(card)
+            mission = missions.get(mission_id) if mission_id is not None else None
+            if not mission:
+                continue
+            context = roleplay_runtime_context(mission)
+            card._roleplay_payload = {
+                "missionId": mission.mission_id,
+                "title": mission.title,
+                "description": context["situation"],
+                "openingMessage": context["opening_message"],
+                "playerGoal": context["player_goal"],
+                "childRole": context["child_role"],
+                "aiCharacter": context["ai_character"],
+                "requiredTurns": context["required_turns"],
+                "hints": mission.hint_sequence or [],
+                "imageUrl": mission.character_image_url,
+            }
+
+    async def _ensure_roleplay_review_cards(self, *, profile: ChildProfile, now: datetime) -> None:
+        completed_sessions = list((
+            await self.session.execute(
+                select(LearningSession.book_id, LearningSession.chapter_number)
+                .where(
+                    LearningSession.profile_id == profile.profile_id,
+                    LearningSession.status == LearningSessionStatus.COMPLETED,
+                )
+                .group_by(LearningSession.book_id, LearningSession.chapter_number)
+            )
+        ).all())
+        created = 0
+        for book_id, chapter_number in completed_sessions:
+            missions = list((
+                await self.session.execute(
+                    select(RoleplayMission).where(
+                        RoleplayMission.book_id == book_id,
+                        RoleplayMission.chapter_number == chapter_number,
+                    )
+                )
+            ).scalars().all())
+            for mission in missions:
+                context = roleplay_runtime_context(mission)
+                if await self._create_card_if_missing(
+                    profile_id=profile.profile_id,
+                    book_id=book_id,
+                    chapter_number=chapter_number,
+                    card_type=ReviewCardType.CHAT,
+                    source_question_id=-mission.mission_id,
+                    source_sentence=context["situation"],
+                    cloze_sentence=context["opening_message"],
+                    keyword=f"{self.ROLEPLAY_KEYWORD_PREFIX}{mission.mission_id}",
+                    due_at=now,
+                ):
+                    created += 1
+        if created:
+            await self.session.commit()
+
+    def _roleplay_mission_id(self, card: ReviewCard) -> int | None:
+        if not card.keyword.startswith(self.ROLEPLAY_KEYWORD_PREFIX):
+            return None
+        try:
+            return int(card.keyword.removeprefix(self.ROLEPLAY_KEYWORD_PREFIX))
+        except ValueError:
+            return None
 
     @staticmethod
     def _fallback_story_topic(cards: list[ReviewCard]) -> dict:

@@ -206,13 +206,6 @@ export default function CustomizePage() {
     setMessage('Preview is back to saved look.')
   }
 
-  const clearPopoKind = (kind: PopoItem['kind']) => {
-    const next = { ...previewPopo }
-    delete next[kind]
-    setPreviewPopo(next)
-    setMessage('Popo item is off in preview.')
-  }
-
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -308,12 +301,6 @@ export default function CustomizePage() {
               )
             })}
           </section>
-          <div className={styles.clearActions}>
-            <button onClick={() => clearPopoKind('hat')}>No Hat</button>
-            <button onClick={() => clearPopoKind('glasses')}>No Glasses</button>
-            <button onClick={() => clearPopoKind('necklace')}>No Necklace</button>
-            <button onClick={() => clearPopoKind('outfit')}>No Clothes</button>
-          </div>
           <div className={styles.saveActions}>
             <button onClick={resetPopoPreview}>Reset Preview</button>
             <button onClick={savePopoLook}>{previewCost > 0 ? `Buy & Save ★ ${previewCost}` : 'Save Look'}</button>

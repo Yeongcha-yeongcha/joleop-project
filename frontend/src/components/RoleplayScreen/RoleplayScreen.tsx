@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import lottie from 'lottie-web'
 import type { RoleplayMission } from '../../types'
 import type { ChapterResult } from '../../utils/chapterProgress'
-import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 import { IMAGES } from '../../constants/assets'
 import styles from './RoleplayScreen.module.css'
 
@@ -33,8 +32,8 @@ function TrophyAnimation({ className, onComplete }: { className?: string; onComp
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const MOCK_RECORD_MS = 2000       // simulated recording duration (replace with real STT)
-const FINAL_NPC_DELAY_MS = 3000   // pause after last user turn before showing completion
+const ROLEPLAY_MAX_RECORD_MS = 6000
+const ROLEPLAY_SILENCE_MS = 1100
 const COMPLETION_TEXT_MS = 500    // delay before final result fades in
 
 type RoleplayView = 'intro' | 'chat'
@@ -45,7 +44,8 @@ interface Props {
   onProgressChange: (v: number) => void
   onFinish: () => Promise<ChapterResult | null> | ChapterResult | null
   onExit: () => void
-  onRecord?: (audio: Blob) => Promise<{
+  onSpeakText?: (text: string) => Promise<void> | void
+  onRecord: (audio: Blob, transcript?: string) => Promise<{
     userTranscript: string
     characterText: string
     missionCompleted: boolean
@@ -53,22 +53,158 @@ interface Props {
   }>
 }
 
-function scoreLabel(value: number | null) {
-  return value === null ? '-' : `${value}%`
+function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
+  return new Promise(async (resolve, reject) => {
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch {
+      reject(new Error('Microphone permission is needed.'))
+      return
+    }
+
+    const chunks: Blob[] = []
+    const mediaRecorder = new MediaRecorder(stream)
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const recognition = Recognition ? new Recognition() : null
+    const finalParts: string[] = []
+    let interimTranscript = ''
+    let settled = false
+    let maxTimer: number | null = null
+    let silenceTimer: number | null = null
+    const deadline = Date.now() + durationMs
+
+    const currentTranscript = () => [...finalParts, interimTranscript].join(' ').trim()
+
+    const cleanup = () => {
+      if (maxTimer !== null) window.clearTimeout(maxTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      try {
+        recognition?.abort()
+      } catch {
+        // Recognition may already be stopped.
+      }
+      stream.getTracks().forEach((track) => track.stop())
+    }
+
+    const finish = () => {
+      if (settled) return
+      settled = true
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+    }
+
+    const restartSilenceTimer = () => {
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      if (!currentTranscript()) return
+      silenceTimer = window.setTimeout(finish, ROLEPLAY_SILENCE_MS)
+    }
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data)
+    }
+    mediaRecorder.onerror = () => {
+      cleanup()
+      reject(new Error('Recording failed.'))
+    }
+    mediaRecorder.onstop = () => {
+      const transcript = currentTranscript()
+      cleanup()
+      resolve({
+        audio: new Blob(chunks, { type: 'audio/webm' }),
+        transcript,
+      })
+    }
+
+    mediaRecorder.start()
+    maxTimer = window.setTimeout(finish, durationMs)
+
+    if (!recognition) return
+
+    const restartIfNoSpeechYet = () => {
+      if (settled || currentTranscript() || Date.now() >= deadline) {
+        if (Date.now() >= deadline) finish()
+        return
+      }
+      try {
+        recognition.start()
+      } catch {
+        window.setTimeout(restartIfNoSpeechYet, 120)
+      }
+    }
+
+    recognition.lang = 'en-US'
+    recognition.interimResults = true
+    recognition.continuous = false
+    recognition.onresult = (event) => {
+      interimTranscript = ''
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const transcript = event.results[index][0]?.transcript ?? ''
+        if (event.results[index].isFinal) finalParts.push(transcript)
+        else interimTranscript = `${interimTranscript} ${transcript}`.trim()
+      }
+      restartSilenceTimer()
+    }
+    recognition.onerror = () => {
+      if (currentTranscript()) {
+        finish()
+        return
+      }
+      restartIfNoSpeechYet()
+    }
+    recognition.onend = restartIfNoSpeechYet
+
+    try {
+      recognition.start()
+    } catch {
+      restartIfNoSpeechYet()
+    }
+  })
 }
 
-export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, onExit, onRecord }: Props) {
-  const [view, setView] = useState<RoleplayView>('intro')
-  const [userAnswers, setUserAnswers] = useState<string[]>([])
-  const [npcReplies, setNpcReplies] = useState<string[]>(roleplay.turns.map((turn) => turn.npc))
+function initialUserAnswers(roleplay: RoleplayMission) {
+  return roleplay.history?.map((turn) => turn.user).filter(Boolean) ?? []
+}
+
+function initialNpcReplies(roleplay: RoleplayMission) {
+  const replies = roleplay.turns.map((turn) => turn.npc)
+  roleplay.history?.forEach((turn, index) => {
+    replies[index + 1] = turn.npc
+  })
+  return replies
+}
+
+export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, onExit, onSpeakText, onRecord }: Props) {
+  const [view, setView] = useState<RoleplayView>(() => roleplay.history?.length ? 'chat' : 'intro')
+  const [userAnswers, setUserAnswers] = useState<string[]>(() => initialUserAnswers(roleplay))
+  const [npcReplies, setNpcReplies] = useState<string[]>(() => initialNpcReplies(roleplay))
   const [recordState, setRecordState] = useState<RecordState>('idle')
   const [showFinalNpc, setShowFinalNpc] = useState(false)
   const [showCompletion, setShowCompletion] = useState(false)
   const [showText, setShowText] = useState(false)
   const [finalResult, setFinalResult] = useState<ChapterResult | null>(null)
   const [isFinalizing, setIsFinalizing] = useState(false)
+  const [speechError, setSpeechError] = useState('')
+  const [finishError, setFinishError] = useState('')
   const chatBottomRef = useRef<HTMLDivElement>(null)
-  const recorder = useAudioRecorder()
+  const roleplayKey = [
+    roleplay.mission,
+    roleplay.missionSummary,
+    roleplay.turns.length,
+    roleplay.history?.map((turn) => `${turn.user}=>${turn.npc}`).join('|') ?? '',
+  ].join('::')
+
+  useEffect(() => {
+    setView(roleplay.history?.length ? 'chat' : 'intro')
+    setUserAnswers(initialUserAnswers(roleplay))
+    setNpcReplies(initialNpcReplies(roleplay))
+    setRecordState('idle')
+    setShowFinalNpc(Boolean(roleplay.history?.length && roleplay.history.length >= roleplay.turns.length))
+    setShowCompletion(false)
+    setShowText(false)
+    setFinalResult(null)
+    setSpeechError('')
+    setFinishError('')
+  }, [roleplayKey])
 
   useEffect(() => {
     const progress = view === 'intro'
@@ -81,47 +217,53 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [userAnswers])
 
-  useEffect(() => {
-    if (!showCompletion || finalResult || isFinalizing) return
-    setIsFinalizing(true)
-    Promise.resolve(onFinish())
-      .then((result) => {
-        if (result) setFinalResult(result)
-      })
-      .finally(() => setIsFinalizing(false))
-  }, [finalResult, isFinalizing, onFinish, showCompletion])
-
   const isDone = userAnswers.length >= roleplay.turns.length
 
   const handleRecord = async () => {
     if (recordState !== 'idle' || isDone) return
     const currentIdx = userAnswers.length
     setRecordState('recording')
+    setSpeechError('')
     try {
-      if (onRecord) {
-        const blob = await recorder.record()
-        const result = await onRecord(blob)
-        setUserAnswers(prev => [...prev, result.userTranscript])
-        setNpcReplies(prev => {
-          const next = [...prev]
-          next[currentIdx + 1] = result.characterText
-          return next
-        })
-        if (result.missionCompleted || currentIdx + 1 >= roleplay.turns.length) {
-          setShowFinalNpc(true)
-          setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
-        }
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, MOCK_RECORD_MS))
-        setUserAnswers(prev => [...prev, roleplay.turns[currentIdx].user])
-        if (currentIdx + 1 >= roleplay.turns.length) {
-          setShowFinalNpc(true)
-          setTimeout(() => setShowCompletion(true), FINAL_NPC_DELAY_MS)
-        }
+      const { audio: blob, transcript } = await recordRoleplaySpeech()
+      const cleanTranscript = transcript.trim()
+      if (!cleanTranscript) {
+        setSpeechError('I could not hear you. Please try again.')
+        setRecordState('idle')
+        return
+      }
+      const result = await onRecord(blob, cleanTranscript)
+      setUserAnswers(prev => [...prev, result.userTranscript])
+      setNpcReplies(prev => {
+        const next = [...prev]
+        next[currentIdx + 1] = result.characterText
+        return next
+      })
+      void onSpeakText?.(result.characterText)
+      if (currentIdx + 1 >= roleplay.turns.length) {
+        setShowFinalNpc(true)
       }
       setRecordState('idle')
     } catch {
       setRecordState('idle')
+    }
+  }
+
+  const handleCompleteLesson = async () => {
+    if (isFinalizing) return
+    setIsFinalizing(true)
+    setFinishError('')
+    try {
+      const result = await Promise.resolve(onFinish())
+      if (result) {
+        setFinalResult(result)
+        setShowCompletion(true)
+        setTimeout(() => setShowText(true), COMPLETION_TEXT_MS)
+      }
+    } catch {
+      setFinishError('Could not complete the lesson. Please try again.')
+    } finally {
+      setIsFinalizing(false)
     }
   }
 
@@ -144,7 +286,14 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
           </div>
         </div>
         <div className={styles.introBottom}>
-          <button className={styles.imgBtn} onClick={() => setView('chat')} aria-label="Start">
+          <button
+            className={styles.imgBtn}
+            onClick={() => {
+              setView('chat')
+              void onSpeakText?.(roleplay.turns[0]?.npc ?? '')
+            }}
+            aria-label="Start"
+          >
             <img src={IMAGES.nextBtnActive} alt="Start" className={styles.btnImg} />
           </button>
         </div>
@@ -157,6 +306,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
 
       <div className={styles.chatHeader}>
         <div className={styles.missionSummaryCard}>
+          <span className={styles.missionSummaryLabel}>Situation</span>
           <span className={styles.missionSummaryText}>{roleplay.missionSummary}</span>
         </div>
       </div>
@@ -179,6 +329,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
       </div>
 
       <div className={styles.chatBottom}>
+        {speechError && <p className={styles.speechError}>{speechError}</p>}
         {!isDone && (
           <button
             className={styles.imgBtn}
@@ -193,61 +344,57 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
             />
           </button>
         )}
+        {isDone && (
+          <section className={styles.finishPanel}>
+            <div>
+              <strong>Roleplay finished!</strong>
+              <p>Check your chat, then complete the lesson.</p>
+            </div>
+            {finishError && <p className={styles.finishError}>{finishError}</p>}
+            <button
+              className={styles.finishButton}
+              onClick={handleCompleteLesson}
+              disabled={isFinalizing}
+            >
+              {isFinalizing ? 'Saving...' : 'Complete Lesson'}
+            </button>
+          </section>
+        )}
       </div>
 
-      {showCompletion && (
+      {showCompletion && finalResult && (
         <div className={styles.completionOverlay}>
-          <div className={styles.trophyWrapper}>
-            <TrophyAnimation
-              className={styles.trophyAnim}
-              onComplete={() => {
-                setTimeout(() => setShowText(true), COMPLETION_TEXT_MS)
-              }}
-            />
-          </div>
-          <section className={`${styles.completionResult} ${showText ? styles.completionVisible : ''}`}>
-            <span className={styles.completionBadge}>
-              Chapter {finalResult?.chapterNumber ?? 1}
-            </span>
-            <h1>{finalResult?.message ?? 'Great job!'}</h1>
-            <div className={styles.starFan} aria-label={`${finalResult?.stars ?? 0} stars`}>
-              {[0, 1, 2].map((index) => (
-                <span key={index} className={index < (finalResult?.stars ?? 0) ? styles.starOn : styles.starOff}>
-                  ★
-                </span>
-              ))}
+          <>
+            <div className={styles.trophyWrapper}>
+              <TrophyAnimation className={styles.trophyAnim} />
             </div>
-            <strong>{finalResult ? `${finalResult.totalScore} points` : 'Saving...'}</strong>
-            {finalResult && (
-              <div className={styles.scoreBreakdown}>
-                <div>
-                  <span>Repeat</span>
-                  <b>{scoreLabel(finalResult.breakdown.repeat)}</b>
-                </div>
-                <div>
-                  <span>Quiz</span>
-                  <b>{scoreLabel(finalResult.breakdown.description)}</b>
-                </div>
-                <div>
-                  <span>Roleplay</span>
-                  <b>{scoreLabel(finalResult.breakdown.roleplay)}</b>
-                </div>
+            <section className={`${styles.completionResult} ${showText ? styles.completionVisible : ''}`}>
+              <span className={styles.completionBadge}>
+                Chapter {finalResult.chapterNumber}
+              </span>
+              <h1>{finalResult.message}</h1>
+              <div className={styles.starFan} aria-label={`${finalResult.stars} stars`}>
+                {[0, 1, 2].map((index) => (
+                  <span key={index} className={index < finalResult.stars ? styles.starOn : styles.starOff}>
+                    ★
+                  </span>
+                ))}
               </div>
-            )}
-            <p>
-              {finalResult && finalResult.totalScore >= 80
-                ? 'You spoke clearly and used the story words well.'
-                : 'Good effort. Try one more chapter to make the sentences smoother.'}
-            </p>
-          </section>
-          <button
-            className={`${styles.imgBtn} ${styles.completionBtn} ${finalResult ? styles.completionVisible : ''}`}
-            onClick={onExit}
-            aria-label="Back to chapters"
-            disabled={!finalResult}
-          >
-            <img src={IMAGES.nextBtnActive} alt="Back to chapters" className={styles.btnImg} />
-          </button>
+              <strong>{`${finalResult.totalScore} points`}</strong>
+              <p>
+                {finalResult.totalScore >= 80
+                  ? 'You spoke clearly and used the story words well.'
+                  : 'Good effort. Try one more chapter to make the sentences smoother.'}
+              </p>
+            </section>
+            <button
+              className={`${styles.imgBtn} ${styles.completionBtn} ${showText ? styles.completionVisible : ''}`}
+              onClick={onExit}
+              aria-label="Back to chapters"
+            >
+              <img src={IMAGES.nextBtnActive} alt="Back to chapters" className={styles.btnImg} />
+            </button>
+          </>
         </div>
       )}
 

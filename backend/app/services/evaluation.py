@@ -1,6 +1,33 @@
 from difflib import SequenceMatcher
 import re
 
+SPEECH_NAME_ALIASES = {
+    "popo": "popo",
+    "purple": "popo",
+    "people": "popo",
+    "polo": "popo",
+    "papa": "popo",
+    "toto": "toto",
+    "titi": "toto",
+    "total": "toto",
+    "pipi": "pipi",
+    "peepee": "pipi",
+    "pp": "pipi",
+    "gigi": "gigi",
+    "gg": "gigi",
+    "momo": "momo",
+    "mama": "momo",
+}
+
+
+def normalize_story_names(text: str) -> str:
+    text = re.sub(r"\bpo\s+po\b", "popo", text, flags=re.I)
+    text = re.sub(r"\bto\s+to\b", "toto", text, flags=re.I)
+    text = re.sub(r"\bpi\s+pi\b", "pipi", text, flags=re.I)
+    text = re.sub(r"\bgi\s+gi\b", "gigi", text, flags=re.I)
+    text = re.sub(r"\bmo\s+mo\b", "momo", text, flags=re.I)
+    return text
+
 
 class RepeatEvaluationService:
     def evaluate(self, *, target_text: str, transcript: str) -> dict:
@@ -26,9 +53,9 @@ class RepeatEvaluationService:
 
     @staticmethod
     def normalize(text: str) -> str:
-        lowered = text.lower().strip()
+        lowered = normalize_story_names(text).lower().strip()
         lowered = re.sub(r"[^a-z0-9\s']", " ", lowered)
-        return " ".join(lowered.split())
+        return " ".join(SPEECH_NAME_ALIASES.get(word, word) for word in lowered.split())
 
     @classmethod
     def word_results(cls, *, target_text: str, transcript: str) -> list[dict]:
@@ -127,9 +154,9 @@ class DescriptionEvaluationService:
 
     @staticmethod
     def normalize(text: str) -> str:
-        lowered = text.lower().strip()
+        lowered = normalize_story_names(text).lower().strip()
         lowered = re.sub(r"[^a-z0-9\s']", " ", lowered)
-        return " ".join(lowered.split())
+        return " ".join(SPEECH_NAME_ALIASES.get(word, word) for word in lowered.split())
 
     @staticmethod
     def _contains_word(text: str, word: str) -> bool:

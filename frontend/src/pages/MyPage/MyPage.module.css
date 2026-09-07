@@ -576,35 +576,34 @@
   box-shadow: 0 5px 0 #ad321f;
 }
 
-.guardianOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.safePanel .guardianLockCard {
+  width: 100%;
+  min-height: 170px;
+  padding: 22px 18px;
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 7px;
+  gap: 8px;
   border-radius: 8px;
-  border: 0;
-  background: rgba(255, 248, 223, 0.72);
+  border: 3px solid #f0d28b;
+  background: #fff8df;
   color: #5f4720;
-  backdrop-filter: blur(10px) saturate(0.82);
   box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.52),
-    inset 0 -120px 160px rgba(255, 151, 0, 0.12);
+    inset 0 -16px 0 rgba(240, 210, 139, 0.26),
+    0 6px 0 #ead596;
 }
 
-.guardianOverlay span {
+.safePanel .guardianLockCard span {
   width: 42px;
   height: 42px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.74);
+  background: white;
   box-shadow: inset 0 -4px 0 rgba(126, 77, 8, 0.1), 0 6px 14px rgba(74, 48, 13, 0.16);
 }
 
-.guardianOverlay svg {
+.safePanel .guardianLockCard svg {
   width: 21px;
   height: 21px;
   fill: none;
@@ -614,13 +613,13 @@
   stroke-linejoin: round;
 }
 
-.guardianOverlay strong {
+.safePanel .guardianLockCard strong {
   color: #4b3518;
   font-size: 16px;
   font-weight: 900;
 }
 
-.guardianOverlay em {
+.safePanel .guardianLockCard em {
   color: #7b5a22;
   font-size: 12px;
   font-style: normal;

@@ -180,7 +180,7 @@ class ParentReportService:
                 "learnedExpressions": [],
                 "strengths": [],
                 "needsPractice": [],
-                "comment": "No finished lesson yet.",
+                "comment": "아직 완료한 학습이 없습니다.",
             }
 
         scores: list[int] = []
@@ -190,6 +190,9 @@ class ParentReportService:
         learned_words: list[str] = []
         learned_expressions: list[str] = []
         books: list[str] = []
+        description_questions_by_chapter: dict[tuple[int, int], list[DescriptionQuestion]] = defaultdict(list)
+        for (book_id, chapter_number, _), question in description_questions.items():
+            description_questions_by_chapter[(book_id, chapter_number)].append(question)
 
         for session in sessions:
             if isinstance(session.book, Book):
@@ -215,8 +218,25 @@ class ParentReportService:
                 if message.score is not None:
                     scores.append(message.score)
                     roleplay_scores.append(message.score)
-                if message.user_transcript.strip():
-                    learned_expressions.append(message.user_transcript.strip())
+                transcript = message.user_transcript.strip()
+                if transcript and not self._is_mock_transcript(transcript):
+                    learned_expressions.append(transcript)
+            chapter_description_questions = description_questions_by_chapter.get(
+                (session.book_id, session.chapter_number),
+                [],
+            )
+            if not learned_words:
+                learned_words.extend(
+                    question.blank_word
+                    for question in chapter_description_questions
+                    if question.blank_word
+                )
+            if not learned_expressions:
+                learned_expressions.extend(
+                    question.source_text or question.answer_sentence or question.sentence
+                    for question in chapter_description_questions
+                    if question.source_text or question.answer_sentence or question.sentence
+                )
 
         average_score = round(sum(scores) / len(scores)) if scores else sessions[-1].total_score
         strengths = self._strengths(repeat_scores, description_scores, roleplay_scores)
@@ -254,48 +274,52 @@ class ParentReportService:
         for value in values:
             normalized = value.strip()
             key = normalized.lower()
-            if not normalized or key in seen:
+            if not normalized or key in seen or ParentReportService._is_mock_transcript(normalized):
                 continue
             seen.add(key)
             unique.append(normalized)
         return unique
 
+    @staticmethod
+    def _is_mock_transcript(value: str) -> bool:
+        return value.strip().lower() == "mock transcript"
+
     def _strengths(self, repeat: list[int], description: list[int], roleplay: list[int]) -> list[str]:
         strengths = []
         if self._average(repeat) is not None and self._average(repeat) >= 80:
-            strengths.append("Repeated story sentences clearly.")
+            strengths.append("따라 말하기에서 문장을 또렷하게 말했어요.")
         if self._average(description) is not None and self._average(description) >= 80:
-            strengths.append("Used picture clues to find the right words.")
+            strengths.append("그림 단서를 보고 알맞은 단어를 잘 찾았어요.")
         if self._average(roleplay) is not None and self._average(roleplay) >= 80:
-            strengths.append("Answered roleplay turns with confidence.")
-        return strengths or ["Finished the lesson and kept practicing."]
+            strengths.append("롤플레잉에서 자신 있게 대답했어요.")
+        return strengths or ["학습을 끝까지 완료했어요."]
 
     def _needs_practice(self, repeat: list[int], description: list[int], roleplay: list[int]) -> list[str]:
         needs = []
         if self._average(repeat) is not None and self._average(repeat) < 70:
-            needs.append("Review pronunciation and missing words in repeat practice.")
+            needs.append("따라 말하기에서 발음과 빠뜨린 단어를 다시 연습해보면 좋아요.")
         if self._average(description) is not None and self._average(description) < 70:
-            needs.append("Practice describing pictures in a full sentence.")
+            needs.append("묘사 퀴즈에서는 단어를 문장 속에서 말하는 연습이 필요해요.")
         if self._average(roleplay) is not None and self._average(roleplay) < 70:
-            needs.append("Try answering roleplay prompts with longer phrases.")
-        return needs or ["Keep reviewing today's new words so they stay fresh."]
+            needs.append("롤플레잉에서는 조금 더 긴 표현으로 대답해보면 좋아요.")
+        return needs
 
     @staticmethod
     def _daily_comment(score: int | None, strengths: list[str], needs: list[str]) -> str:
         if score is None:
-            return "No finished lesson yet."
+            return "아직 완료한 학습이 없습니다."
         if score >= 85:
-            return "Strong day. The story words and speaking flow looked steady."
+            return "오늘은 이야기 단어와 말하기 흐름이 안정적이었어요."
         if score >= 70:
-            return "Good progress. A short review will help the new expressions settle."
+            return "좋은 흐름이에요. 짧게 복습하면 새 표현이 더 오래 남을 거예요."
         return needs[0] if needs else strengths[0]
 
     @staticmethod
     def _summary_comment(average_score: int | None, completed_chapters: int) -> str:
         if completed_chapters == 0:
-            return "No completed chapters in this period yet."
+            return "이번 기간에는 아직 완료한 챕터가 없습니다."
         if average_score is not None and average_score >= 85:
-            return "This week shows strong understanding and confident speaking."
+            return "이번 주는 이해도와 말하기 자신감이 좋아요."
         if average_score is not None and average_score >= 70:
-            return "This week is progressing well. Review will help make expressions smoother."
-        return "This week needs lighter, repeated practice with familiar words."
+            return "이번 주 학습 흐름이 좋아요. 복습을 더하면 표현이 자연스러워질 거예요."
+        return "이번 주는 익숙한 단어부터 가볍게 반복 연습하면 좋아요."

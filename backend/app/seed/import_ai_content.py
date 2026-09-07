@@ -247,12 +247,24 @@ async def replace_book_content(
             mission.description = scenario.get("scene_description") or lesson.get("theme") or ""
             mission.character_name = scenario.get("character_name") or "Friend"
             mission.character_image_url = scenario.get("character_image_url")
-            mission.opening_message = scenario.get("opening_message") or "Hi! Can you help me?"
-            mission.player_goal = scenario.get("player_goal")
+            mission.opening_message = (
+                scenario.get("opening_message")
+                or scenario.get("opening_line")
+                or "Hi! What should we do?"
+            )
+            mission.player_goal = scenario.get("player_goal") or scenario.get("mission_goal")
             mission.model_answer = scenario.get("model_answer")
             mission.similar_answers = scenario.get("similar_answers") or []
-            mission.hint_sequence = scenario.get("hint_sequence") or []
-            mission.required_turns = 1
+            mission.hint_sequence = scenario.get("hint_sequence") or [
+                hint
+                for hint in (
+                    scenario.get("hint_1"),
+                    scenario.get("hint_2"),
+                    scenario.get("hint_3"),
+                )
+                if hint
+            ]
+            mission.required_turns = max(3, int(scenario.get("max_turns") or 3))
             if index > len(existing_missions):
                 session.add(mission)
             roleplay_count += 1

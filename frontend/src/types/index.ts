@@ -21,6 +21,11 @@ export interface RoleplayTurn {
   user: string   // 사용자 예시 대사
 }
 
+export interface RoleplayHistoryTurn {
+  user: string
+  npc: string
+}
+
 /** 레슨 말미 롤플레잉 미션 */
 export interface RoleplayMission {
   thumbnailColor: string   // 썸네일 원형 배경색 (이미지 없을 때 플레이스홀더)
@@ -28,6 +33,7 @@ export interface RoleplayMission {
   mission: string          // 인트로 카드 전체 미션 설명 (\n 사용 가능)
   missionSummary: string   // 채팅창 상단 한 줄 요약
   turns: RoleplayTurn[]    // 대화 턴 목록 (사용자 응답 포함)
+  history?: RoleplayHistoryTurn[]
   finalNpc: string         // 사용자 마지막 답변 후 상대방의 마지막 버블
 }
 
