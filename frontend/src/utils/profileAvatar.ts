@@ -34,11 +34,12 @@ export function saveProfileColor(profileId: number, color: string) {
   writeRecord(PROFILE_COLORS_KEY, colors)
 }
 
-export function getProfileColor(profile: Pick<ChildProfile, 'profileId' | 'nickname'> | null): string {
+export function getProfileColor(profile: Pick<ChildProfile, 'profileId' | 'nickname' | 'profileColor'> | null): string {
   if (!profile) return profileColors[0]
   const colors = readRecord(PROFILE_COLORS_KEY)
   const saved = colors[String(profile.profileId)]
   if (saved) return saved
+  if ('profileColor' in profile && profile.profileColor) return profile.profileColor
   const seed = [...profile.nickname].reduce((sum, char) => sum + char.charCodeAt(0), profile.profileId)
   const color = profileColors[Math.abs(seed) % profileColors.length]
   saveProfileColor(profile.profileId, color)

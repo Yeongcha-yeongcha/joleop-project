@@ -109,6 +109,10 @@ class RepeatEvaluationService:
 
     @staticmethod
     def allowed_missed_words(word_count: int) -> int:
+        if word_count >= 10:
+            return max(3, round(word_count * 0.25))
+        if word_count >= 7:
+            return 3
         if word_count >= 5:
             return 2
         if word_count >= 4:

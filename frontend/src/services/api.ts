@@ -366,6 +366,7 @@ export interface ChildProfile {
   nickname: string
   age: number
   profileImageUrl: string | null
+  profileImageId?: number | null
   profileColor?: string
   passwordEnabled: boolean
   onboardingCompleted: boolean

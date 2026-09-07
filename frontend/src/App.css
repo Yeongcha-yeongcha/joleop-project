@@ -51,11 +51,16 @@
   height: 100%;
   min-height: 0;
   overflow: auto;
+  scrollbar-width: none;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   animation-duration: 0.28s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-fill-mode: both;
+}
+
+.page-enter::-webkit-scrollbar {
+  display: none;
 }
 
 .page-enter-up {

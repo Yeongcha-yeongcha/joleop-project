@@ -16,7 +16,7 @@ import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
 import type { ChapterResult } from '../../utils/chapterProgress'
 import styles from './ReviewPage.module.css'
 
-type ReviewKind = 'word' | 'sentenceOrder' | 'sentenceRepeat' | 'chat'
+type ReviewKind = 'wordCloze' | 'wordRepeat' | 'sentenceOrder' | 'sentenceRepeat' | 'chat'
 
 interface ReviewItem {
   id: string
@@ -33,7 +33,7 @@ interface ReviewItem {
 }
 
 const modeCards: Array<{ mode: ReviewMode; title: string; description: string }> = [
-  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'See a word, then find it in the choices.' },
+  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Fill 3 word blanks, then say 2 words.' },
   { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Build 3 sentences, then say 2 sentences.' },
   { mode: 'STORY_TALK', title: 'Story Talk', description: 'Replay finished roleplays at the right time.' },
 ]
@@ -53,7 +53,7 @@ const smartFlowCards = [
   { label: 'Sentence', icon: '', tone: 'sentence' },
   { label: 'Word', icon: 'B', tone: 'word' },
   { label: 'Sentence', icon: '', tone: 'sentence' },
-  { label: 'Roleplay', icon: '🎭', tone: 'chat' },
+  { label: 'Word', icon: 'C', tone: 'word' },
 ]
 
 function activeProfileKey() {
@@ -130,15 +130,29 @@ function normalizeBuiltAnswer(value: string) {
   return value.replace(/\s+/g, '').toLowerCase()
 }
 
-function normalizeSpokenSentence(value: string) {
+function normalizeAnswerText(value: string) {
   return value.replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+function isSpokenAnswerCorrect(expected: string, transcript: string) {
+  const normalizedExpected = normalizeAnswerText(expected)
+  const normalizedTranscript = normalizeAnswerText(transcript)
+  if (!normalizedExpected || !normalizedTranscript) return false
+  if (!normalizedExpected.includes(' ')) {
+    return normalizedTranscript.split(' ').includes(normalizedExpected)
+  }
+  const expectedWords = normalizedExpected.split(' ')
+  const transcriptWords = normalizedTranscript.split(' ')
+  const matchedWords = expectedWords.filter((word) => transcriptWords.includes(word)).length
+  const allowedMisses = expectedWords.length >= 7 ? 3 : expectedWords.length >= 5 ? 2 : 1
+  return expectedWords.length - matchedWords <= allowedMisses
 }
 
 function wordUseCount(words: string[], target: string) {
   return words.filter((word) => word === target).length
 }
 
-function recognizeSentence(): Promise<string> {
+function recognizeSentence(onTranscript?: (transcript: string) => void): Promise<string> {
   return new Promise((resolve, reject) => {
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
     if (!Recognition) {
@@ -146,40 +160,64 @@ function recognizeSentence(): Promise<string> {
       return
     }
     const recognition = new Recognition()
+    const finalParts: string[] = []
     let transcript = ''
     let settled = false
-    const timer = window.setTimeout(() => {
+    let hasSpeech = false
+    let silenceTimer: number | undefined
+    const finish = () => {
       if (settled) return
       settled = true
-      recognition.stop()
+      window.clearTimeout(timer)
+      if (silenceTimer) window.clearTimeout(silenceTimer)
+      try {
+        recognition.stop()
+      } catch {
+        // Recognition can already be stopped by the browser.
+      }
       resolve(transcript.trim())
-    }, 5500)
+    }
+    const restartSilenceTimer = () => {
+      if (silenceTimer) window.clearTimeout(silenceTimer)
+      silenceTimer = window.setTimeout(finish, 1200)
+    }
+    const timer = window.setTimeout(finish, 9000)
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
-    recognition.continuous = false
+    recognition.continuous = true
+    recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
-      transcript = ''
+      let interim = ''
       for (let index = 0; index < event.results.length; index += 1) {
-        transcript = `${transcript} ${event.results[index][0]?.transcript ?? ''}`.trim()
+        const text = event.results[index][0]?.transcript ?? ''
+        if (event.results[index].isFinal) {
+          finalParts[index] = text
+        } else {
+          interim = `${interim} ${text}`.trim()
+        }
       }
-      if (event.results[event.results.length - 1]?.isFinal && !settled) {
-        settled = true
-        window.clearTimeout(timer)
-        recognition.stop()
-        resolve(transcript.trim())
-      }
+      transcript = `${finalParts.filter(Boolean).join(' ')} ${interim}`.trim()
+      hasSpeech = Boolean(transcript)
+      onTranscript?.(transcript)
+      restartSilenceTimer()
     }
     recognition.onerror = () => {
       if (settled) return
       settled = true
       window.clearTimeout(timer)
+      if (silenceTimer) window.clearTimeout(silenceTimer)
+      if (hasSpeech) {
+        resolve(transcript.trim())
+        return
+      }
       reject(new Error('Speech recognition failed.'))
     }
     recognition.onend = () => {
       if (settled) return
       settled = true
       window.clearTimeout(timer)
+      if (silenceTimer) window.clearTimeout(silenceTimer)
       resolve(transcript.trim())
     }
     recognition.start()
@@ -195,9 +233,10 @@ function cleanSentenceWords(sentence: string) {
 }
 
 function cardKind(card: ReviewCardData, index: number): ReviewKind {
+  const positionInFive = index % 5
   if (card.cardType === 'CHAT') return 'chat'
-  if (card.cardType === 'SENTENCE') return index % 5 >= 3 ? 'sentenceRepeat' : 'sentenceOrder'
-  return 'word'
+  if (card.cardType === 'SENTENCE') return positionInFive === 1 || positionInFive === 3 ? 'sentenceRepeat' : 'sentenceOrder'
+  return positionInFive === 1 || positionInFive === 3 ? 'wordRepeat' : 'wordCloze'
 }
 
 function uniqueWords(cards: ReviewCardData[]) {
@@ -211,6 +250,17 @@ function wordOptions(card: ReviewCardData, cards: ReviewCardData[]) {
   const answer = card.keyword.trim()
   const distractors = uniqueWords(cards).filter((word) => word.toLowerCase() !== answer.toLowerCase()).slice(0, 3)
   return shuffle([answer, ...distractors]).slice(0, Math.max(1, Math.min(4, 1 + distractors.length)))
+}
+
+function clozeWordSentence(card: ReviewCardData) {
+  const answer = card.keyword.trim()
+  const source = (card.sourceSentence || card.clozeSentence || answer).trim()
+  if (!answer) return source
+  if (source.includes('____')) return source
+  const escaped = answer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const wordPattern = new RegExp(`\\b${escaped}\\b`, 'i')
+  if (wordPattern.test(source)) return source.replace(wordPattern, '____')
+  return source
 }
 
 function sentenceForOrder(card: ReviewCardData) {
@@ -245,6 +295,11 @@ function roleplayCardToMission(card: ReviewCardData): RoleplayMission | undefine
   }
 }
 
+function reviewItemsFromCards(cards: ReviewCardData[], allowRoleplay: boolean) {
+  const filteredCards = allowRoleplay ? cards.filter((card) => card.cardType === 'CHAT') : cards.filter((card) => card.cardType !== 'CHAT')
+  return filteredCards.map((card, cardIndex) => cardToReviewItem(card, filteredCards, cardIndex))
+}
+
 function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: number): ReviewItem {
   const kind = cardKind(card, index)
   if (kind === 'sentenceOrder' || kind === 'sentenceRepeat') {
@@ -268,8 +323,12 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     kind,
     bookTitle: card.bookTitle || 'Story',
     chapterNumber: card.chapterNumber,
-    prompt: kind === 'chat' ? 'Replay the roleplay.' : 'Find the word.',
-    sentence: kind === 'chat' ? card.sourceSentence : card.keyword,
+    prompt: kind === 'chat'
+      ? 'Replay the roleplay.'
+      : kind === 'wordRepeat' ? 'Say the word.' : 'Pick the missing word.',
+    sentence: kind === 'chat'
+      ? card.sourceSentence
+      : kind === 'wordRepeat' ? card.keyword : clozeWordSentence(card),
     answer: card.keyword,
     options: kind === 'chat' ? [] : wordOptions(card, cards),
     memory: card.memoryScore,
@@ -322,7 +381,7 @@ export default function ReviewPage() {
     if (!usesBackendApi()) return
     fetchDueReviews(5, 'SMART_MIX')
       .then((data) => {
-        setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
+        setReviewQueue(reviewItemsFromCards(data.cards, false))
       })
       .catch(() => undefined)
   }, [location.key])
@@ -345,12 +404,12 @@ export default function ReviewPage() {
     setReviewRoleplayHistory([])
     if (mode === 'STORY_TALK') {
       const data = await fetchStoryTalk(5)
-      setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
+      setReviewQueue(reviewItemsFromCards(data.cards, true))
       setStarted(true)
       return
     }
-    const data = await fetchDueReviews(5, mode)
-    setReviewQueue(data.cards.map((card, cardIndex, cards) => cardToReviewItem(card, cards, cardIndex)))
+    const data = await fetchDueReviews(8, mode)
+    setReviewQueue(reviewItemsFromCards(data.cards, false).slice(0, 5))
     setStarted(true)
   }
 
@@ -427,14 +486,15 @@ export default function ReviewPage() {
     setIsListening(true)
     setSpokenTranscript('')
     try {
-      const transcript = await recognizeSentence()
+      const transcript = await recognizeSentence(setSpokenTranscript)
       setSpokenTranscript(transcript)
-      const expected = normalizeSpokenSentence(current.answer)
-      const spoken = normalizeSpokenSentence(transcript)
-      moveNext(Boolean(spoken) && spoken === expected)
+      if (!transcript.trim()) {
+        setSpokenTranscript('I could not hear you. Please try again.')
+        return
+      }
+      moveNext(isSpokenAnswerCorrect(current.answer, transcript))
     } catch {
-      setSpokenTranscript('')
-      moveNext(false)
+      setSpokenTranscript('Speech recognition is not available. Please try Chrome microphone permissions.')
     } finally {
       setIsListening(false)
     }
@@ -558,7 +618,7 @@ export default function ReviewPage() {
                   <article>
                     <b>A</b>
                     <strong>Word Playground</strong>
-                    <p>A word appears first. Find the same word among saved DB words.</p>
+                    <p>Fill 3 story blanks with DB words. Then say 2 words out loud.</p>
                   </article>
                   <article>
                     <b>□</b>
@@ -594,7 +654,7 @@ export default function ReviewPage() {
               <img src="/images/onboarding/lion-headphones.png" alt="" />
               <div>
                 <h2>Start Smart Mix</h2>
-                <p>5 mixed review cards from saved words, sentences, and finished roleplays.</p>
+                <p>5 mixed review cards from saved words and sentences.</p>
               </div>
             </div>
 
@@ -638,7 +698,7 @@ export default function ReviewPage() {
           </p>
           <button onClick={restart}>Back to Review</button>
         </section>
-      ) : current.roleplay ? (
+      ) : selectedMode === 'STORY_TALK' && current.roleplay ? (
         <section className={styles.reviewRoleplayShell}>
           <RoleplayScreen
             roleplay={{ ...current.roleplay, history: reviewRoleplayHistory }}
@@ -647,6 +707,7 @@ export default function ReviewPage() {
             onExit={exitReviewRoleplay}
             onSpeakText={speakReviewText}
             onRecord={recordReviewRoleplay}
+            variant="review"
           />
         </section>
       ) : selectedMode === 'WORD_PLAYGROUND' ? (
@@ -662,17 +723,28 @@ export default function ReviewPage() {
 
           <article className={styles.wordStage}>
             <small>{current.bookTitle} · Chapter {current.chapterNumber}</small>
-            <span className={styles.wordCueLabel}>Find this word</span>
-            <p><strong>{current.answer}</strong></p>
+            <span className={styles.wordCueLabel}>
+              {current.kind === 'wordRepeat' ? 'Say this word' : 'Choose the missing word'}
+            </span>
+            <p>{current.kind === 'wordRepeat' ? <strong>{current.answer}</strong> : current.sentence}</p>
           </article>
 
-          <div className={styles.wordTokenGrid}>
-            {current.options.map((option) => (
-              <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
-                {option}
+          {current.kind === 'wordRepeat' ? (
+            <div className={styles.repeatPanel}>
+              <button disabled={isListening || Boolean(feedback)} onClick={handleSentenceRepeat}>
+                {isListening ? 'Listening...' : 'Tap and say it'}
               </button>
-            ))}
-          </div>
+              <span>{spokenTranscript || 'Your voice will appear here.'}</span>
+            </div>
+          ) : (
+            <div className={styles.wordTokenGrid}>
+              {current.options.map((option) => (
+                <button key={option} className={selected === option ? styles.picked : ''} onClick={() => chooseOption(option)}>
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
 
           {feedback && <div className={styles.feedback}>{feedback === 'correct' ? 'Great!' : `Oops! ${current.answer}`}</div>}
         </section>
@@ -749,7 +821,7 @@ export default function ReviewPage() {
             <p>{current.sentence}</p>
           </article>
 
-          {current.kind === 'word' && (
+          {current.kind === 'wordCloze' && (
             <div className={styles.choiceGrid}>
               {current.options.map((option) => (
                 <button
@@ -760,6 +832,15 @@ export default function ReviewPage() {
                   {option}
                 </button>
               ))}
+            </div>
+          )}
+
+          {current.kind === 'wordRepeat' && (
+            <div className={styles.repeatPanel}>
+              <button disabled={isListening || Boolean(feedback)} onClick={handleSentenceRepeat}>
+                {isListening ? 'Listening...' : 'Tap and say it'}
+              </button>
+              <span>{spokenTranscript || 'Your voice will appear here.'}</span>
             </div>
           )}
 

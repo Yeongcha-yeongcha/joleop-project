@@ -56,10 +56,12 @@ interface ReadToken {
 
 /** Must match the phaseExit animation duration in LearnPage.module.css */
 const PHASE_EXIT_MS = 230
-const REPEAT_SILENCE_TIMEOUT_MS = 5000
-const REPEAT_AUTO_ADVANCE_MS = 650
-const TTS_HIGHLIGHT_LEAD_SECONDS = 0.18
-const TTS_HIGHLIGHT_DURATION_RATIO = 0.86
+const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 4200
+const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 1200
+const REPEAT_AUTO_ADVANCE_MS = 420
+const TTS_HIGHLIGHT_LEAD_SECONDS = 0.1
+const TTS_HIGHLIGHT_START_PADDING_SECONDS = 0.02
+const TTS_HIGHLIGHT_END_PADDING_SECONDS = 0.16
 const SPEECH_NAME_ALIASES: Record<string, string> = {
   popo: 'popo',
   purple: 'popo',
@@ -163,6 +165,8 @@ function evaluateRepeatSpeech(expected: string, recognized: string, finalize = f
 }
 
 function allowedMissedWords(wordCount: number) {
+  if (wordCount >= 10) return Math.ceil(wordCount * 0.25)
+  if (wordCount >= 7) return 3
   if (wordCount >= 5) return 2
   if (wordCount >= 4) return 1
   return 0
@@ -240,18 +244,27 @@ function wordIndexFromChar(tokens: ReadToken[], charIndex: number): number | nul
 
 function wordIndexFromAudioProgress(text: string, currentTime: number, duration: number): number | null {
   if (!Number.isFinite(duration) || duration <= 0 || currentTime < 0) return null
-  const words = Array.from(text.matchAll(/[A-Za-z0-9']+/g), (match) => match[0])
+  const words = Array.from(text.matchAll(/[A-Za-z0-9']+[.,!?;:]?/g), (match) => match[0])
   if (!words.length) return null
 
-  const totalWeight = words.reduce((sum, word) => sum + Math.max(word.length, 2), 0)
-  const spokenDuration = Math.max(duration * TTS_HIGHLIGHT_DURATION_RATIO, 0.1)
-  const targetWeight = Math.min((currentTime + TTS_HIGHLIGHT_LEAD_SECONDS) / spokenDuration, 0.999) * totalWeight
+  const startPadding = Math.min(TTS_HIGHLIGHT_START_PADDING_SECONDS, duration * 0.08)
+  const endPadding = Math.min(TTS_HIGHLIGHT_END_PADDING_SECONDS, duration * 0.12)
+  const spokenDuration = Math.max(duration - startPadding - endPadding, 0.1)
+  const elapsed = Math.max(0, Math.min(currentTime - startPadding + TTS_HIGHLIGHT_LEAD_SECONDS, spokenDuration))
+  const targetWeight = Math.min(elapsed / spokenDuration, 0.999) * words.reduce((sum, word) => sum + wordTimingWeight(word), 0)
   let accumulated = 0
   for (let index = 0; index < words.length; index += 1) {
-    accumulated += Math.max(words[index].length, 2)
+    accumulated += wordTimingWeight(words[index])
     if (targetWeight <= accumulated) return index
   }
   return words.length - 1
+}
+
+function wordTimingWeight(word: string) {
+  const cleanWord = word.replace(/[.,!?;:]+$/g, '')
+  const punctuation = word.slice(cleanWord.length)
+  const punctuationPause = /[.!?]/.test(punctuation) ? 3 : /[,;:]/.test(punctuation) ? 1.6 : 0
+  return Math.max(Math.sqrt(cleanWord.length), 1.35) + punctuationPause
 }
 
 function pickKidFriendlyVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
@@ -325,11 +338,16 @@ export default function LearnPage() {
       let finalTranscript = ''
       let interimTranscript = ''
       let settled = false
-      let silenceTimer = window.setTimeout(() => finish(), REPEAT_SILENCE_TIMEOUT_MS)
+      let hasSpeech = false
+      const expectedWordCount = Array.from(expected.matchAll(/[A-Za-z0-9']+/g)).length
+      const maxRecordMs = Math.min(18000, Math.max(8500, expectedWordCount * 950))
+      let silenceTimer = window.setTimeout(() => finish(), REPEAT_INITIAL_SILENCE_TIMEOUT_MS)
+      const maxRecordTimer = window.setTimeout(() => finish(), maxRecordMs)
       let autoAdvanceTimer: number | null = null
 
       const cleanup = () => {
         window.clearTimeout(silenceTimer)
+        window.clearTimeout(maxRecordTimer)
         if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer)
         recognition?.abort()
         stream.getTracks().forEach((track) => track.stop())
@@ -367,7 +385,10 @@ export default function LearnPage() {
 
       const restartSilenceTimer = () => {
         window.clearTimeout(silenceTimer)
-        silenceTimer = window.setTimeout(() => finish(), REPEAT_SILENCE_TIMEOUT_MS)
+        silenceTimer = window.setTimeout(
+          () => finish(),
+          hasSpeech ? REPEAT_AFTER_SPEECH_TIMEOUT_MS : REPEAT_INITIAL_SILENCE_TIMEOUT_MS,
+        )
       }
 
       mediaRecorder.ondataavailable = (event) => {
@@ -396,23 +417,30 @@ export default function LearnPage() {
           if (event.results[index].isFinal) finalTranscript = `${finalTranscript} ${transcript}`.trim()
           else interimTranscript = `${interimTranscript} ${transcript}`.trim()
         }
+        hasSpeech = Boolean(currentTranscript())
         const result = updateResult()
         restartSilenceTimer()
         if (result.correct && autoAdvanceTimer === null) {
           autoAdvanceTimer = window.setTimeout(() => finish(), REPEAT_AUTO_ADVANCE_MS)
         }
       }
+      ;(recognition as SpeechRecognition & { onspeechend?: () => void }).onspeechend = () => {
+        hasSpeech = hasSpeech || Boolean(currentTranscript())
+        restartSilenceTimer()
+      }
       recognition.onerror = () => {
         restartSilenceTimer()
       }
       recognition.onend = () => {
-        if (!settled) {
+        if (!settled && !hasSpeech) {
           try {
             recognition.start()
           } catch {
             restartSilenceTimer()
           }
+          return
         }
+        if (!settled) restartSilenceTimer()
       }
 
       try {

@@ -60,3 +60,11 @@ button {
   cursor: pointer;
   font-family: inherit;
 }
+
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

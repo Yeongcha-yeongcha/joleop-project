@@ -1438,7 +1438,7 @@
 .playMode {
   margin-top: 18px;
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
 
 .modeHeader {
@@ -1591,7 +1591,8 @@
 .wordTokenGrid button,
 .sentenceTiles button,
 .sentenceChoices button,
-.sentenceTray span {
+.sentenceTray span,
+.sentenceTray button {
   min-height: 54px;
   padding: 8px 10px;
   border-radius: 14px;
@@ -1610,7 +1611,8 @@
 
 .sentenceTiles button,
 .sentenceChoices button,
-.sentenceTray span {
+.sentenceTray span,
+.sentenceTray button {
   border: 3px solid #80aef8;
 }
 
@@ -1676,7 +1678,14 @@
   font-weight: 900;
 }
 
+.sentenceTray button,
+.buildTray button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .repeatPanel {
+  margin-top: 18px;
   display: grid;
   gap: 12px;
 }
@@ -1748,7 +1757,7 @@
 .choiceGrid,
 .pictureGrid,
 .wordCloud {
-  margin-top: 16px;
+  margin-top: 20px;
   display: grid;
   gap: 10px;
 }
@@ -1761,7 +1770,8 @@
 .choiceGrid button,
 .wordCloud button,
 .matchColumn button,
-.buildTray span {
+.buildTray span,
+.buildTray button {
   min-height: 54px;
   padding: 8px 10px;
   border: 3px solid #ffbd54;
@@ -1813,7 +1823,7 @@
 
 .buildTray {
   min-height: 76px;
-  margin-top: 16px;
+  margin-top: 20px;
   padding: 10px;
   display: flex;
   align-items: center;
@@ -1866,13 +1876,24 @@
 }
 
 .feedback {
+  position: fixed;
+  left: 50%;
+  bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  z-index: 24;
+  width: min(340px, calc(100vw - 48px));
   min-height: 46px;
-  margin-top: 16px;
+  margin: 0;
+  padding: 0 18px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.96);
+  border: 3px solid currentColor;
+  box-shadow: 0 7px 0 rgba(127, 63, 0, 0.14), 0 16px 30px rgba(45, 27, 11, 0.18);
   font-size: 20px;
+  line-height: 1.1;
+  text-align: center;
+  transform: translateX(-50%);
 }
 
 .correct .feedback {
@@ -1917,8 +1938,9 @@
 }
 
 .reviewRoleplayShell {
-  min-height: 100vh;
-  margin: -28px -16px;
+  height: calc(100dvh - 126px);
+  margin: -24px -18px calc(-106px - env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
 }
 
 @media (min-width: 560px) {

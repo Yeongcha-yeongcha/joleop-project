@@ -20,6 +20,7 @@ import type { UserStats } from '../../types'
 import {
   getProfileColor,
   getProfileImage,
+  profileColors,
   saveProfileColor,
   saveProfileImageOverride,
 } from '../../utils/profileAvatar'
@@ -124,6 +125,11 @@ function isFutureDate(date: string) {
   return date > localDateIso()
 }
 
+function nextProfileColor(currentColor: string) {
+  const currentIndex = profileColors.findIndex((color) => color.toLowerCase() === currentColor.toLowerCase())
+  return profileColors[(currentIndex + 1) % profileColors.length] ?? profileColors[0]
+}
+
 export default function MyPage() {
   const navigate = useNavigate()
   const initialProfile = useMemo(() => (
@@ -171,7 +177,19 @@ export default function MyPage() {
           setCustomization(data)
           setUnlockedAvatars(new Set(data.unlockedAvatarIndices))
           setPoints(data.availableStars)
-          if (data.profileImageUrl !== undefined) {
+          if (profile) {
+            if (data.profileColor) saveProfileColor(profile.profileId, data.profileColor)
+            if (data.profileImageUrl) {
+              saveProfileImageOverride(profile.profileId, data.profileImageUrl)
+            }
+            const nextProfileImageUrl = data.profileImageUrl ?? profile.profileImageUrl
+            syncProfile({
+              ...profile,
+              profileImageUrl: nextProfileImageUrl,
+              profileImageId: data.profileImageId,
+              profileColor: data.profileColor ?? profile.profileColor,
+            })
+          } else if (data.profileImageUrl !== undefined) {
             setAvatarPreview(data.profileImageUrl)
           }
           if (data.profileColor) {
@@ -264,7 +282,14 @@ export default function MyPage() {
         setCustomization(data)
         setUnlockedAvatars(new Set(data.unlockedAvatarIndices))
         setPoints(data.availableStars)
-        syncProfile({ ...profile, profileImageUrl: data.profileImageUrl ?? avatars[index] })
+        const imageUrl = data.profileImageUrl ?? avatars[index]
+        saveProfileImageOverride(profile.profileId, imageUrl)
+        syncProfile({
+          ...profile,
+          profileImageUrl: imageUrl,
+          profileImageId: data.profileImageId ?? index + 1,
+          profileColor: data.profileColor ?? profile.profileColor,
+        })
         setMessage(isUnlocked ? 'Your picture changed!' : 'New picture unlocked!')
         return
       }
@@ -286,17 +311,16 @@ export default function MyPage() {
 
   const useSolidAvatar = async () => {
     if (!profile) return
-    const color = getProfileColor(profile)
+    const color = nextProfileColor(avatarColor)
+    saveProfileColor(profile.profileId, color)
+    saveProfileImageOverride(profile.profileId, '')
     if (usesBackendApi()) {
       const data = await saveAvatarCustomization({ profileImageUrl: null, profileColor: color })
       setCustomization(data)
       setPoints(data.availableStars)
-    } else {
-      saveProfileColor(profile.profileId, color)
-      saveProfileImageOverride(profile.profileId, '')
     }
     setAvatarPreview(null)
-    syncProfile({ ...profile, profileImageUrl: null })
+    syncProfile({ ...profile, profileImageUrl: null, profileColor: color })
     setAvatarColor(color)
     setMessage('Simple color is on!')
   }
@@ -307,16 +331,10 @@ export default function MyPage() {
     reader.onload = async () => {
       const imageUrl = String(reader.result || '')
       if (!imageUrl) return
-      if (usesBackendApi()) {
-        const data = await saveAvatarCustomization({ profileImageUrl: imageUrl })
-        setCustomization(data)
-        setPoints(data.availableStars)
-      } else {
-        saveProfileImageOverride(profile.profileId, imageUrl)
-      }
+      saveProfileImageOverride(profile.profileId, imageUrl)
       setAvatarPreview(imageUrl)
       syncProfile({ ...profile, profileImageUrl: imageUrl })
-      setMessage('Your selfie is on!')
+      setMessage('Your photo is on!')
     }
     reader.readAsDataURL(file)
   }
@@ -415,11 +433,14 @@ export default function MyPage() {
             Color
           </button>
           <label>
-            Selfie
+            Photo
             <input
               type="file"
               accept="image/*"
-              onChange={(event) => uploadSelfie(event.target.files?.[0] ?? null)}
+              onChange={(event) => {
+                uploadSelfie(event.target.files?.[0] ?? null)
+                event.currentTarget.value = ''
+              }}
               disabled={!profile || isSaving}
             />
           </label>

@@ -32,8 +32,8 @@ function TrophyAnimation({ className, onComplete }: { className?: string; onComp
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_MAX_RECORD_MS = 6000
-const ROLEPLAY_SILENCE_MS = 1100
+const ROLEPLAY_MAX_RECORD_MS = 5200
+const ROLEPLAY_SILENCE_MS = 750
 const COMPLETION_TEXT_MS = 500    // delay before final result fades in
 
 type RoleplayView = 'intro' | 'chat'
@@ -51,6 +51,7 @@ interface Props {
     missionCompleted: boolean
     score?: number
   }>
+  variant?: 'lesson' | 'review'
 }
 
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
@@ -173,7 +174,15 @@ function initialNpcReplies(roleplay: RoleplayMission) {
   return replies
 }
 
-export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, onExit, onSpeakText, onRecord }: Props) {
+export default function RoleplayScreen({
+  roleplay,
+  onProgressChange,
+  onFinish,
+  onExit,
+  onSpeakText,
+  onRecord,
+  variant = 'lesson',
+}: Props) {
   const [view, setView] = useState<RoleplayView>(() => roleplay.history?.length ? 'chat' : 'intro')
   const [userAnswers, setUserAnswers] = useState<string[]>(() => initialUserAnswers(roleplay))
   const [npcReplies, setNpcReplies] = useState<string[]>(() => initialNpcReplies(roleplay))
@@ -269,7 +278,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
 
   if (view === 'intro') {
     return (
-      <div className={styles.introPage}>
+      <div className={`${styles.introPage} ${variant === 'review' ? styles.reviewIntroPage : ''}`}>
         <div className={styles.introContent}>
           <div
             className={styles.thumbnail}
@@ -302,7 +311,7 @@ export default function RoleplayScreen({ roleplay, onProgressChange, onFinish, o
   }
 
   return (
-    <div className={styles.chatPage}>
+    <div className={`${styles.chatPage} ${variant === 'review' ? styles.reviewChatPage : ''}`}>
 
       <div className={styles.chatHeader}>
         <div className={styles.missionSummaryCard}>

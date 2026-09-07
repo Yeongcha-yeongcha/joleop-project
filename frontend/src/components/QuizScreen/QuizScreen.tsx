@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../types'
-import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 import { IMAGES } from '../../constants/assets'
 import styles from './QuizScreen.module.css'
 
-const RECORD_MS = 4000
+const QUIZ_MAX_RECORD_MS = 3800
+const QUIZ_SILENCE_MS = 650
 
 type QuizState = 'idle' | 'recording' | 'done'
 type QuizFeedback = 'correct' | 'wrong' | ''
@@ -22,51 +22,94 @@ interface Props {
   totalSteps?: number
 }
 
-function recognizeSpeech(durationMs = RECORD_MS): Promise<string> {
-  return new Promise((resolve) => {
-    if (typeof window === 'undefined') {
-      resolve('')
+function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
+  return new Promise(async (resolve, reject) => {
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch {
+      reject(new Error('Microphone permission is needed.'))
       return
     }
 
+    const chunks: Blob[] = []
+    const mediaRecorder = new MediaRecorder(stream)
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
-    if (!Recognition) {
-      resolve('')
-      return
-    }
-
-    const recognition = new Recognition()
+    const recognition = Recognition ? new Recognition() : null
     let transcript = ''
     let settled = false
+    let maxTimer: number | null = null
+    let silenceTimer: number | null = null
+
+    const cleanup = () => {
+      if (maxTimer !== null) window.clearTimeout(maxTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      try {
+        recognition?.abort()
+      } catch {
+        // Recognition may already be stopped.
+      }
+      stream.getTracks().forEach((track) => track.stop())
+    }
 
     const finish = () => {
       if (settled) return
       settled = true
-      try {
-        recognition.stop()
-      } catch {
-        // The browser may already have stopped recognition.
-      }
-      resolve(transcript.trim())
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
     }
+
+    const restartSilenceTimer = () => {
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      if (!transcript.trim()) return
+      silenceTimer = window.setTimeout(finish, QUIZ_SILENCE_MS)
+    }
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data)
+    }
+    mediaRecorder.onerror = () => {
+      cleanup()
+      reject(new Error('Recording failed.'))
+    }
+    mediaRecorder.onstop = () => {
+      cleanup()
+      resolve({
+        audio: new Blob(chunks, { type: 'audio/webm' }),
+        transcript: transcript.trim(),
+      })
+    }
+
+    mediaRecorder.start()
+    maxTimer = window.setTimeout(finish, durationMs)
+
+    if (!recognition) return
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
-    recognition.continuous = true
+    recognition.continuous = false
+    recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
       transcript = Array.from(event.results)
         .map((result) => result[0]?.transcript ?? '')
         .join(' ')
         .trim()
+      if (event.results[event.results.length - 1]?.isFinal) {
+        finish()
+        return
+      }
+      restartSilenceTimer()
     }
-    recognition.onerror = finish
-    recognition.onend = finish
+    recognition.onerror = () => {
+      if (transcript.trim()) finish()
+    }
+    recognition.onend = () => {
+      if (transcript.trim()) finish()
+    }
 
     try {
       recognition.start()
-      window.setTimeout(finish, durationMs)
     } catch {
-      resolve('')
+      // Keep the audio recording as a fallback for backend-side handling.
     }
   })
 }
@@ -76,7 +119,6 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
   const [error, setError] = useState('')
   const [feedback, setFeedback] = useState<QuizFeedback>('')
   const [spokenAnswer, setSpokenAnswer] = useState('')
-  const recorder = useAudioRecorder()
 
   useEffect(() => {
     setState('idle')
@@ -94,11 +136,8 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
       setState('recording')
       setError('')
       try {
-        const [blob, transcript] = await Promise.all([
-          recorder.record(RECORD_MS),
-          recognizeSpeech(RECORD_MS),
-        ])
-        const result = await onRecord(blob, transcript)
+        const recording = await recordQuizSpeech()
+        const result = await onRecord(recording.audio, recording.transcript)
         if (typeof result === 'boolean') {
           setFeedback(result ? 'correct' : 'wrong')
         } else if (typeof result === 'number') {
