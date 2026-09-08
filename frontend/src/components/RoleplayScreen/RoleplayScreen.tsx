@@ -34,6 +34,7 @@ const PROGRESS_CHAT_RANGE = 0.30
 
 const ROLEPLAY_MAX_RECORD_MS = 5200
 const ROLEPLAY_SILENCE_MS = 750
+const ROLEPLAY_MIN_RECORD_MS = 1800
 const COMPLETION_TEXT_MS = 500    // delay before final result fades in
 
 type RoleplayView = 'intro' | 'chat'
@@ -73,6 +74,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     let settled = false
     let maxTimer: number | null = null
     let silenceTimer: number | null = null
+    let canFinishForSilence = false
     const deadline = Date.now() + durationMs
 
     const currentTranscript = () => [...finalParts, interimTranscript].join(' ').trim()
@@ -97,7 +99,9 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     const restartSilenceTimer = () => {
       if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       if (!currentTranscript()) return
-      silenceTimer = window.setTimeout(finish, ROLEPLAY_SILENCE_MS)
+      silenceTimer = window.setTimeout(() => {
+        if (canFinishForSilence) finish()
+      }, ROLEPLAY_SILENCE_MS)
     }
 
     mediaRecorder.ondataavailable = (event) => {
@@ -117,6 +121,10 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     mediaRecorder.start()
+    window.setTimeout(() => {
+      canFinishForSilence = true
+      if (currentTranscript()) finish()
+    }, ROLEPLAY_MIN_RECORD_MS)
     maxTimer = window.setTimeout(finish, durationMs)
 
     if (!recognition) return
@@ -236,12 +244,7 @@ export default function RoleplayScreen({
     try {
       const { audio: blob, transcript } = await recordRoleplaySpeech()
       const cleanTranscript = transcript.trim()
-      if (!cleanTranscript) {
-        setSpeechError('I could not hear you. Please try again.')
-        setRecordState('idle')
-        return
-      }
-      const result = await onRecord(blob, cleanTranscript)
+      const result = await onRecord(blob, cleanTranscript || undefined)
       setUserAnswers(prev => [...prev, result.userTranscript])
       setNpcReplies(prev => {
         const next = [...prev]
@@ -253,7 +256,8 @@ export default function RoleplayScreen({
         setShowFinalNpc(true)
       }
       setRecordState('idle')
-    } catch {
+    } catch (error) {
+      setSpeechError(error instanceof Error ? error.message : 'Recording failed. Please try again.')
       setRecordState('idle')
     }
   }

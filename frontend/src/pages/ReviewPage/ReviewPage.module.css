@@ -1938,8 +1938,8 @@
 }
 
 .reviewRoleplayShell {
-  height: calc(100dvh - 126px);
-  margin: -24px -18px calc(-106px - env(safe-area-inset-bottom, 0px));
+  height: calc(100dvh - 130px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  margin: calc(-24px - env(safe-area-inset-top, 0px)) -18px 0;
   overflow: hidden;
 }
 

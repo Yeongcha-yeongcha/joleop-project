@@ -87,7 +87,7 @@
   z-index: 1;
   margin-top: 26px;
   display: grid;
-  gap: 12px;
+  gap: 11px;
 }
 
 .form label {
@@ -112,7 +112,7 @@
   height: 46px;
   border: 0;
   border-radius: 999px;
-  padding: 0 18px;
+  padding: 0 44px 0 18px;
   background: rgba(255, 255, 255, 0.95);
   color: #815018;
   font: inherit;
@@ -123,6 +123,54 @@
 
 .form input::placeholder {
   color: #d6ad7a;
+}
+
+.inputWrap {
+  position: relative;
+  display: grid;
+}
+
+.validationIcon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.validationText {
+  margin: 5px 16px 0;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.valid {
+  color: #188f49;
+}
+
+.validationIcon.valid {
+  background: rgba(24, 143, 73, 0.12);
+  box-shadow: inset 0 0 0 2px rgba(24, 143, 73, 0.32);
+}
+
+.invalid {
+  color: #cf3124;
+}
+
+.validationIcon.invalid {
+  background: rgba(207, 49, 36, 0.12);
+  box-shadow: inset 0 0 0 2px rgba(207, 49, 36, 0.28);
 }
 
 .primaryButton,
