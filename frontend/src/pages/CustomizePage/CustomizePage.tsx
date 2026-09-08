@@ -1,5 +1,4 @@
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import {
   fetchCustomization,
@@ -13,23 +12,17 @@ import {
   HOME_BACKGROUND_THEMES,
   type HomeBackgroundTheme,
 } from '../../data/homeBackgroundThemes'
+import PageHeader from '../../components/PageHeader/PageHeader'
+import { ICONS } from '../../constants/assets'
+import {
+  POPO_ITEMS,
+  resolvePopoSpots,
+  type PopoCustomization,
+  type PopoItem,
+} from '../../data/popoItems'
 import styles from './CustomizePage.module.css'
 
 type Tab = 'background' | 'popo'
-
-interface PopoItem {
-  id: string
-  name: string
-  kind: 'hat' | 'glasses' | 'necklace' | 'outfit'
-  price: number
-}
-
-interface PopoCustomization {
-  hat?: string
-  glasses?: string
-  necklace?: string
-  outfit?: string
-}
 
 const HOME_THEME_KEY = 'yeongcha:home-background-theme'
 const THEME_UNLOCKS_KEY = 'yeongcha:home-background-theme-unlocks'
@@ -37,17 +30,6 @@ const THEME_SPENT_KEY = 'yeongcha:home-background-theme-points-spent'
 const POPO_CUSTOMIZATION_KEY = 'yeongcha:popo-customization'
 const POPO_UNLOCKS_KEY = 'yeongcha:popo-customization-unlocks'
 const POPO_SPENT_KEY = 'yeongcha:popo-customization-points-spent'
-
-const popoItems: PopoItem[] = [
-  { id: 'sun-cap', name: 'Sun Hat', kind: 'hat', price: 80 },
-  { id: 'star-cap', name: 'Star Hat', kind: 'hat', price: 120 },
-  { id: 'round-glasses', name: 'Round Glasses', kind: 'glasses', price: 90 },
-  { id: 'cool-glasses', name: 'Cool Glasses', kind: 'glasses', price: 130 },
-  { id: 'star-necklace', name: 'Star Necklace', kind: 'necklace', price: 90 },
-  { id: 'heart-necklace', name: 'Heart Necklace', kind: 'necklace', price: 110 },
-  { id: 'blue-hoodie', name: 'Blue Hoodie', kind: 'outfit', price: 150 },
-  { id: 'orange-vest', name: 'Orange Vest', kind: 'outfit', price: 150 },
-]
 
 function readJson<T>(key: string, fallback: T): T {
   try {
@@ -62,7 +44,6 @@ function readSelectedThemeId(): string {
 }
 
 export default function CustomizePage() {
-  const navigate = useNavigate()
   const { userStats } = useAppStore()
   const [tab, setTab] = useState<Tab>('background')
   const [selectedThemeId, setSelectedThemeId] = useState(readSelectedThemeId)
@@ -87,7 +68,7 @@ export default function CustomizePage() {
   ), [themeUnlocks])
   const isThemeOwned = (theme: HomeBackgroundTheme) => theme.owned || unlockedThemeIds.has(theme.id)
   const isPopoOwned = (item: PopoItem) => popoUnlocks.includes(item.id)
-  const previewItems = popoItems.filter((item) => previewPopo[item.kind] === item.id)
+  const previewItems = POPO_ITEMS.filter((item) => previewPopo[item.kind] === item.id)
   const previewCost = previewItems.reduce((sum, item) => sum + (isPopoOwned(item) ? 0 : item.price), 0)
 
   useEffect(() => {
@@ -208,31 +189,36 @@ export default function CustomizePage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <button className={styles.backButton} onClick={() => navigate('/home')} aria-label="Go home">
-          ←
-        </button>
-        <div className={styles.titleGroup}>
-          <h1>Style</h1>
-          <p>Make the room and Popo fun</p>
-        </div>
-        <div className={styles.points} aria-label={`${points} stars`}>
-          <span>★</span>
-          <strong>{points}</strong>
-        </div>
-      </header>
+      <PageHeader
+        title="Style"
+        backLabel="Go home"
+        trailing={
+          <div className={styles.points} aria-label={`${points} stars`}>
+            <img src={ICONS.star} alt="" className={styles.pointsIcon} aria-hidden="true" />
+            <strong>{points}</strong>
+          </div>
+        }
+      />
+
+      <div className={styles.body}>
 
       <section
-        className={`${styles.preview} ${styles[`theme_${previewTheme.id}`] ?? ''}`}
-        style={{ '--preview-background': `url("${previewTheme.background}")` } as CSSProperties}
+        className={styles.preview}
+        style={{
+          '--preview-background': previewTheme.background,
+          '--preview-background-size': previewTheme.backgroundSize,
+          '--preview-background-position': previewTheme.backgroundPosition,
+          '--room-floor': previewTheme.floor,
+          '--room-floor-shade': previewTheme.floorShade,
+        } as CSSProperties}
       >
         <div className={styles.previewBackdrop} aria-hidden="true" />
         <div className={styles.popoStage}>
-          <img src="/images/HomeBearHands.png" alt="" className={styles.previewPopo} />
-          {previewPopo.outfit && <span className={`${styles.popoOutfit} ${styles[`outfit_${previewPopo.outfit}`]}`} />}
+          <img src="/images/HomePopo.png" alt="" className={styles.previewPopo} />
           {previewPopo.hat && <span className={`${styles.popoHat} ${styles[`hat_${previewPopo.hat}`]}`} />}
-          {previewPopo.glasses && <span className={`${styles.popoGlasses} ${styles[`glasses_${previewPopo.glasses}`]}`} />}
-          {previewPopo.necklace && <span className={`${styles.popoNecklace} ${styles[`necklace_${previewPopo.necklace}`]}`} />}
+          {resolvePopoSpots(previewPopo).map((item) => (
+            <img key={item.id} src={item.spot} alt="" className={styles.popoSpot} aria-hidden="true" />
+          ))}
         </div>
       </section>
 
@@ -253,7 +239,7 @@ export default function CustomizePage() {
             return (
               <article
                 key={theme.id}
-                className={`${styles.themeCard} ${styles[`theme_${theme.id}`] ?? ''} ${selected ? styles.selected : ''}`}
+                className={`${styles.themeCard} ${selected ? styles.selected : ''}`}
               >
                 <button
                   className={styles.themeButton}
@@ -262,7 +248,13 @@ export default function CustomizePage() {
                 >
                   <span
                     className={styles.thumbnail}
-                    style={{ '--theme-thumbnail': `url("${theme.thumbnail}")` } as CSSProperties}
+                    style={{
+                      '--theme-thumbnail': theme.background,
+                      '--theme-thumbnail-size': theme.backgroundSize,
+                      '--theme-thumbnail-position': theme.backgroundPosition,
+                      '--room-floor': theme.floor,
+                      '--room-floor-shade': theme.floorShade,
+                    } as CSSProperties}
                   >
                     {selected && <span className={styles.checkMark}>✓</span>}
                   </span>
@@ -273,7 +265,7 @@ export default function CustomizePage() {
                   <span className={owned ? styles.ownedBadge : styles.priceBadge}>
                     {owned ? 'Use' : (
                       <>
-                        <span>★</span>
+                        <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
                         {theme.price}
                       </>
                     )}
@@ -286,16 +278,29 @@ export default function CustomizePage() {
       ) : (
         <>
           <section className={styles.popoGrid} aria-label="Popo items">
-            {popoItems.map((item) => {
+            {POPO_ITEMS.map((item) => {
               const owned = isPopoOwned(item)
               const previewed = previewPopo[item.kind] === item.id
               const equipped = popoCustomization[item.kind] === item.id
               return (
                 <article key={item.id} className={`${styles.popoCard} ${previewed ? styles.selected : ''}`}>
                   <button className={styles.popoButton} onClick={() => choosePopoItem(item)}>
-                    <span className={`${styles.itemPreview} ${styles[`item_${item.id}`]}`} />
+                    {item.thumbnail ? (
+                      <span className={styles.itemPreview}>
+                        <img src={item.thumbnail} alt="" className={styles.itemThumb} />
+                      </span>
+                    ) : (
+                      <span className={`${styles.itemPreview} ${styles[`item_${item.id}`]}`} />
+                    )}
                     <strong>{item.name}</strong>
-                    <em>{previewed ? 'Preview Off' : equipped ? 'Wearing' : owned ? 'Preview' : `★ ${item.price}`}</em>
+                    <em>
+                      {previewed ? 'Preview Off' : equipped ? 'Wearing' : owned ? 'Preview' : (
+                        <>
+                          <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
+                          {item.price}
+                        </>
+                      )}
+                    </em>
                   </button>
                 </article>
               )
@@ -303,12 +308,21 @@ export default function CustomizePage() {
           </section>
           <div className={styles.saveActions}>
             <button onClick={resetPopoPreview}>Reset Preview</button>
-            <button onClick={savePopoLook}>{previewCost > 0 ? `Buy & Save ★ ${previewCost}` : 'Save Look'}</button>
+            <button onClick={savePopoLook}>
+              {previewCost > 0 ? (
+                <>
+                  Buy &amp; Save
+                  <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
+                  {previewCost}
+                </>
+              ) : 'Save Look'}
+            </button>
           </div>
         </>
       )}
 
       <p className={styles.message}>{message}</p>
+      </div>
     </main>
   )
 }

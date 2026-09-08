@@ -63,7 +63,7 @@
   gap: 8px;
   border: 3px solid rgba(255, 255, 255, 0.72);
   border-radius: 14px;
-  background: rgba(255, 253, 244, 0.9);
+  background: #ffffff;
   color: #2f210f;
   box-shadow: 0 7px 0 rgba(35, 57, 66, 0.24), 0 14px 24px rgba(21, 45, 58, 0.2);
 }
@@ -102,21 +102,8 @@
 }
 
 .stars {
-  display: flex;
-  justify-content: center;
-  gap: 3px;
+  /* 별 배치는 StarRow 가 담당한다. 카드 안에서의 높이만 고정한다. */
   min-height: 23px;
-  font-size: 24px;
-  line-height: 1;
-  -webkit-text-stroke: 1px #704414;
-}
-
-.starOn {
-  color: #ffbd1f;
-}
-
-.starOff {
-  color: #d5cec0;
 }
 
 .locked {

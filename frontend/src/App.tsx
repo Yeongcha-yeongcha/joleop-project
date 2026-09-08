@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import SplashPage from './pages/SplashPage/SplashPage'
 import AuthPage from './pages/AuthPage/AuthPage'
@@ -14,8 +15,8 @@ import ReviewPage from './pages/ReviewPage/ReviewPage'
 import BookChoicePage from './pages/BookChoicePage/BookChoicePage'
 import ChapterSelectPage from './pages/ChapterSelectPage/ChapterSelectPage'
 import LearnPage from './pages/LearnPage/LearnPage'
-import BottomNav from './components/BottomNav/BottomNav'
 import OnboardingTour from './components/OnboardingTour/OnboardingTour'
+import { playButtonSound } from './utils/sound'
 import './App.css'
 
 function AnimatedRoutes() {
@@ -41,17 +42,43 @@ function AnimatedRoutes() {
         <Route path="/books/:bookId/chapters" element={<PageWrapper slideUp><ChapterSelectPage /></PageWrapper>} />
         <Route path="/learn/:bookId" element={<PageWrapper slideUp><LearnPage /></PageWrapper>} />
       </Routes>
-      <AppBottomNav />
       <OnboardingTour />
+      <ButtonSound />
     </div>
   )
 }
 
-function AppBottomNav() {
+/**
+ * 학습 코스는 낭독·녹음 음성과 겹치므로 버튼 사운드를 끈다.
+ * `/review` 도 시작하면 같은 학습 화면(QuizScreen, RoleplayScreen)을 띄운다.
+ */
+const SILENT_ROUTE_PREFIXES = ['/learn/', '/review']
+
+/** 앱 전역 클릭/터치 기본 사운드. */
+function ButtonSound() {
   const location = useLocation()
-  const visibleRoutes = ['/home', '/review', '/mypage']
-  if (!visibleRoutes.includes(location.pathname)) return null
-  return <BottomNav />
+  const mutedRef = useRef(false)
+
+  useEffect(() => {
+    mutedRef.current = SILENT_ROUTE_PREFIXES.some((prefix) => location.pathname.startsWith(prefix))
+  }, [location.pathname])
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (mutedRef.current) return
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const hit = target.closest('button, [role="button"]')
+      if (!hit) return
+      if (hit instanceof HTMLButtonElement && hit.disabled) return
+      playButtonSound()
+    }
+    // 캡처 단계로 붙여 stopPropagation 을 쓰는 핸들러에도 영향받지 않게 한다.
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true)
+  }, [])
+
+  return null
 }
 
 function AppNavButton() {

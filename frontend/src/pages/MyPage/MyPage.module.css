@@ -1,37 +1,25 @@
 .page {
   height: 100dvh;
-  padding:
-    calc(28px + env(safe-area-inset-top, 0px))
-    18px
-    calc(124px + env(safe-area-inset-bottom, 0px));
-  background:
-    radial-gradient(circle at 78% 8%, rgba(255, 203, 91, 0.46) 0 12%, transparent 29%),
-    linear-gradient(180deg, #ff9633 0 132px, #fff8df 132px 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff8df;
   color: #2c2115;
   box-sizing: border-box;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 18px 18px calc(28px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.header {
-  margin-top: 6px;
+.avatarBlock {
   display: grid;
   justify-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.header h1 {
-  color: white;
-  font-size: 27px;
-  font-weight: 900;
-  text-shadow: 0 3px 0 rgba(142, 75, 4, 0.16);
-}
-
-.header p {
-  color: #fff5d6;
-  font-size: 14px;
-  font-weight: 900;
+  margin-bottom: 18px;
 }
 
 .currentAvatar {

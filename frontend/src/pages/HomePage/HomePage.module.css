@@ -1,23 +1,48 @@
 .page {
-  --home-background: none;
-  --theme-fallback:
-    radial-gradient(circle at 78% 36%, rgba(255, 201, 88, 0.28), transparent 24%),
-    linear-gradient(180deg, #fff2c3 0%, #fff8df 56%, #fffdf4 100%);
   position: relative;
   width: 100%;
   height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #fff7dd;
+  /* 벽지. .hero 안의 레이어로 두면 헤더 영역(safe-area + 82px)을 덮지 못해
+     화면 맨 위에 다른 색이 드러난다. 페이지 배경으로 깔아 이음새를 없앤다. */
+  background-image: var(--home-background, linear-gradient(#fffcf0, #fffcf0));
+  background-size: var(--home-background-size, cover);
+  background-position: var(--home-background-position, center);
+  background-repeat: repeat;
   color: #251609;
+  container-type: inline-size;
 }
 
 .header {
   position: relative;
   z-index: 4;
   flex: 0 0 auto;
-  padding: 8px 20px 0;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 12px 0;
+}
+
+/*
+ * 상단 HUD 의 하드 그림자. 양옆 허브 버튼과 같은 스타일이다 —
+ * x 0, y 5px 아래, blur 0, 색 rgba(72, 46, 16, 0.17).
+ * HUD 와 같은 크기(62px)·같은 라운드(20px)의 사각형을 5px 밑으로 밀어
+ * 아래로 5px 만 삐져나오게 한다.
+ *
+ * mix-blend-mode 는 가장 가까운 쌓임 문맥 안에서만 합성된다. .header 는
+ * z-index: 4 로 자체 쌓임 문맥을 만들어 그 안에 넣으면 배경과 안 섞이므로,
+ * .page 직계 자식으로 두고 z-index 로 히어로(1) 위·헤더(4) 아래에 끼운다.
+ */
+.headerShadow {
+  position: absolute;
+  z-index: 3;
+  left: 12px;
+  right: 12px;
+  top: calc(env(safe-area-inset-top, 0px) + 20px + 5px);
+  height: 62px;
+  border-radius: 20px;
+  background: rgba(72, 46, 16, 0.17);
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 .hero {
@@ -28,16 +53,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 10px 18px 0;
+  padding: 6px 18px 0;
 }
 
+/* 배경 벽지는 .page 가 그린다. 이 레이어는 창문(::before) 배치 기준으로만 쓴다. */
 .backgroundLayer {
   position: absolute;
   inset: -72px 0 0;
-  background-image: var(--home-background), var(--theme-fallback);
-  background-size: cover, cover;
-  background-position: center, center;
-  background-repeat: no-repeat;
 }
 
 .backgroundLayer::before {
@@ -45,27 +67,40 @@
   position: absolute;
   left: 26px;
   top: 108px;
-  width: 134px;
-  height: 158px;
-  border: 8px solid #ffd48a;
-  border-radius: 13px;
-  background:
-    linear-gradient(90deg, transparent 47%, rgba(255, 248, 224, 0.95) 47% 53%, transparent 53%),
-    linear-gradient(180deg, transparent 47%, rgba(255, 248, 224, 0.95) 47% 53%, transparent 53%),
-    radial-gradient(circle at 76% 25%, #ffe074 0 19px, transparent 20px),
-    radial-gradient(ellipse at 22% 60%, white 0 30px, transparent 31px),
-    linear-gradient(180deg, #92dcff 0%, #bceeff 100%);
-  box-shadow: 0 8px 18px rgba(117, 73, 20, 0.14);
+  /* 창문 일러스트. 이미지 비율(h/w = 1.098)에 맞춰 박스를 잡아
+     contain 으로도 여백이 생기지 않게 한다. */
+  width: 140px;
+  height: 154px;
+  background: url('/images/window.png') center / contain no-repeat;
 }
 
 .backgroundLayer::after {
   content: none;
 }
 
+.footShadow {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  /* 캐릭터 발 위치 = stage 아래 여백(34px) + 이미지 하단 투명 여백(4.4%).
+     거기서 10px 더 내려 바닥에 붙게 둔다. */
+  bottom: calc(34px + min(74cqw, 44dvh) * 0.028 - 10px);
+  width: calc(min(74cqw, 44dvh) * 0.54);
+  height: calc(min(74cqw, 44dvh) * 0.125);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: rgba(120, 92, 44, 0.42);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
 .mascotStage {
   position: relative;
   z-index: 2;
-  width: min(50vw, 214px);
+  /* 히어로가 flex-end 정렬이라 아래 여백을 주면 캐릭터가 올라간다.
+     손에 든 책은 이 stage 안의 % 좌표라 자동으로 같이 올라간다. */
+  margin-bottom: 34px;
+  width: min(74cqw, 44dvh);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -74,22 +109,25 @@
 .mascot {
   width: 100%;
   height: 100%;
-  max-height: min(31dvh, 252px);
   object-fit: contain;
-  filter: drop-shadow(0 18px 18px rgba(71, 42, 8, 0.22));
 }
 
-.popoHat,
-.popoGlasses,
-.popoNecklace,
-.popoOutfit {
+.popoSpot {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* 모자는 기존 CSS 도형을 그대로 쓴다. */
+.popoHat {
   position: absolute;
   z-index: 3;
   left: 50%;
   pointer-events: none;
-}
-
-.popoHat {
   top: 3%;
   width: 48%;
   height: 16%;
@@ -112,92 +150,30 @@
   font-size: 24px;
 }
 
-.popoGlasses {
-  top: 24%;
-  width: 40%;
-  height: 12%;
-  transform: translateX(-50%);
-}
-
-.popoGlasses::before,
-.popoGlasses::after {
-  content: '';
-  position: absolute;
-  width: 38%;
-  height: 76%;
-  border-radius: 11px;
-  background: #2d2117;
-  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.22);
-}
-
-.popoGlasses::before {
-  left: 4px;
-}
-
-.popoGlasses::after {
-  right: 4px;
-}
-
-.glasses_round-glasses::before,
-.glasses_round-glasses::after {
-  border-radius: 50%;
-}
-
-.popoNecklace {
-  top: 44%;
-  width: 34%;
-  height: 15%;
-  border-bottom: 5px dotted #ffe16d;
-  border-radius: 0 0 50% 50%;
-  transform: translateX(-50%);
-}
-
-.necklace_heart-necklace::after {
-  content: '♥';
-  position: absolute;
-  left: 39%;
-  bottom: -48%;
-  color: #ff6d8d;
-  font-size: 22px;
-}
-
-.popoOutfit {
-  top: 48%;
-  width: 45%;
-  height: 25%;
-  border-radius: 26px 26px 17px 17px;
-  transform: translateX(-50%);
-  background: rgba(95, 172, 255, 0.82);
-  mix-blend-mode: multiply;
-}
-
-.outfit_orange-vest {
-  background: rgba(255, 155, 49, 0.84);
-}
-
 .hero::after {
   content: '';
   position: absolute;
   z-index: 1;
   left: 50%;
   bottom: -17px;
-  width: min(128vw, 560px);
+  width: min(128cqw, 560px);
   height: 156px;
   border-radius: 50%;
   transform: translateX(-50%);
-  background: #8dd4ff;
-  box-shadow:
-    inset 0 -16px 0 rgba(27, 99, 150, 0.12),
-    0 14px 22px rgba(84, 49, 15, 0.12);
+  /* 발판 색은 방 테마가 정한다(기본 테마는 기존 파란색). */
+  background: var(--room-floor, #8dd4ff);
+  box-shadow: inset 0 -16px 0 var(--room-floor-shade, rgba(27, 99, 150, 0.12));
 }
 
 .heldBook {
   position: absolute;
   z-index: 3;
   left: 50%;
-  bottom: 34px;
-  width: 66px;
-  height: 84px;
+  /* stage 기준 % 라 캐릭터 크기가 바뀌어도 손 위치를 따라간다.
+     8.5% 면 책 중심이 앞발 중심(위에서 70%)에 정확히 맞는다. */
+  bottom: 8%;
+  width: 33.8%;
+  height: 43%;
   transform: translateX(-50%);
   display: grid;
   place-items: center;
@@ -207,21 +183,26 @@
   transform: translateX(-50%) scale(0.97);
 }
 
+.heldBook:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: 10px;
+}
+
 .heldBook img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 8px 8px rgba(60, 41, 14, 0.2));
 }
 
 .panel {
   position: relative;
   z-index: 3;
   flex: 0 0 auto;
-  padding: 14px 34px calc(98px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 18px calc(40px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 11px;
   background: linear-gradient(180deg, rgba(255, 253, 244, 0) 0%, rgba(255, 253, 244, 0.96) 16%, #fffdf7 100%);
 }
 
@@ -260,13 +241,22 @@
 
 .bookMeta em {
   width: fit-content;
-  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 7px;
   border-radius: 999px;
-  background: #f0f0f0;
-  color: #777;
-  font-size: 11px;
+  background: #fff1d3;
+  color: #8a5a12;
+  font-size: var(--font-size-min);
   font-style: normal;
   font-weight: 900;
+}
+
+.metaIcon {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
 }
 
 .bookMeta strong {
@@ -276,14 +266,17 @@
 }
 
 .bookMeta span {
-  color: #707070;
+  color: #6b5b45;
   font-size: 14px;
   font-weight: 900;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .progressTrack {
-  height: 14px;
+  /* 흰 테두리 두께는 양옆 허브 버튼 아이콘과 같은 4.8px.
+     전역 box-sizing: border-box 라 안쪽 트랙이 14px 로 남게 높이를 키운다. */
+  height: 24px;
+  border: 4.8px solid #ffffff;
   border-radius: 999px;
   background: #ede6db;
   overflow: hidden;
@@ -299,12 +292,35 @@
 .startButton {
   width: 100%;
   min-height: 62px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #ff9700;
   color: white;
   box-shadow: 0 7px 0 #d47900;
-  font-size: 19px;
+  font-size: clamp(18px, 5.2cqw, 21px);
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.startIcon {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+  --outline-w: 1.6px;
+  filter: var(--icon-outline);
+}
+
+.startButton:disabled .startIcon {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+.bookCard:focus-visible,
+.startButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .startButton:disabled {
@@ -317,68 +333,6 @@
   box-shadow: 0 4px 0 #d47900;
 }
 
-.theme_sky-dream-room {
-  --theme-fallback:
-    radial-gradient(circle at 75% 20%, rgba(255, 255, 255, 0.9) 0 34px, transparent 35px),
-    radial-gradient(ellipse at 30% 28%, rgba(255, 255, 255, 0.92) 0 44px, transparent 45px),
-    linear-gradient(180deg, #aee6ff 0%, #eaf9ff 54%, #fff8dd 100%);
-}
-
-.theme_forest-cozy-room {
-  --theme-fallback:
-    radial-gradient(circle at 22% 18%, rgba(116, 178, 75, 0.3), transparent 26%),
-    radial-gradient(circle at 80% 26%, rgba(82, 151, 72, 0.28), transparent 22%),
-    linear-gradient(180deg, #f3f3b9 0%, #d9edb8 52%, #fff8e1 100%);
-}
-
-.theme_sunset-lounge {
-  --theme-fallback:
-    radial-gradient(circle at 80% 20%, rgba(255, 201, 90, 0.62), transparent 18%),
-    linear-gradient(180deg, #ffb66c 0%, #ffd89a 54%, #fff5dd 100%);
-}
-
-.theme_night-star-room {
-  --theme-fallback:
-    radial-gradient(circle at 20% 18%, #ffd86b 0 8px, transparent 9px),
-    radial-gradient(circle at 72% 22%, #ffe288 0 11px, transparent 12px),
-    linear-gradient(180deg, #473184 0%, #7254ad 58%, #fff1cd 100%);
-}
-
-.theme_ocean-blue-room {
-  --theme-fallback:
-    radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.45), transparent 18%),
-    radial-gradient(circle at 80% 36%, rgba(255, 212, 82, 0.42), transparent 12%),
-    linear-gradient(180deg, #4dbce9 0%, #8de4f4 54%, #d9f7f3 100%);
-}
-
-.theme_rainbow-room {
-  --theme-fallback:
-    radial-gradient(ellipse at 66% 28%, rgba(255, 180, 220, 0.5), transparent 26%),
-    radial-gradient(ellipse at 30% 20%, rgba(177, 221, 255, 0.58), transparent 28%),
-    linear-gradient(180deg, #ffd8e9 0%, #fff0c9 52%, #f7f8ff 100%);
-}
-
-.theme_mint-garden-room {
-  --theme-fallback:
-    radial-gradient(circle at 78% 22%, rgba(116, 195, 114, 0.34), transparent 25%),
-    linear-gradient(180deg, #d8f6d2 0%, #ebf9cf 52%, #fff8df 100%);
-}
-
-.theme_winter-snow-room {
-  --theme-fallback:
-    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.92) 0 34px, transparent 35px),
-    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.72) 0 26px, transparent 27px),
-    linear-gradient(180deg, #cbeaff 0%, #eaf7ff 56%, #fffdf4 100%);
-}
-
-.theme_space-adventure-room,
-.theme_book {
-  --theme-fallback:
-    radial-gradient(circle at 24% 20%, #ffd86b 0 7px, transparent 8px),
-    radial-gradient(circle at 72% 26%, #ffbd68 0 15px, transparent 16px),
-    linear-gradient(180deg, #30256e 0%, #6152aa 56%, #fff0c7 100%);
-}
-
 @media (min-width: 560px) {
   .page {
     max-width: 390px;
@@ -387,21 +341,147 @@
 }
 
 @media (max-height: 780px) {
-  .mascot {
-    max-height: min(28dvh, 220px);
+  /* .mascot 에는 max-height 를 걸지 않는다. stage 가 상한을 쥐고 있어야
+     손에 든 책의 % 좌표가 캐릭터와 정확히 맞는다. */
+  .mascotStage {
+    margin-bottom: 26px;
+    width: min(66cqw, 40dvh);
   }
 
-  .mascotStage {
-    width: min(46vw, 190px);
+  .footShadow {
+    bottom: calc(26px + min(66cqw, 40dvh) * 0.028 - 10px);
+    width: calc(min(66cqw, 40dvh) * 0.54);
+    height: calc(min(66cqw, 40dvh) * 0.125);
   }
 
   .panel {
-    gap: 12px;
+    gap: 10px;
     padding-top: 12px;
-    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
   }
 
   .startButton {
-    min-height: 56px;
+    min-height: 58px;
+  }
+}
+
+/*
+ * 홈 허브 버튼. 바로 묶지 않고 양옆에 하나씩 떠 있게 둔다.
+ * 캐릭터는 가운데(50cqw ≒ 195px, x 97~292)를 쓰므로 좌우 8~72px 구간은
+ * 비어 있고, 배경 창문(히어로 기준 y 36~194)보다 아래에 배치해 겹치지 않는다.
+ * 세로 위치는 엄지가 닿는 하단부로 잡았다.
+ */
+.hubButton {
+  position: absolute;
+  z-index: 4;
+  min-width: 60px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #111111;
+  font-family: inherit;
+  /* 아이콘 + 텍스트를 합친 실루엣(둘 다 흰 테두리 포함)의 하드 그림자.
+     x 0, y 아래, blur 0.
+     곱하기 블렌드처럼 배경을 눌러 어둡게 하도록 불투명 베이지가 아닌
+     반투명 웜다크를 쓴다. multiply(#e5d9c9)는 배경에 (0.898, 0.851, 0.788)을
+     곱하는 것이고, 이는 검정 계열을 알파 0.10~0.21 로 올린 것과 같다. */
+  filter: drop-shadow(0 5px 0 rgba(72, 46, 16, 0.17));
+  transition: transform 0.12s ease;
+}
+
+.hub_left_top {
+  left: 16px;
+  bottom: 142px;
+}
+
+.hub_left_bottom {
+  left: 16px;
+  bottom: 26px;
+}
+
+.hub_right_top {
+  right: 16px;
+  bottom: 142px;
+}
+
+.hub_right_bottom {
+  right: 16px;
+  bottom: 26px;
+}
+
+.hubIcon {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  /* 흰 테두리. 레퍼런스 비율(아이콘의 5.26% ≈ 2.4px)의 2배 */
+  --outline-w: 4.8px;
+  filter: var(--icon-outline);
+}
+
+.hubLabel {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 8px #ffffff;
+}
+
+/* 배경 사진이 어두운 테마에서는 라벨을 밝게 뒤집는다.
+   컨테이너가 없어져 라벨이 배경과 직접 맞닿기 때문이다. */
+.darkLabels .hubLabel {
+  color: #fffaf0;
+}
+
+.hubButton:active {
+  transform: translateY(3px);
+}
+
+.hubButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hubButton {
+    transition: none;
+  }
+
+  .hubButton:active {
+    transform: none;
+  }
+}
+
+/* 세로가 짧으면 허브 버튼을 줄이고 아래로 모은다 */
+@media (max-height: 720px) {
+  .hubIcon {
+    width: 40px;
+    height: 40px;
+    --outline-w: 3.8px;
+    filter: var(--icon-outline);
+  }
+
+  .hubButton {
+    filter: drop-shadow(0 4px 0 rgba(72, 46, 16, 0.17));
+  }
+
+  .hubLabel {
+    font-size: 16px;
+    -webkit-text-stroke: 7px #ffffff;
+  }
+
+  .hub_left_top,
+  .hub_right_top {
+    bottom: 104px;
+  }
+
+  .hub_left_bottom,
+  .hub_right_bottom {
+    bottom: 14px;
   }
 }

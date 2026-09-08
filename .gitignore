@@ -23,10 +23,10 @@ content_plan.json
 plans/content_plan.json
 plans/curriculum_plan.json
 
-# Local generated assets
-audio/
-images/
-generated_images/
+# Local generated assets (저장소 루트 산출물만. 앱 에셋은 아래에서 되살린다)
+/audio/
+/images/
+/generated_images/
 outputs/*
 !outputs/test17_character/
 !outputs/test17_character/**
@@ -41,14 +41,19 @@ tmp/
 *.jpeg
 *.webp
 
-# Local tools / large model files
-tools/
-models/
-checkpoints/
+# 앱이 실제로 쓰는 프론트엔드 에셋은 추적한다.
+# 위 확장자 규칙보다 뒤에 와야 되살아난다(마지막에 일치한 규칙이 이긴다).
+!frontend/public/**
+
+# Local tools / large model files (저장소 루트만)
+/tools/
+/models/
+/checkpoints/
 
 # Logs
 *.log
 logs/
+.api-server.err
 
 # OS / editor
 .DS_Store

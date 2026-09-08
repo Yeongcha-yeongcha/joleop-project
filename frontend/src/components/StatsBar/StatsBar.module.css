@@ -1,24 +1,49 @@
 .bar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: clamp(28px, 9vw, 52px);
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
   width: 100%;
-  padding: 6px 0 0;
+  padding: 9px 8px;
+  border-radius: 20px;
+  background: rgba(255, 253, 245, 0.94);
+}
+
+/* 사진 배경이 어두운 테마에서는 HUD 자체를 어둡게 뒤집는다 */
+.dark.bar {
+  background: rgba(38, 26, 14, 0.82);
+}
+
+.dark .meta strong {
+  color: #fff6e2;
+}
+
+.dark .meta em {
+  color: rgba(255, 240, 214, 0.82);
+}
+
+/* 칩 사이 구분선. inset 그림자 대신 실제 선으로 그린다. */
+.stat + .stat {
+  border-left: 1px solid rgba(146, 96, 24, 0.16);
+}
+
+.dark .stat + .stat {
+  border-left-color: rgba(255, 236, 205, 0.16);
 }
 
 .stat {
   min-width: 0;
-  height: 46px;
+  min-height: 44px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: 7px;
   border: 0;
-  padding: 0;
+  padding: 0 2px;
   background: transparent;
   font-family: inherit;
-  text-align: center;
+  text-align: left;
+  transition: transform 0.12s ease;
 }
 
 button.stat {
@@ -31,129 +56,45 @@ button.stat:active {
 
 .icon {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
+  width: clamp(34px, 10.5cqw, 42px);
+  height: clamp(34px, 10.5cqw, 42px);
   display: grid;
   place-items: center;
-  color: #55330f;
 }
 
-.icon svg {
-  width: 29px;
-  height: 29px;
-  overflow: visible;
-  filter: drop-shadow(0 2px 0 rgba(82, 48, 12, 0.16));
+.iconImage {
+  /* 흰 테두리. 아이콘 크기의 5.26% ≈ 2.2px */
+  --outline-w: 2.2px;
+  filter: var(--icon-outline);
 }
 
-.iconFill {
-  stroke: #4a2d0e;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.iconShine {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.95);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.iconImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .meta {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 3px;
   line-height: 1;
 }
 
 .meta strong {
   color: #2d1b0b;
-  font-size: 20px;
+  font-size: clamp(19px, 5.8cqw, 23px);
   font-weight: 900;
 }
 
 .meta em {
-  color: rgba(78, 48, 13, 0.76);
-  font-size: 10px;
+  color: rgba(78, 48, 13, 0.82);
+  font-size: clamp(var(--font-size-min), 3.7cqw, 15px);
   font-style: normal;
   font-weight: 900;
   white-space: nowrap;
-}
-
-.meta small {
-  margin-top: -1px;
-  color: rgba(78, 48, 13, 0.62);
-  font-size: 8px;
-  line-height: 1;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.customizeButton {
-  flex: 0 0 auto;
-  width: 54px;
-  min-height: 58px;
-  margin-top: -1px;
-  display: grid;
-  place-items: center;
-  gap: 2px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #704414;
-  box-shadow: 0 7px 16px rgba(117, 72, 14, 0.16), inset 0 -4px 0 rgba(120, 68, 0, 0.1);
-}
-
-.customizeButton span {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.customizeButton strong {
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 900;
-}
-
-.customizeButton:active {
-  transform: translateY(2px);
-}
-
-.dark .meta strong {
-  color: white;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.dark .meta em {
-  color: rgba(255, 255, 255, 0.88);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
-}
-
-.dark .meta small {
-  color: rgba(255, 255, 255, 0.82);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
-}
-
-.dark .customizeButton {
-  background: rgba(255, 255, 255, 0.94);
-}
-
-.streak .iconFill {
-  fill: #ff7248;
-}
-
-.rewards .iconFill {
-  fill: #ffd84d;
-}
-
-.energy .iconFill {
-  fill: #ff8d79;
-}
-
-.dark .iconFill {
-  stroke: rgba(255, 255, 255, 0.96);
 }
 
 .attendanceOverlay {
@@ -223,7 +164,7 @@ button.stat:active {
   display: block;
   margin-bottom: 14px;
   color: #8b6a3e;
-  font-size: 12px;
+  font-size: var(--font-size-min);
   line-height: 1;
   font-weight: 900;
 }
@@ -261,7 +202,7 @@ button.stat:active {
 
 .calendarGrid .weekday {
   color: #8b6a3e;
-  font-size: 10px;
+  font-size: var(--font-size-min);
   line-height: 1;
   font-weight: 900;
   text-align: center;
@@ -354,14 +295,14 @@ button.stat:active {
 
 .historyItem strong {
   color: #3b250e;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 900;
 }
 
 .historyItem em {
   color: #8b6a3e;
-  font-size: 10px;
+  font-size: var(--font-size-min);
   line-height: 1;
   font-style: normal;
   font-weight: 900;
@@ -404,8 +345,24 @@ button.stat:active {
   display: block;
   margin-top: 8px;
   color: #8b6a3e;
-  font-size: 11px;
+  font-size: var(--font-size-min);
   line-height: 1.25;
   font-style: normal;
   font-weight: 900;
+}
+
+.stat:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat {
+    transition: none;
+  }
+
+  .stat:active {
+    transform: none;
+  }
 }

@@ -14,6 +14,7 @@ import {
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
 import type { ChapterResult } from '../../utils/chapterProgress'
+import PageHeader from '../../components/PageHeader/PageHeader'
 import styles from './ReviewPage.module.css'
 
 type ReviewKind = 'wordCloze' | 'wordRepeat' | 'sentenceOrder' | 'sentenceRepeat' | 'chat'
@@ -584,16 +585,16 @@ export default function ReviewPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <img src="/images/onboarding/lion-headphones.png" alt="" />
-        <div>
-          <h1>Review</h1>
-          <p>Small practice makes big memory.</p>
-        </div>
-        <button className={styles.helpButton} onClick={() => setShowHelp(true)} aria-label="Review help">
-          ?
-        </button>
-      </header>
+      <PageHeader
+        title="Review"
+        trailing={
+          <button className={styles.helpButton} onClick={() => setShowHelp(true)} aria-label="Review help">
+            ?
+          </button>
+        }
+      />
+
+      <div className={styles.body}>
 
       {!started ? (
         <>
@@ -892,6 +893,7 @@ export default function ReviewPage() {
           )}
         </section>
       )}
+      </div>
     </main>
   )
 }

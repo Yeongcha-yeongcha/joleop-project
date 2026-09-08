@@ -24,10 +24,12 @@ import {
   saveProfileColor,
   saveProfileImageOverride,
 } from '../../utils/profileAvatar'
+import PageHeader from '../../components/PageHeader/PageHeader'
 import styles from './MyPage.module.css'
 
 const avatars = [
-  '/images/HomeBearHands.png',
+  // 기본 캐릭터. 홈 화면 마스코트와 같은 에셋을 쓴다.
+  '/images/HomePopo.png',
   '/images/onboarding/lion-wave.png',
   '/images/onboarding/lion-thinking.png',
   '/images/onboarding/lion-backpack.png',
@@ -392,15 +394,16 @@ export default function MyPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.currentAvatar} style={{ background: avatarColor }}>
-          {avatarPreview ? <img src={avatarPreview} alt="" /> : null}
+      <PageHeader
+        title="My Page"
+      />
+
+      <div className={styles.body}>
+        <div className={styles.avatarBlock}>
+          <div className={styles.currentAvatar} style={{ background: avatarColor }}>
+            {avatarPreview ? <img src={avatarPreview} alt="" /> : null}
+          </div>
         </div>
-        <div>
-          <h1>My Page</h1>
-          <p>{profile?.nickname ?? 'Friend'}'s profile</p>
-        </div>
-      </header>
 
       <section className={styles.card}>
         <div className={styles.sectionTitle}>
@@ -586,6 +589,7 @@ export default function MyPage() {
           </form>
         </div>
       )}
+      </div>
     </main>
   )
 }

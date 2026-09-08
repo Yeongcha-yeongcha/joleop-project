@@ -3,26 +3,64 @@
   min-height: 100dvh;
   width: 100%;
   overflow: hidden;
-  background-position: center;
-  background-size: cover;
   isolation: isolate;
+  container-type: inline-size;
 }
 
-.treeScene {
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.18) 34%,
+    rgba(0, 0, 0, 0.46) 62%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+}
+
+/*
+ * 배경 크로스페이드.
+ * 현재 배경을 밑에 깔고, 바뀌는 순간 이전 배경을 위에 얹어 서서히 지운다.
+ * 새 배경을 페이드 인 시키는 방식은 첫 진입에서 한 번 비어 보인다.
+ */
+.sceneLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.scene_tree {
   background-image: url('/images/onboarding/bg-tree-house.png');
 }
 
-.meadowScene {
+.scene_meadow {
   background-image: url('/images/onboarding/bg-meadow-house.png');
 }
 
-.castleScene {
+.scene_castle {
   background-image: url('/images/onboarding/bg-castle-path.png');
+}
+
+.sceneLeaving {
+  animation: sceneOut 520ms ease forwards;
+}
+
+@keyframes sceneOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 .lion {
   position: absolute;
-  width: 160px;
+  width: clamp(176px, 53cqw, 220px);
   object-fit: contain;
   left: 50%;
   bottom: 205px;
@@ -32,37 +70,37 @@
 }
 
 .step0 .lion {
-  width: 154px;
+  width: clamp(172px, 52cqw, 216px);
   left: 65%;
   bottom: 196px;
 }
 
 .step1 .lion {
-  width: 154px;
+  width: clamp(172px, 52cqw, 216px);
   left: 64%;
   bottom: 204px;
 }
 
 .step2 .lion {
-  width: 170px;
+  width: clamp(186px, 56cqw, 234px);
   left: 64%;
   bottom: 202px;
 }
 
 .step4 .lion {
-  width: 142px;
+  width: clamp(158px, 48cqw, 198px);
   left: 21%;
   bottom: 226px;
 }
 
 .step5 .lion {
-  width: 208px;
+  width: clamp(224px, 68cqw, 282px);
   left: 50%;
   bottom: 205px;
 }
 
 .step6 .lion {
-  width: 152px;
+  width: clamp(168px, 51cqw, 211px);
   left: 50%;
   bottom: 194px;
 }
@@ -71,34 +109,65 @@
   position: absolute;
   width: 112px;
   left: 12%;
-  bottom: 214px;
+  bottom: 254px;
   z-index: 3;
   filter: drop-shadow(0 10px 12px rgba(78, 50, 18, 0.24));
+  transition: transform 0.16s ease;
 }
 
-.step3 .bag {
+.step3 .bag,
+.step4 .bag {
   width: 136px;
-  left: 50%;
-  bottom: 214px;
+  bottom: 300px;
   transform: translateX(-50%);
   filter:
     drop-shadow(0 18px 16px rgba(72, 45, 11, 0.28))
     drop-shadow(0 0 20px rgba(255, 255, 255, 0.78));
 }
 
-.step3::after {
+.step3 .bag {
+  left: 50%;
+}
+
+.step4 .bag {
+  left: 72%;
+}
+
+/* 카드를 가방 위로 끌어오면 드롭 지점을 키워 알려준다 */
+.dropActive .bag {
+  transform: translateX(-50%) scale(1.09);
+}
+
+.step3::after,
+.step4::after {
   content: '';
   position: absolute;
-  left: 50%;
-  bottom: 198px;
-  width: 184px;
-  height: 142px;
-  border-radius: 48% 48% 44% 44%;
-  background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.66) 0 34%, rgba(255, 255, 255, 0.3) 52%, rgba(255, 255, 255, 0) 72%);
-  box-shadow: 0 22px 18px rgba(70, 45, 14, 0.16);
+  bottom: 216px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(255, 255, 255, 0.6) 0 24%,
+    rgba(255, 255, 255, 0.28) 46%,
+    rgba(255, 255, 255, 0) 68%
+  );
   transform: translateX(-50%);
+  transition: transform 0.16s ease;
   pointer-events: none;
   z-index: 2;
+}
+
+.step3::after {
+  left: 50%;
+}
+
+.step4::after {
+  left: 72%;
+}
+
+.dropActive::after {
+  transform: translateX(-50%) scale(1.14);
 }
 
 .cardRow {
@@ -113,6 +182,10 @@
   z-index: 5;
 }
 
+.cardRowDragging {
+  z-index: 9;
+}
+
 .choiceCard {
   height: 110px;
   padding: 10px 6px;
@@ -120,13 +193,39 @@
   background: #fff7e8;
   border: 2px solid rgba(129, 84, 33, 0.14);
   box-shadow: 0 7px 0 rgba(122, 77, 20, 0.2), 0 9px 18px rgba(89, 50, 8, 0.13);
-  color: #3d2c19;
-  font-size: 14px;
-  font-weight: 900;
-  line-height: 1;
   display: grid;
   place-items: center;
   transition: transform 0.12s ease;
+  cursor: grab;
+  touch-action: none;
+  animation: cardFloat 2.4s ease-in-out infinite;
+}
+
+.cardRow .choiceCard:nth-child(2) {
+  animation-delay: 0.32s;
+}
+
+.cardRow .choiceCard:nth-child(3) {
+  animation-delay: 0.64s;
+}
+
+@keyframes cardFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -14px;
+  }
+}
+
+/* 끌고 있는 카드: 애니메이션을 끄고 인라인 transform 이 따라오게 한다 */
+.choiceCardDragging {
+  animation: none;
+  transition: none;
+  cursor: grabbing;
+  box-shadow: 0 16px 28px rgba(89, 50, 8, 0.32);
 }
 
 .choiceCard:active {
@@ -159,29 +258,31 @@
 }
 
 .speechBox {
-  min-height: 102px;
+  min-height: 112px;
   display: grid;
   place-items: center;
-  padding: 17px 18px;
+  padding: 18px 18px;
   border: 4px solid #ff9500;
   border-radius: 13px;
   background: #fff7e7;
   box-shadow: 0 5px 0 rgba(135, 78, 13, 0.24);
   color: #a64f12;
   text-align: center;
-  font-size: clamp(13px, 3.7vw, 16px);
+  font-size: clamp(17px, 4.9cqw, 20px);
   font-weight: 900;
-  line-height: 1.45;
+  line-height: 1.5;
+  text-wrap: balance;
   word-break: keep-all;
 }
 
 .primaryButton {
-  height: 58px;
+  min-height: 58px;
+  padding: 0 14px;
   border-radius: 13px;
   background: #ff9700;
   box-shadow: 0 6px 0 #d87900;
   color: white;
-  font-size: clamp(18px, 5vw, 24px);
+  font-size: clamp(19px, 5.1cqw, 22px);
   font-weight: 900;
   display: inline-flex;
   align-items: center;
@@ -209,7 +310,7 @@
 
 .manualInput {
   min-width: 0;
-  height: 58px;
+  min-height: 58px;
   padding: 0 16px;
   border: 3px solid #ff9700;
   border-radius: 13px;
@@ -217,13 +318,12 @@
   box-shadow: 0 6px 0 rgba(216, 121, 0, 0.22);
   color: #583414;
   font: inherit;
-  font-size: 18px;
+  font-size: clamp(18px, 4.9cqw, 20px);
   font-weight: 900;
-  outline: none;
 }
 
 .manualInput::placeholder {
-  color: rgba(88, 52, 20, 0.48);
+  color: rgba(88, 52, 20, 0.78);
 }
 
 .manualInput:focus {
@@ -231,7 +331,7 @@
 }
 
 .confirmButton {
-  height: 58px;
+  min-height: 58px;
   border-radius: 13px;
   background: #007f70;
   box-shadow: 0 6px 0 #006255;
@@ -252,37 +352,10 @@
 }
 
 .micIcon {
-  position: relative;
-  width: 13px;
-  height: 18px;
-  border: 3px solid white;
-  border-radius: 999px;
-  font-size: 0;
-}
-
-.micIcon::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -8px;
-  width: 13px;
-  height: 8px;
-  border: 3px solid white;
-  border-top: 0;
-  border-radius: 0 0 999px 999px;
-  transform: translateX(-50%);
-}
-
-.micIcon::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -13px;
-  width: 16px;
-  height: 3px;
-  border-radius: 999px;
-  background: white;
-  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 @media (max-height: 720px) {
@@ -298,8 +371,41 @@
     bottom: 196px;
   }
 
+  .step0 .lion,
+  .step1 .lion,
+  .step6 .lion {
+    width: clamp(150px, 44cqw, 182px);
+  }
+
+  .step2 .lion {
+    width: clamp(158px, 47cqw, 192px);
+  }
+
+  .step4 .lion {
+    width: clamp(140px, 41cqw, 170px);
+  }
+
+  .step5 .lion {
+    width: clamp(186px, 56cqw, 232px);
+  }
+
+  .speechBox {
+    min-height: 96px;
+    font-size: clamp(16px, 4.4cqw, 18px);
+  }
+
   .bag {
-    bottom: 188px;
+    bottom: 226px;
+  }
+
+  .step3 .bag,
+  .step4 .bag {
+    bottom: 262px;
+  }
+
+  .step3::after,
+  .step4::after {
+    bottom: 178px;
   }
 
   .cardRow {
@@ -308,5 +414,110 @@
 
   .bottomPanel {
     bottom: 24px;
+  }
+}
+
+/* 키보드 포커스 표시. 전역 reset 이 button 의 기본 outline 을 지워 두었고
+   .manualInput 은 outline: none 이었기 때문에 이전에는 포커스가 보이지 않았다. */
+.primaryButton:focus-visible,
+.confirmButton:focus-visible,
+.choiceCard:focus-visible,
+.manualInput:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .confirmButton,
+  .choiceCard {
+    transition: none;
+  }
+
+  .primaryButton:active,
+  .confirmButton:active,
+  .choiceCard:active {
+    transform: none;
+  }
+
+  .choiceCard {
+    animation: none;
+  }
+
+  .bag,
+  .step3::after,
+  .step4::after {
+    transition: none;
+  }
+}
+
+/* 진행 표시 */
+.progress {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  display: flex;
+  gap: 7px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 253, 244, 0.9);
+  box-shadow: 0 6px 14px rgba(70, 42, 12, 0.18);
+}
+
+.progressDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(122, 77, 20, 0.26);
+}
+
+.progressDotDone {
+  background: rgba(122, 77, 20, 0.55);
+}
+
+.progressDotCurrent {
+  width: 20px;
+  background: #ff9700;
+}
+
+/* 단계 전환 시 요소별 등장. key 가 바뀌어 다시 마운트되면 재생된다. */
+.lion {
+  animation: stepIn 420ms ease;
+}
+
+.speechText {
+  display: block;
+  animation: stepIn 340ms ease;
+}
+
+.cardRow {
+  animation: stepIn 380ms ease;
+}
+
+.bag {
+  animation: stepIn 420ms ease;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sceneLeaving,
+  .lion,
+  .speechText,
+  .cardRow,
+  .bag {
+    animation: none;
   }
 }

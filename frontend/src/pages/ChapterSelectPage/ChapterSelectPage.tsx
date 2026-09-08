@@ -6,6 +6,7 @@ import type { Book } from '../../types'
 import { chaptersForBook } from '../../data/bookChapters'
 import { isChapterUnlocked, readChapterResults, readChapterStars } from '../../utils/chapterProgress'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
+import StarRow from '../../components/StarRow/StarRow'
 import styles from './ChapterSelectPage.module.css'
 
 export default function ChapterSelectPage() {
@@ -81,11 +82,7 @@ export default function ChapterSelectPage() {
               <span className={styles.planet} />
               <strong>{chapter.label}</strong>
               <em>{unlocked ? chapter.theme : 'Finish the chapter before this one.'}</em>
-              <span className={styles.stars} aria-label={`${chapterStars} stars`}>
-                {[0, 1, 2].map((index) => (
-                  <span key={index} className={index < chapterStars ? styles.starOn : styles.starOff}>★</span>
-                ))}
-              </span>
+              <StarRow lit={chapterStars} size={22} gap={3} className={styles.stars} />
             </button>
           )
         })}

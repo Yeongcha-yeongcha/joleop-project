@@ -291,9 +291,20 @@
   display: grid;
   justify-items: center;
   gap: 10px;
-  opacity: 0;
   color: #ffffff;
   text-align: center;
+}
+
+/* 단계별 등장. 부모 섹션이 아니라 각 요소가 차례로 나타난다. */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .completionBadge {
@@ -317,46 +328,8 @@
 }
 
 .starFan {
-  position: relative;
-  width: 150px;
-  height: 70px;
+  /* 별 배치는 StarRow 가 담당한다. 여기서는 결과 화면에서의 여백만 준다. */
   margin-top: -2px;
-}
-
-.starFan span {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  color: #ffffff;
-  font-size: 41px;
-  line-height: 1;
-  transform-origin: 50% 88px;
-  -webkit-text-stroke: 2px #7b4f19;
-  filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.16));
-}
-
-.starFan span:nth-child(1) {
-  transform: translateX(-50%) rotate(-28deg) translateY(12px);
-}
-
-.starFan span:nth-child(2) {
-  transform: translateX(-50%) rotate(0deg) translateY(-4px);
-}
-
-.starFan span:nth-child(3) {
-  transform: translateX(-50%) rotate(28deg) translateY(12px);
-}
-
-.starFan .starOn {
-  color: #ffcf4a;
-}
-
-.starFan .starOff {
-  color: rgba(255, 255, 255, 0.22);
 }
 
 .completionResult strong {
@@ -467,11 +440,6 @@
 .completionBtn {
   width: min(342px, calc(100% - 40px));
   margin-top: 18px;
-  opacity: 0;
-}
-
-.completionVisible {
-  animation: fadeUp 0.6s ease forwards;
 }
 
 @keyframes fadeUp {
@@ -520,4 +488,10 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+  }
 }

@@ -5,20 +5,16 @@ import StatsBar from '../../components/StatsBar/StatsBar'
 import { ApiError, clearProfileSession, fetchHome, usesBackendApi } from '../../services/api'
 import {
   DEFAULT_HOME_BACKGROUND_THEME_ID,
-  HOME_BACKGROUND_THEMES,
+  findHomeBackgroundTheme,
+  imageBackground,
 } from '../../data/homeBackgroundThemes'
 import { resolveHeroBackgroundImage } from '../../utils/bookAssets'
+import { ICONS } from '../../constants/assets'
+import { resolvePopoSpots, type PopoCustomization } from '../../data/popoItems'
 import styles from './HomePage.module.css'
 
 const HOME_THEME_KEY = 'yeongcha:home-background-theme'
 const POPO_CUSTOMIZATION_KEY = 'yeongcha:popo-customization'
-
-interface PopoCustomization {
-  hat?: string
-  glasses?: string
-  necklace?: string
-  outfit?: string
-}
 
 function readSelectedThemeId(): string {
   return window.localStorage.getItem(HOME_THEME_KEY) || DEFAULT_HOME_BACKGROUND_THEME_ID
@@ -87,23 +83,27 @@ export default function HomePage() {
     }
   }, [])
 
-  const selectedTheme = useMemo(() => (
-    HOME_BACKGROUND_THEMES.find((theme) => theme.id === selectedThemeId) ??
-    HOME_BACKGROUND_THEMES[0]
-  ), [selectedThemeId])
+  const selectedTheme = useMemo(() => findHomeBackgroundTheme(selectedThemeId), [selectedThemeId])
 
   const selectedBookCover = selectedBook?.coverImage
   const bookBackground = resolveHeroBackgroundImage(selectedBook)
-  const activeBackground = bookBackground ?? selectedTheme.background
-  const activeThemeClass = bookBackground ? styles.theme_book : styles[`theme_${selectedTheme.id}`]
+  // 책 표지 배경이 있으면 그 이미지를, 없으면 방 테마의 CSS 패턴을 쓴다.
+  const activeBackground = bookBackground ? imageBackground(bookBackground) : selectedTheme
   const normalizedBookTitle = (selectedBook?.title ?? '').toLowerCase()
+  // 방 테마는 전부 밝은 색이므로, 어두운 배경은 책 표지 배경일 때만 나온다.
   const isDarkTheme =
-    selectedTheme.id === 'night-star-room' ||
-    selectedTheme.id === 'space-adventure-room' ||
     normalizedBookTitle.includes('dragon') ||
     normalizedBookTitle.includes('star') ||
     normalizedBookTitle.includes('moon') ||
     normalizedBookTitle.includes('space')
+
+  // 화면 양옆에 하나씩 떠 있는 허브 버튼. 캐릭터는 가운데를 그대로 쓴다.
+  const hubButtons = [
+    { side: 'left' as const, slot: 'top' as const, path: '/review', label: 'Review', icon: ICONS.brain, tourId: 'nav-review' },
+    { side: 'left' as const, slot: 'bottom' as const, path: '/mypage', label: 'Me', icon: ICONS.goal, tourId: 'nav-my' },
+    { side: 'right' as const, slot: 'top' as const, path: '/customize', label: 'Style', icon: ICONS.armchair, tourId: 'customize' },
+    { side: 'right' as const, slot: 'bottom' as const, path: '/books', label: 'Books', icon: ICONS.book, tourId: 'nav-books' },
+  ]
 
   const handleStart = () => {
     if (!selectedBook) return
@@ -112,40 +112,72 @@ export default function HomePage() {
 
   return (
     <div
-      className={`${styles.page} ${activeThemeClass ?? styles.theme_cream}`}
-      style={{ '--home-background': `url("${activeBackground}")` } as CSSProperties}
+      className={[
+        styles.page,
+        isDarkTheme ? styles.darkLabels : '',
+      ].join(' ')}
+      style={{
+        '--home-background': activeBackground.background,
+        '--home-background-size': activeBackground.backgroundSize,
+        '--home-background-position': activeBackground.backgroundPosition,
+        '--room-floor': activeBackground.floor,
+        '--room-floor-shade': activeBackground.floorShade,
+      } as CSSProperties}
     >
       <header className={styles.header}>
-        <StatsBar stats={userStats} tone={isDarkTheme ? 'dark' : 'light'} onCustomize={() => navigate('/customize')} />
+        <StatsBar stats={userStats} tone={isDarkTheme ? 'dark' : 'light'} />
       </header>
+      <span className={styles.headerShadow} aria-hidden="true" />
 
       <section className={styles.hero} aria-label="Home">
         <div className={styles.backgroundLayer} aria-hidden="true" />
+        <span className={styles.footShadow} aria-hidden="true" />
         <div className={styles.mascotStage}>
           <img
-            src="/images/HomeBearHands.png"
+            src="/images/HomePopo.png"
             alt=""
             className={styles.mascot}
             onError={(event) => {
-              event.currentTarget.src = '/images/HomeLionBook.png'
+              event.currentTarget.src = '/images/HomeBearHands.png'
             }}
           />
-          {popoCustomization.outfit && <span className={`${styles.popoOutfit} ${styles[`outfit_${popoCustomization.outfit}`]}`} />}
           {popoCustomization.hat && <span className={`${styles.popoHat} ${styles[`hat_${popoCustomization.hat}`]}`} />}
-          {popoCustomization.glasses && <span className={`${styles.popoGlasses} ${styles[`glasses_${popoCustomization.glasses}`]}`} />}
-          {popoCustomization.necklace && <span className={`${styles.popoNecklace} ${styles[`necklace_${popoCustomization.necklace}`]}`} />}
+          {resolvePopoSpots(popoCustomization).map((item) => (
+            <img key={item.id} src={item.spot} alt="" className={styles.popoSpot} aria-hidden="true" />
+          ))}
+          <button
+            className={styles.heldBook}
+            data-tour="held-book"
+            onClick={() => navigate('/books')}
+            aria-label={selectedBook ? 'Change book' : 'Pick a book'}
+          >
+            <img src={selectedBookCover || '/images/BookBtn_unselected.png'} alt="" />
+          </button>
         </div>
-        <button
-          className={styles.heldBook}
-          data-tour="held-book"
-          onClick={() => navigate('/books')}
-          aria-label={selectedBook ? 'Change book' : 'Pick a book'}
-        >
-          <img src={selectedBookCover || '/images/BookBtn_unselected.png'} alt="" />
-        </button>
+
+        {hubButtons.map((item) => (
+          <button
+            key={item.path}
+            className={[styles.hubButton, styles[`hub_${item.side}_${item.slot}`]].join(' ')}
+            data-tour={item.tourId}
+            onClick={() => navigate(item.path)}
+          >
+            <img src={item.icon} alt="" className={styles.hubIcon} aria-hidden="true" />
+            <span className={styles.hubLabel}>{item.label}</span>
+          </button>
+        ))}
       </section>
 
       <section className={styles.panel}>
+        {selectedBook && (
+          <div className={styles.progressTrack}>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${selectedBook.progress * 100}%` }}
+            />
+          </div>
+        )}
+
         <button
           className={styles.bookCard}
           data-tour="book"
@@ -158,18 +190,14 @@ export default function HomePage() {
             className={styles.bookCover}
           />
           <span className={styles.bookMeta}>
-            <em>{selectedBook ? 'Current Book' : 'Library'}</em>
+            <em>
+              <img src={ICONS.bookmark} alt="" className={styles.metaIcon} aria-hidden="true" />
+              {selectedBook ? 'Current Book' : 'Library'}
+            </em>
             <strong>{selectedBook ? selectedBook.title : 'Choose a Book'}</strong>
             <span>{selectedBook ? selectedBook.currentText ?? 'Keep going!' : 'New stories are waiting.'}</span>
           </span>
         </button>
-
-        <div className={styles.progressTrack}>
-          <div
-            className={styles.progressFill}
-            style={{ width: `${selectedBook ? selectedBook.progress * 100 : 0}%` }}
-          />
-        </div>
 
         <button
           className={styles.startButton}
@@ -177,6 +205,7 @@ export default function HomePage() {
           onClick={handleStart}
           disabled={!selectedBook}
         >
+          <img src={ICONS.star} alt="" className={styles.startIcon} aria-hidden="true" />
           {selectedBook ? 'Start Adventure' : 'Choose Book First'}
         </button>
       </section>

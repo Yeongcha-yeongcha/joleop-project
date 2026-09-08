@@ -1,0 +1,77 @@
+/*
+ * Books(My Library)의 .whiteHeader 와 같은 스타일.
+ * 값은 BookChoicePage.module.css 를 그대로 따른다 —
+ * 높이 74px + safe-area, 배경 white, 그림자 0 2px 0 rgba(80,40,20,.08),
+ * 버튼 36px 원형 #f2f3f5/#6b5b55 28px/700, 타이틀 20px/800/#505050/-0.3px.
+ *
+ * Books 와 다른 점은 두 가지이고 둘 다 요구사항에서 온 것이다.
+ *  1) 좌측 패딩 18px: Books 는 버튼이 absolute left:18px 인데 여기서는
+ *     flex 아이템이라 패딩이 버튼 x 좌표를 결정한다. 우측은 Books 대로 20px.
+ *  2) 타이틀 absolute 중앙 정렬: 우측 슬롯 폭이 페이지마다 달라
+ *     (도움말 42px, 별 개수 ~64px) 중앙을 보장하려면 필요하다.
+ */
+.bar {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  height: calc(74px + env(safe-area-inset-top, 0px));
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 20px 0 18px;
+  background: white;
+  box-shadow: 0 2px 0 rgba(80, 40, 20, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.backButton {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f2f3f5;
+  color: #6b5b55;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.backButton:active {
+  transform: scale(0.95);
+}
+
+.backButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 190px);
+  margin: 0;
+  color: #505050;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.trailing {
+  flex: 0 0 auto;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backButton:active {
+    transform: none;
+  }
+}

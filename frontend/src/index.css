@@ -30,6 +30,24 @@
   --color-badge-reading: #E85D5D;
   --color-badge-done: #F5A623;
   --radius-full: 999px;
+
+  /* 아동(만 3~13세) 대상 UI 최소 글자 크기. 이보다 작게 쓰지 않는다. */
+  --font-size-min: 13px;
+
+  /* 키보드 포커스 표시. 전역 reset 이 button 의 기본 outline 을 지우므로 직접 준다. */
+  --focus-ring: 3px solid #1b8b78;
+  --focus-ring-offset: 3px;
+
+  /*
+   * PNG 아이콘 알파 실루엣에 두르는 흰 테두리.
+   * 쓰는 쪽에서 --outline-w 만 정하면 된다(레퍼런스 기준 아이콘 크기의 5.26%).
+   * blur 0 인 drop-shadow 를 상하좌우로 겹치면 모서리까지 메워진다.
+   */
+  --icon-outline:
+    drop-shadow(var(--outline-w) 0 0 #fff)
+    drop-shadow(calc(var(--outline-w) * -1) 0 0 #fff)
+    drop-shadow(0 var(--outline-w) 0 #fff)
+    drop-shadow(0 calc(var(--outline-w) * -1) 0 #fff);
 }
 
 html, body {

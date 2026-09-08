@@ -5,6 +5,7 @@ import { ApiError, clearProfileSession, fetchBooks } from '../../services/api'
 import type { Book } from '../../types'
 import BookCard from '../../components/BookCard/BookCard'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
+import PageHeader from '../../components/PageHeader/PageHeader'
 import styles from './BookChoicePage.module.css'
 
 export default function BookChoicePage() {
@@ -43,16 +44,7 @@ export default function BookChoicePage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.whiteHeader}>
-        <button
-          className={styles.closeButton}
-          onClick={() => navigate('/home')}
-          aria-label="Close book picker"
-        >
-          ×
-        </button>
-        <h1 className={styles.title}>My Library</h1>
-      </div>
+      <PageHeader title="My Library" backLabel="Go home" />
 
       {isLoading || error ? (
         <StatusScreen isLoading={isLoading} error={error} onRetry={load} />

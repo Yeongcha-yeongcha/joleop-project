@@ -52,8 +52,19 @@ export function saveProfileImageOverride(profileId: number, imageUrl: string) {
   writeRecord(PROFILE_IMAGE_OVERRIDES_KEY, images)
 }
 
+/**
+ * 기본 캐릭터 에셋이 교체되면서 예전 URL 이 저장된 프로필을 새 이미지로 넘긴다.
+ * 선택값은 URL 로 저장되므로(saveProfileImageOverride) 이 매핑이 없으면
+ * 기존 프로필이 계속 옛 이미지를 보여준다. 백엔드의 profileImageUrl 도 같이 처리된다.
+ */
+const LEGACY_IMAGE_REPLACEMENTS: Record<string, string> = {
+  '/images/HomeBearHands.png': '/images/HomePopo.png',
+}
+
 export function getProfileImage(profile: ChildProfile | null): string | null {
   if (!profile) return null
   const images = readRecord(PROFILE_IMAGE_OVERRIDES_KEY)
-  return images[String(profile.profileId)] ?? profile.profileImageUrl ?? null
+  const saved = images[String(profile.profileId)] ?? profile.profileImageUrl ?? null
+  if (!saved) return null
+  return LEGACY_IMAGE_REPLACEMENTS[saved] ?? saved
 }
