@@ -680,7 +680,18 @@ export interface OnboardingResult {
 }
 
 export async function postOnboarding(answers: OnboardingAnswer[]): Promise<OnboardingResult> {
-  if (BASE_URL) return post('/profiles/me/onboarding', { answers }, getProfileToken())
+  if (BASE_URL) {
+    const result = await post<OnboardingResult>('/profiles/me/onboarding', { answers }, getProfileToken())
+    const activeProfile = JSON.parse(window.localStorage.getItem('yeongcha:active-profile') || 'null') as ChildProfile | null
+    if (activeProfile) {
+      window.localStorage.setItem('yeongcha:active-profile', JSON.stringify({
+        ...activeProfile,
+        onboardingCompleted: result.onboardingCompleted,
+        difficulty: result.difficulty,
+      }))
+    }
+    return result
+  }
   const normalized = Object.fromEntries(answers.map((answer) => [answer.questionId, answer.answer.toLowerCase()]))
   const onboardingScore = normalized[3] !== 'apple' ? 2 : normalized[4] === 'rain' ? 14 : 8
   const result: OnboardingResult = {
