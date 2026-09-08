@@ -6,15 +6,15 @@ import styles from './OnboardingPage.module.css'
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6
 const fruitCards = [
-  { id: 'apple', image: '/images/onboarding/apple.png', label: 'Apple', answer: 'Apple' },
-  { id: 'banana', image: '/images/onboarding/banana.png', label: 'Banana', answer: 'Banana' },
-  { id: 'peach', image: '/images/onboarding/peach.png', label: 'Peach', answer: 'Peach' },
+  { id: 'apple', image: '/images/onboarding/apple.png', answer: 'Apple' },
+  { id: 'banana', image: '/images/onboarding/banana.png', answer: 'Banana' },
+  { id: 'peach', image: '/images/onboarding/peach.png', answer: 'Peach' },
 ]
 
 const weatherCards = [
-  { id: 'rain', emoji: '🌧️', label: 'Rain', answer: 'Rain' },
-  { id: 'wind', emoji: '💨', label: 'Wind', answer: 'Wind' },
-  { id: 'sun', emoji: '☀️', label: 'Sunny', answer: 'Sunny' },
+  { id: 'rain', emoji: '🌧️', answer: 'Rain' },
+  { id: 'wind', emoji: '💨', answer: 'Wind' },
+  { id: 'sun', emoji: '☀️', answer: 'Sunny' },
 ]
 
 function upsertAnswer(answers: OnboardingAnswer[], questionId: number, answer: string): OnboardingAnswer[] {
@@ -207,6 +207,7 @@ export default function OnboardingPage() {
             <button
               key={card.id}
               className={styles.choiceCard}
+              aria-label={card.answer}
               onClick={() => {
                 const nextAnswers = upsertAnswer(answers, 3, card.answer)
                 setAnswers(nextAnswers)
@@ -219,7 +220,6 @@ export default function OnboardingPage() {
               }}
             >
               <img src={card.image} alt="" className={styles.choiceImage} />
-              <span>{card.label}</span>
             </button>
           ))}
         </div>
@@ -231,6 +231,7 @@ export default function OnboardingPage() {
             <button
               key={card.id}
               className={styles.choiceCard}
+              aria-label={card.answer}
               onClick={() => {
                 const nextAnswers = upsertAnswer(answers, 4, card.answer)
                 setAnswers(nextAnswers)
@@ -244,7 +245,6 @@ export default function OnboardingPage() {
               }}
             >
               <span className={styles.choiceEmoji}>{card.emoji}</span>
-              <span>{card.label}</span>
             </button>
           ))}
         </div>

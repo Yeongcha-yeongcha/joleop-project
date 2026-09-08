@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class KakaoLoginRequest(BaseModel):
@@ -9,9 +9,20 @@ class KakaoLoginRequest(BaseModel):
 
 
 class ParentPasswordSignupRequest(BaseModel):
-    username: str = Field(min_length=4, max_length=30, pattern=r"^[A-Za-z0-9_]+$")
+    username: str = Field(min_length=6, max_length=30, pattern=r"^[A-Za-z0-9_]+$")
     password: str = Field(min_length=6, max_length=100)
     nickname: str | None = Field(default=None, max_length=30)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not any(char.isalpha() for char in value):
+            raise ValueError("Password must include a letter.")
+        if not any(char.isdigit() for char in value):
+            raise ValueError("Password must include a number.")
+        if not any(not char.isalnum() for char in value):
+            raise ValueError("Password must include a special character.")
+        return value
 
 
 class ParentPasswordLoginRequest(BaseModel):

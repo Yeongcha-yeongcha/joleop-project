@@ -115,7 +115,7 @@
 
 .choiceCard {
   height: 110px;
-  padding: 10px 6px 11px;
+  padding: 10px 6px;
   border-radius: 8px;
   background: #fff7e8;
   border: 2px solid rgba(129, 84, 33, 0.14);
@@ -124,6 +124,8 @@
   font-size: 14px;
   font-weight: 900;
   line-height: 1;
+  display: grid;
+  place-items: center;
   transition: transform 0.12s ease;
 }
 
@@ -134,17 +136,16 @@
 
 .choiceEmoji {
   display: block;
-  margin-bottom: 8px;
-  font-size: 43px;
+  font-size: 52px;
   line-height: 1;
 }
 
 .choiceImage {
   display: block;
-  width: 58px;
-  height: 58px;
+  width: 72px;
+  height: 72px;
   object-fit: contain;
-  margin: 0 auto 8px;
+  margin: 0 auto;
 }
 
 .bottomPanel {
