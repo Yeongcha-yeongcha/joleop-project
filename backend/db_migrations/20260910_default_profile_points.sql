@@ -1,0 +1,2 @@
+ALTER TABLE child_profiles
+ALTER COLUMN hearts SET DEFAULT 500;
