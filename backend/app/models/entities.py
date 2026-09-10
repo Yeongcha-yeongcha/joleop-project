@@ -120,7 +120,7 @@ class ChildProfile(UpdatedTimestampMixin, Base):
     )
     hearts: Mapped[int] = mapped_column(
         Integer,
-        server_default=text("0"),
+        server_default=text("500"),
         nullable=False,
     )
     energy: Mapped[int] = mapped_column(

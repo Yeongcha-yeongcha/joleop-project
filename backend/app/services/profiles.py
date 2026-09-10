@@ -58,7 +58,7 @@ class ProfileService:
             profile_image_url=self.profile_image_url(request.profile_image_id),
             onboarding_completed=False,
             streak_days=0,
-            hearts=0,
+            hearts=500,
             energy=5,
             max_energy=5,
         )
