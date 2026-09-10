@@ -1,0 +1,79 @@
+{
+  "level1/lesson01": [
+    "/images/pages/level1/lesson01/p01.png",
+    "/images/pages/level1/lesson01/p02.png",
+    "/images/pages/level1/lesson01/p03.png",
+    "/images/pages/level1/lesson01/p04.png",
+    "/images/pages/level1/lesson01/p05.png",
+    "/images/pages/level1/lesson01/p06.png",
+    "/images/pages/level1/lesson01/p07.png",
+    "/images/pages/level1/lesson01/p08.png",
+    "/images/pages/level1/lesson01/p09.png",
+    "/images/pages/level1/lesson01/p10.png",
+    "/images/pages/level1/lesson01/p11.png"
+  ],
+  "level1/lesson02": [
+    "/images/pages/level1/lesson02/p01.png",
+    "/images/pages/level1/lesson02/p02.png",
+    "/images/pages/level1/lesson02/p03.png",
+    "/images/pages/level1/lesson02/p04.png",
+    "/images/pages/level1/lesson02/p05.png",
+    "/images/pages/level1/lesson02/p06.png",
+    "/images/pages/level1/lesson02/p07.png",
+    "/images/pages/level1/lesson02/p08.png",
+    "/images/pages/level1/lesson02/p09.png",
+    "/images/pages/level1/lesson02/p10.png"
+  ],
+  "level2/lesson01": [
+    "/images/pages/level2/lesson01/p01.png",
+    "/images/pages/level2/lesson01/p02.png",
+    "/images/pages/level2/lesson01/p03.png",
+    "/images/pages/level2/lesson01/p04.png",
+    "/images/pages/level2/lesson01/p05.png",
+    "/images/pages/level2/lesson01/p06.png",
+    "/images/pages/level2/lesson01/p07.png",
+    "/images/pages/level2/lesson01/p08.png",
+    "/images/pages/level2/lesson01/p09.png",
+    "/images/pages/level2/lesson01/p10.png",
+    "/images/pages/level2/lesson01/p11.png"
+  ],
+  "level2/lesson02": [
+    "/images/pages/level2/lesson02/p01.png",
+    "/images/pages/level2/lesson02/p02.png",
+    "/images/pages/level2/lesson02/p03.png",
+    "/images/pages/level2/lesson02/p04.png",
+    "/images/pages/level2/lesson02/p05.png",
+    "/images/pages/level2/lesson02/p06.png",
+    "/images/pages/level2/lesson02/p07.png",
+    "/images/pages/level2/lesson02/p08.png",
+    "/images/pages/level2/lesson02/p09.png",
+    "/images/pages/level2/lesson02/p10.png",
+    "/images/pages/level2/lesson02/p11.png"
+  ],
+  "level3/lesson01": [
+    "/images/pages/level3/lesson01/p01.png",
+    "/images/pages/level3/lesson01/p02.png",
+    "/images/pages/level3/lesson01/p03.png",
+    "/images/pages/level3/lesson01/p04.png",
+    "/images/pages/level3/lesson01/p05.png",
+    "/images/pages/level3/lesson01/p06.png",
+    "/images/pages/level3/lesson01/p07.png",
+    "/images/pages/level3/lesson01/p08.png",
+    "/images/pages/level3/lesson01/p09.png",
+    "/images/pages/level3/lesson01/p10.png",
+    "/images/pages/level3/lesson01/p11.png"
+  ],
+  "level3/lesson02": [
+    "/images/pages/level3/lesson02/p01.png",
+    "/images/pages/level3/lesson02/p02.png",
+    "/images/pages/level3/lesson02/p03.png",
+    "/images/pages/level3/lesson02/p04.png",
+    "/images/pages/level3/lesson02/p05.png",
+    "/images/pages/level3/lesson02/p06.png",
+    "/images/pages/level3/lesson02/p07.png",
+    "/images/pages/level3/lesson02/p08.png",
+    "/images/pages/level3/lesson02/p09.png",
+    "/images/pages/level3/lesson02/p10.png",
+    "/images/pages/level3/lesson02/p11.png"
+  ]
+}
