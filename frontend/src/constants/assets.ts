@@ -17,11 +17,6 @@ export const IMAGES = {
   // My Library
   myLibraryBg: '/images/MyLibrary_Background.png',
   bookLocked: '/images/Book_locked.png',
-  bookSamples: {
-    A: '/images/BookSample_A.png',
-    B: '/images/BookSample_B.png',
-    C: '/images/BookSample_C.png',
-  },
   bookBackgrounds: {
     dragon: '/images/home-themes/cream-book-room.png',
     lemonade: '/images/home-themes/sunset-lounge.png',

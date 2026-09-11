@@ -65,7 +65,7 @@ class FakeLearningSessionStore:
         self.books = [
             Book(
                 book_id=1,
-                title="The Dragon Story",
+                title="Test Story",
                 lesson_name="Lesson 1",
                 difficulty=Difficulty.BEGINNER,
             )

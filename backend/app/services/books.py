@@ -51,7 +51,7 @@ class BookService:
                     book,
                     progress_by_book_id.get(book.book_id),
                     total_lessons=await self._chapter_count(book.book_id),
-                    default_unlocked=index == 0,
+                    default_unlocked=index < 3,
                 )
                 for index, book in enumerate(books)
             ]

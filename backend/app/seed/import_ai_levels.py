@@ -21,7 +21,7 @@ LEVEL_IMPORTS = [
         "description_file": "qwen_judged_lessons_accepted_text_descriptions.json",
         "roleplay_file": "qwen_judged_lessons_accepted_text_roleplays.json",
         "display_order": 1,
-        "cover_image_url": "/images/BookSample_A.png",
+        "cover_image_url": None,
         "cover_color": "#F7C948",
     },
     {
@@ -33,7 +33,7 @@ LEVEL_IMPORTS = [
         "description_file": "qwen_judged_lessons_level2_accepted_text_descriptions.json",
         "roleplay_file": "qwen_judged_lessons_level2_accepted_text_roleplays.json",
         "display_order": 2,
-        "cover_image_url": "/images/BookSample_B.png",
+        "cover_image_url": None,
         "cover_color": "#5FB67A",
     },
     {
@@ -45,7 +45,7 @@ LEVEL_IMPORTS = [
         "description_file": "qwen_judged_lessons_level3_accepted_text_descriptions.json",
         "roleplay_file": "qwen_judged_lessons_level3_accepted_text_roleplays.json",
         "display_order": 3,
-        "cover_image_url": "/images/BookSample_C.png",
+        "cover_image_url": None,
         "cover_color": "#6F83D8",
     },
 ]

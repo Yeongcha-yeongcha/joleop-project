@@ -21,6 +21,7 @@ interface Props {
 
 export default function BookCard({ book, onSelect }: Props) {
   const isLocked = book.status === 'locked'
+  const coverStyle = { backgroundColor: book.coverColor ?? '#f6b34f' }
 
   if (isLocked) {
     return (
@@ -46,7 +47,13 @@ export default function BookCard({ book, onSelect }: Props) {
         aria-label={`Choose ${book.title}`}
         style={{ cursor: 'pointer' }}
       >
-        <img src={book.coverImage} className={styles.coverImage} alt={book.title} />
+        {book.coverImage ? (
+          <img src={book.coverImage} className={styles.coverImage} alt={book.title} />
+        ) : (
+          <div className={styles.colorCover} style={coverStyle} aria-hidden="true">
+            <span>{book.title}</span>
+          </div>
+        )}
       </div>
 
       {/* 설명 카드 — 클릭 불가 */}

@@ -28,9 +28,13 @@ class EnergyService:
     def apply_recharge(self, profile: ChildProfile, *, now: datetime | None = None) -> dict:
         now = now or datetime.now(UTC)
         max_energy = profile.max_energy or 5
-        current_energy = min(profile.energy or 0, max_energy)
+        if profile.energy is None:
+            profile.energy = max_energy
+        current_energy = min(profile.energy, max_energy)
         interval_seconds = settings.ENERGY_RECHARGE_MINUTES * 60
         anchor = profile.energy_recharged_at or now
+        if profile.energy_recharged_at is None:
+            profile.energy_recharged_at = anchor
 
         if current_energy >= max_energy:
             profile.energy = max_energy
@@ -52,7 +56,7 @@ class EnergyService:
         if current_energy >= max_energy:
             next_seconds = 0
         else:
-            elapsed_after_anchor = max(0, int((now - profile.energy_recharged_at).total_seconds()))
+            elapsed_after_anchor = max(0, int((now - anchor).total_seconds()))
             next_seconds = interval_seconds - (elapsed_after_anchor % interval_seconds)
 
         return {

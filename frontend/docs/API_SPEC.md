@@ -32,10 +32,10 @@
 ```json
 [
   {
-    "id": "dragon-story",
-    "title": "The Dragon Story",
+    "id": "test-story",
+    "title": "Test Story",
     "coverColor": "#D94F4F",
-    "coverImage": "https://cdn.example.com/covers/dragon-story.png",
+    "coverImage": "https://cdn.example.com/covers/test-story.png",
     "level": 1,
     "totalLessons": 5,
     "currentLesson": 1,
@@ -66,9 +66,9 @@
 **Response**
 ```json
 {
-  "id": "dragon-story-lesson-1",
-  "bookId": "dragon-story",
-  "title": "The Dragon Story - lesson 1",
+  "id": "test-story-lesson-1",
+  "bookId": "test-story",
+  "title": "Test Story - lesson 1",
   "pages": [
     {
       "id": "p1",
@@ -92,8 +92,8 @@
 **Request Body**
 ```json
 {
-  "bookId": "dragon-story",
-  "lessonId": "dragon-story-lesson-1",
+  "bookId": "test-story",
+  "lessonId": "test-story-lesson-1",
   "completedAt": "2026-05-20T12:00:00Z"
 }
 ```

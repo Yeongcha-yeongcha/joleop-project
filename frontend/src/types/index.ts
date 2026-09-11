@@ -50,7 +50,7 @@ export interface QuizQuestion {
 export interface Lesson {
   id: string
   bookId: string
-  title: string          // e.g. "The Dragon Story - lesson 1"
+  title: string          // e.g. "Book title - lesson 1"
   pages: LessonPage[]
   quiz?: QuizQuestion
   roleplay?: RoleplayMission

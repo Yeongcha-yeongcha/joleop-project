@@ -14,6 +14,7 @@ from app.models import (
     ChildProfile,
     Difficulty,
     OnboardingResult,
+    ProfileCustomization,
     UserBookProgress,
 )
 from app.schemas.onboarding import OnboardingSubmitRequest
@@ -78,7 +79,7 @@ class FakeLearningSession:
         self.books = [
             Book(
                 book_id=1,
-                title="The Dragon Story",
+                title="Test Story",
                 lesson_name="Lesson 1",
                 difficulty=Difficulty.BEGINNER,
                 cover_image_url="https://cdn.example.com/books/1/cover.png",
@@ -86,7 +87,7 @@ class FakeLearningSession:
             ),
             Book(
                 book_id=2,
-                title="The Space Story",
+                title="Test Space Story",
                 lesson_name="Lesson 2",
                 difficulty=Difficulty.INTERMEDIATE,
                 cover_image_url="https://cdn.example.com/books/2/cover.png",
@@ -123,6 +124,7 @@ class FakeLearningSession:
             ),
         ]
         self.onboarding_results: list[OnboardingResult] = []
+        self.profile_customizations: list[ProfileCustomization] = []
 
     async def execute(self, statement):
         entity = statement.column_descriptions[0].get("entity")
@@ -153,6 +155,21 @@ class FakeLearningSession:
                     if progress.profile_id == params["profile_id_1"]
                 ]
             )
+        if "FROM reading_chunks" in str(statement):
+            return FakeResult(value=1)
+        if "FROM learning_sessions" in str(statement):
+            return FakeResult(values=[])
+        if "FROM profile_customizations" in str(statement):
+            return FakeResult(
+                next(
+                    (
+                        customization
+                        for customization in self.profile_customizations
+                        if customization.profile_id == params["profile_id_1"]
+                    ),
+                    None,
+                )
+            )
         raise AssertionError(f"Unexpected query: {statement}")
 
     def add(self, instance) -> None:
@@ -160,7 +177,14 @@ class FakeLearningSession:
             instance.onboarding_result_id = len(self.onboarding_results) + 1
             self.onboarding_results.append(instance)
             return
+        if isinstance(instance, ProfileCustomization):
+            instance.customization_id = len(self.profile_customizations) + 1
+            self.profile_customizations.append(instance)
+            return
         raise AssertionError(f"Unexpected add: {instance}")
+
+    async def flush(self) -> None:
+        return None
 
     async def commit(self) -> None:
         return None
