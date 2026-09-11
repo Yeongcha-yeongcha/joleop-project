@@ -1,3 +1,5 @@
+import pytest
+
 from app.models import RoleplayMission
 from app.services.evaluation import DescriptionEvaluationService
 from app.services.roleplay import MockRoleplayService
@@ -28,6 +30,7 @@ def test_description_returns_model_answer_feedback_for_mismatch() -> None:
     assert result["feedback"] == "모범 답안을 보고 다시 말해볼까요?"
 
 
+@pytest.mark.asyncio
 async def test_roleplay_scores_similar_answers_and_returns_success() -> None:
     mission = RoleplayMission(
         mission_id=1,
@@ -53,6 +56,7 @@ async def test_roleplay_scores_similar_answers_and_returns_success() -> None:
     assert result["text"] == "Thank you! That helps a lot."
 
 
+@pytest.mark.asyncio
 async def test_roleplay_returns_hint_for_unrelated_answer() -> None:
     mission = RoleplayMission(
         mission_id=1,

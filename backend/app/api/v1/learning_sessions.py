@@ -177,11 +177,9 @@ async def create_description_attempt(
     ),
     speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
 ) -> dict:
-    transcript = (
-        transcript.strip()
-        if transcript and transcript.strip()
-        else await speech_to_text_service.transcribe(audio)
-    )
+    transcript = transcript.strip() if isinstance(transcript, str) else ""
+    if not transcript:
+        transcript = await speech_to_text_service.transcribe(audio)
     return success_response(
         await learning_session_service.create_description_attempt(
             profile=current_profile,

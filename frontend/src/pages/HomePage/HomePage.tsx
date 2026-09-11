@@ -8,7 +8,7 @@ import {
   findHomeBackgroundTheme,
   imageBackground,
 } from '../../data/homeBackgroundThemes'
-import { resolveHeroBackgroundImage } from '../../utils/bookAssets'
+import { resolveBookCover, resolveHeroBackgroundImage } from '../../utils/bookAssets'
 import { ICONS } from '../../constants/assets'
 import { resolvePopoSpots, type PopoCustomization } from '../../data/popoItems'
 import styles from './HomePage.module.css'
@@ -85,7 +85,7 @@ export default function HomePage() {
 
   const selectedTheme = useMemo(() => findHomeBackgroundTheme(selectedThemeId), [selectedThemeId])
 
-  const selectedBookCover = selectedBook?.coverImage
+  const selectedBookCover = resolveBookCover(selectedBook)
   const bookBackground = resolveHeroBackgroundImage(selectedBook)
   // 책 표지 배경이 있으면 그 이미지를, 없으면 방 테마의 CSS 패턴을 쓴다.
   const activeBackground = bookBackground ? imageBackground(bookBackground) : selectedTheme

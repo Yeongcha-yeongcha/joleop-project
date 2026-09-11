@@ -29,6 +29,7 @@ def test_all_learning_tables_are_registered() -> None:
         "learning_sessions",
         "onboarding_results",
         "parents",
+        "point_transactions",
         "profile_customizations",
         "reading_chunks",
         "refresh_tokens",

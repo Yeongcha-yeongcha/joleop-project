@@ -63,7 +63,7 @@ class FakeUploadFile:
     content_type = "audio/wav"
 
     async def read(self) -> bytes:
-        return b"Hello dragon"
+        return b"Hello test character"
 
 
 class FakeRoleplayStore:
@@ -100,17 +100,17 @@ class FakeRoleplayStore:
         )
         self.book = Book(
             book_id=1,
-            title="The Dragon Story",
+            title="Test Story",
             lesson_name="Lesson 1",
             difficulty=Difficulty.BEGINNER,
         )
         self.mission = RoleplayMission(
             mission_id=401,
             book_id=1,
-            title="Help the Dragon",
-            description="Talk with the dragon.",
-            character_name="Dori",
-            character_image_url="https://cdn.example.com/dori.png",
+            title="Help the Character",
+            description="Talk with the test character.",
+            character_name="Test Character",
+            character_image_url="https://cdn.example.com/test-character.png",
             opening_message="Can you help me?",
             required_turns=3,
         )
@@ -299,8 +299,8 @@ async def test_roleplay(roleplay_context) -> None:
     )
     assert response["data"]["mission"]["missionId"] == 401
     assert response["data"]["character"] == {
-        "name": "Dori",
-        "imageUrl": "https://cdn.example.com/dori.png",
+        "name": "Test Character",
+        "imageUrl": "https://cdn.example.com/test-character.png",
     }
     assert response["data"]["courseProgress"] == 0
 
@@ -315,9 +315,9 @@ async def test_roleplay_audio(roleplay_context) -> None:
         learning_session_service=roleplay_context["service"],
         speech_to_text_service=roleplay_context["speech"],
     )
-    assert response["data"]["user"]["transcript"] == "Hello dragon"
+    assert response["data"]["user"]["transcript"] == "Hello test character"
     assert response["data"]["character"] == {
-        "speaker": "DORI",
+        "speaker": "TEST CHARACTER",
         "text": "Thank you! That helps a lot.",
     }
     assert response["data"]["turn"] == 1
@@ -393,7 +393,7 @@ async def test_exit_complete_result_and_recomplete_block(roleplay_context) -> No
     assert result_response["data"]["profile"] == {"profileId": 101, "nickname": "은정"}
     assert result_response["data"]["book"] == {
         "bookId": 1,
-        "title": "The Dragon Story",
+        "title": "Test Story",
     }
     assert result_response["data"]["completed"] is True
 
