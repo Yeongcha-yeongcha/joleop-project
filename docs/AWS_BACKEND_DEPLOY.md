@@ -1,5 +1,7 @@
 # AWS Backend Deploy
 
+전체 프론트엔드/백엔드 배포 순서는 `docs/AWS_DEPLOY.md`를 참고하세요. 이 문서는 FastAPI 백엔드만 App Runner에 올리는 절차입니다.
+
 이 문서는 FastAPI 백엔드를 AWS App Runner에 올리기 위한 최소 절차입니다.
 
 ## 배포 단위
@@ -28,6 +30,7 @@ CORS_ORIGINS=https://YOUR_FRONTEND_DOMAIN
 KAKAO_CLIENT_ID=
 KAKAO_CLIENT_SECRET=
 KAKAO_REDIRECT_URI=https://YOUR_FRONTEND_DOMAIN/oauth/kakao/callback
+EDGE_TTS_CACHE_DIR=/tmp/tts-cache
 ```
 
 `JWT_SECRET_KEY`는 32자 이상 랜덤 문자열로 설정합니다.

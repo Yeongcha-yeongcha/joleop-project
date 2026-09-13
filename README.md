@@ -85,6 +85,7 @@ scripts/
 
 docs/
   API_REQUESTS.md        # API 요청 예시
+  AWS_DEPLOY.md          # AWS App Runner + Amplify 배포 절차
   GITHUB_STRUCTURE.md    # 저장소 구조 설명
 
 plans/
@@ -187,6 +188,19 @@ COMFYUI_CFG=7.0
 ```
 
 ## 실행 방법
+
+## AWS 배포
+
+AWS 배포 기본 경로는 `Backend: App Runner`, `Frontend: Amplify Hosting`, `Database: RDS PostgreSQL`입니다.
+
+```txt
+docs/AWS_DEPLOY.md
+backend/env.production.example
+frontend/env.production.example
+amplify.yml
+```
+
+위 파일들을 기준으로 AWS 환경변수를 채운 뒤 배포합니다.
 
 ### 방법 1. 테마 목록 파일로 동화 생성
 
