@@ -65,7 +65,7 @@ export default function KakaoCallbackPage() {
 
   return (
     <main className={styles.page}>
-      <img src="/images/onboarding/lion-headphones.png" alt="" />
+      <img src="/images/onboarding/lion-headphones.webp" alt="" />
       <p>{message}</p>
     </main>
   )

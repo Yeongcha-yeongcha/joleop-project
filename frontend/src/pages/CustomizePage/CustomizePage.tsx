@@ -214,7 +214,7 @@ export default function CustomizePage() {
       >
         <div className={styles.previewBackdrop} aria-hidden="true" />
         <div className={styles.popoStage}>
-          <img src="/images/HomePopo.png" alt="" className={styles.previewPopo} />
+          <img src="/images/HomePopo.webp" alt="" className={styles.previewPopo} />
           {previewPopo.hat && <span className={`${styles.popoHat} ${styles[`hat_${previewPopo.hat}`]}`} />}
           {resolvePopoSpots(previewPopo).map((item) => (
             <img key={item.id} src={item.spot} alt="" className={styles.popoSpot} aria-hidden="true" />

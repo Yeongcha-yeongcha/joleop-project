@@ -652,7 +652,7 @@ export default function ReviewPage() {
           <section className={styles.smartHero}>
             <span className={styles.heroBadge}>Today&apos;s Review</span>
             <div className={styles.smartTop}>
-              <img src="/images/onboarding/lion-headphones.png" alt="" />
+              <img src="/images/onboarding/lion-headphones.webp" alt="" />
               <div>
                 <h2>Start Smart Mix</h2>
                 <p>5 mixed review cards from saved words and sentences.</p>

@@ -4,22 +4,22 @@ import styles from './ServiceIntroPage.module.css'
 
 const slides = [
   {
-    image: '/images/onboarding/lion-reading.png',
+    image: '/images/onboarding/lion-reading.webp',
     title: 'Start with Stories',
     text: 'Read short scenes. Meet new words with pictures.',
   },
   {
-    image: '/images/onboarding/lion-headphones.png',
+    image: '/images/onboarding/lion-headphones.webp',
     title: 'Listen and Say',
     text: 'Hear a sentence. Say it out loud.',
   },
   {
-    image: '/images/onboarding/lion-magnifier.png',
+    image: '/images/onboarding/lion-magnifier.webp',
     title: 'Look and Answer',
     text: 'Look at the picture. Say a word or a short sentence.',
   },
   {
-    image: '/images/onboarding/lion-wave.png',
+    image: '/images/onboarding/lion-wave.webp',
     title: 'Talk with Friends',
     text: 'Use what you learned in a small role play.',
   },

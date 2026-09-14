@@ -9,7 +9,7 @@ export interface PopoItem {
   thumbnail?: string
   /**
    * 캐릭터 위에 그대로 겹치면 위치가 맞는 오버레이.
-   * 캐릭터(HomePopo.png 321x321)와 같은 정사각 캔버스(435x435)로 만들어져 있어
+   * 캐릭터(HomePopo.webp 321x321)와 같은 정사각 캔버스(435x435)로 만들어져 있어
    * `inset: 0` + `object-fit: contain` 이면 좌표가 정확히 맞는다.
    */
   spot?: string
@@ -28,32 +28,32 @@ export const POPO_ITEMS: PopoItem[] = [
     name: 'Heart Sunglasses',
     kind: 'glasses',
     price: 90,
-    thumbnail: `${BASE}/heart_sunglass_thumbnail.png`,
-    spot: `${BASE}/heart_sunglass_spot.png`,
+    thumbnail: `${BASE}/heart_sunglass_thumbnail.webp`,
+    spot: `${BASE}/heart_sunglass_spot.webp`,
   },
   {
     id: 'cool-sunglass',
     name: 'Cool Sunglasses',
     kind: 'glasses',
     price: 130,
-    thumbnail: `${BASE}/cool_sunglass_thumbnail.png`,
-    spot: `${BASE}/cool_sunglass_spot.png`,
+    thumbnail: `${BASE}/cool_sunglass_thumbnail.webp`,
+    spot: `${BASE}/cool_sunglass_spot.webp`,
   },
   {
     id: 'rainbow-necklace',
     name: 'Rainbow Necklace',
     kind: 'necklace',
     price: 90,
-    thumbnail: `${BASE}/rainbow_necklace_thumbnail.png`,
-    spot: `${BASE}/rainbow_necklace_spot.png`,
+    thumbnail: `${BASE}/rainbow_necklace_thumbnail.webp`,
+    spot: `${BASE}/rainbow_necklace_spot.webp`,
   },
   {
     id: 'pearl-necklace',
     name: 'Pearl Necklace',
     kind: 'necklace',
     price: 110,
-    thumbnail: `${BASE}/pearl_necklace_thumbnail.png`,
-    spot: `${BASE}/pearl_necklace_spot.png`,
+    thumbnail: `${BASE}/pearl_necklace_thumbnail.webp`,
+    spot: `${BASE}/pearl_necklace_spot.webp`,
   },
 ]
 

@@ -13,7 +13,7 @@ export default function SplashPage() {
   return (
     <main className={styles.page}>
       <div className={styles.logoMark}>
-        <img src="/images/onboarding/lion-reading.png" alt="Lion" />
+        <img src="/images/onboarding/lion-reading.webp" alt="Lion" />
       </div>
       <h1>Lion</h1>
       <p>AI English Stories</p>

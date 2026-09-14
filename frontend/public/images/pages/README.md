@@ -2,7 +2,7 @@
 
 대본 문장 1개 = 페이지 1장. 파일명 `pNN` 은 대본의 문장 번호와 같다.
 
-    /images/pages/level{1,2,3}/lesson{01,02}/pNN.png     520 x 445
+    /images/pages/level{1,2,3}/lesson{01,02}/pNN.webp     520 x 445
 
 ## 레벨 간 공유
 

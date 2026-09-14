@@ -10,9 +10,9 @@ type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 const SCENE_FADE_MS = 520   // 배경 크로스페이드 길이. CSS 의 sceneOut 과 맞춘다.
 const fruitCards = [
-  { id: 'apple', image: '/images/onboarding/apple.png', answer: 'Apple' },
-  { id: 'banana', image: '/images/onboarding/banana.png', answer: 'Banana' },
-  { id: 'peach', image: '/images/onboarding/peach.png', answer: 'Peach' },
+  { id: 'apple', image: '/images/onboarding/apple.webp', answer: 'Apple' },
+  { id: 'banana', image: '/images/onboarding/banana.webp', answer: 'Banana' },
+  { id: 'peach', image: '/images/onboarding/peach.webp', answer: 'Peach' },
 ]
 
 const weatherCards = [
@@ -67,12 +67,12 @@ export default function OnboardingPage() {
   }, [scene])
 
   const lionImage = useMemo(() => {
-    if (step === 0) return '/images/onboarding/lion-wave.png'
-    if (step === 1) return '/images/onboarding/lion-thinking.png'
-    if (step === 2) return '/images/onboarding/lion-backpack.png'
-    if (step === 4) return '/images/onboarding/lion-side.png'
-    if (step === 5) return '/images/onboarding/lion-flag.png'
-    if (step === 6) return '/images/onboarding/lion-reading.png'
+    if (step === 0) return '/images/onboarding/lion-wave.webp'
+    if (step === 1) return '/images/onboarding/lion-thinking.webp'
+    if (step === 2) return '/images/onboarding/lion-backpack.webp'
+    if (step === 4) return '/images/onboarding/lion-side.webp'
+    if (step === 5) return '/images/onboarding/lion-flag.webp'
+    if (step === 6) return '/images/onboarding/lion-reading.webp'
     return null
   }, [step])
 
@@ -326,7 +326,7 @@ export default function OnboardingPage() {
       {(step === 2 || step === 3 || step === 4) && (
         <img
           ref={bagRef}
-          src="/images/onboarding/adventure-bag.png"
+          src="/images/onboarding/adventure-bag.webp"
           alt=""
           className={styles.bag}
         />
@@ -444,7 +444,7 @@ export default function OnboardingPage() {
               onClick={() => handleSpeechInput(step === 0 ? 'name' : 'age')}
               disabled={isListening}
             >
-              <img src="/images/voice-record.png" alt="" className={styles.micIcon} />
+              <img src="/images/voice-record.webp" alt="" className={styles.micIcon} />
               <span aria-live="polite">{isListening ? 'Listening...' : 'Tap to speak'}</span>
             </button>
           )
@@ -489,7 +489,7 @@ export default function OnboardingPage() {
             onClick={handleRepeatSpeech}
             disabled={isListening}
           >
-            <img src="/images/voice-record.png" alt="" className={styles.micIcon} />
+            <img src="/images/voice-record.webp" alt="" className={styles.micIcon} />
             <span aria-live="polite">{isListening ? 'Listening...' : 'Tap to speak'}</span>
           </button>
         )}

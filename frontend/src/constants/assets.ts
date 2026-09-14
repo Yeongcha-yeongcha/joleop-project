@@ -5,37 +5,37 @@
 
 export const IMAGES = {
   // 홈 화면
-  startLion: '/images/onboarding/lion-flag.png',
-  homeBg: '/images/onboarding/bg-meadow-house.png',
-  libraryBg: '/images/onboarding/bg-castle-path.png',
-  lionReading: '/images/onboarding/lion-reading.png',
-  lionWave: '/images/onboarding/lion-wave.png',
-  bookBtnUnselected: '/images/BookBtn_unselected.png',
-  startBtnActive: '/images/StartBtn_active.png',
-  startBtnInactive: '/images/StartBtn_Inactive.png',
+  startLion: '/images/onboarding/lion-flag.webp',
+  homeBg: '/images/onboarding/bg-meadow-house.webp',
+  libraryBg: '/images/onboarding/bg-castle-path.webp',
+  lionReading: '/images/onboarding/lion-reading.webp',
+  lionWave: '/images/onboarding/lion-wave.webp',
+  bookBtnUnselected: '/images/BookBtn_unselected.webp',
+  startBtnActive: '/images/StartBtn_active.webp',
+  startBtnInactive: '/images/StartBtn_Inactive.webp',
 
   // My Library
-  myLibraryBg: '/images/MyLibrary_Background.png',
-  bookLocked: '/images/Book_locked.png',
+  myLibraryBg: '/images/MyLibrary_Background.webp',
+  bookLocked: '/images/Book_locked.webp',
   bookBackgrounds: {
-    dragon: '/images/home-themes/cream-book-room.png',
-    lemonade: '/images/home-themes/sunset-lounge.png',
-    snack: '/images/home-themes/sky-dream-room.png',
-    ocean: '/images/home-themes/ocean-blue-room.png',
-    forest: '/images/home-themes/forest-cozy-room.png',
-    space: '/images/home-themes/space-adventure-room.png',
+    dragon: '/images/home-themes/cream-book-room.webp',
+    lemonade: '/images/home-themes/sunset-lounge.webp',
+    snack: '/images/home-themes/sky-dream-room.webp',
+    ocean: '/images/home-themes/ocean-blue-room.webp',
+    forest: '/images/home-themes/forest-cozy-room.webp',
+    space: '/images/home-themes/space-adventure-room.webp',
   },
 
   // 학습 화면 버튼
-  nextBtnActive: '/images/NextBtn_active.png',
-  recordBtnActive: '/images/RecordBtn_active.png',
-  recordBtnInactive: '/images/RecordBtn_inactive.png',
+  nextBtnActive: '/images/NextBtn_active.webp',
+  recordBtnActive: '/images/RecordBtn_active.webp',
+  recordBtnInactive: '/images/RecordBtn_inactive.webp',
 
   // 롤플레잉
-  roleplayBg: '/images/Roleplaying_Background.png',
+  roleplayBg: '/images/Roleplaying_Background.webp',
 
   // 음성 녹음
-  voiceRecord: '/images/voice-record.png',
+  voiceRecord: '/images/voice-record.webp',
 } as const
 
 /**
@@ -43,17 +43,17 @@ export const IMAGES = {
  * 외곽선 없는 두툼한 플랫 스타일(파스텔 2~3톤 셰이딩) 512x512 PNG 세트.
  */
 export const ICONS = {
-  fire: '/images/icons/fire.png',
-  star: '/images/icons/star.png',
-  heart: '/images/icons/heart.png',
-  book: '/images/icons/book.png',
-  bookmark: '/images/icons/bookmark.png',
-  brain: '/images/icons/brain.png',
-  pencil: '/images/icons/pencil.png',
-  plant: '/images/icons/plant.png',
-  bed: '/images/icons/bed.png',
-  armchair: '/images/icons/armchair.png',
-  goal: '/images/icons/goal.png',
+  fire: '/images/icons/fire.webp',
+  star: '/images/icons/star.webp',
+  heart: '/images/icons/heart.webp',
+  book: '/images/icons/book.webp',
+  bookmark: '/images/icons/bookmark.webp',
+  brain: '/images/icons/brain.webp',
+  pencil: '/images/icons/pencil.webp',
+  plant: '/images/icons/plant.webp',
+  bed: '/images/icons/bed.webp',
+  armchair: '/images/icons/armchair.webp',
+  goal: '/images/icons/goal.webp',
 } as const
 
 /**

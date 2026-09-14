@@ -5,6 +5,7 @@ import pytest
 from app.api.v1.learning_sessions import (
     get_learning_session,
     get_reading,
+    skip_current_course,
     start_or_resume_learning_session,
     update_reading_progress,
 )
@@ -410,3 +411,36 @@ async def test_reading_complete_moves_to_repeat(learning_session_context) -> Non
     assert learning_session.current_course == CourseType.REPEAT
     assert learning_session.current_course_number == 2
     assert learning_session.current_step == 1
+
+
+@pytest.mark.asyncio
+async def test_skip_moves_through_learning_courses(learning_session_context) -> None:
+    await start_or_resume_learning_session(
+        1,
+        current_profile=learning_session_context["profile"],
+        learning_session_service=learning_session_context["service"],
+    )
+
+    expected_courses = [
+        ("REPEAT", 2, 25),
+        ("DESCRIPTION", 3, 50),
+        ("ROLEPLAY", 4, 75),
+    ]
+    for course, course_number, total_progress in expected_courses:
+        response = await skip_current_course(
+            128,
+            current_profile=learning_session_context["profile"],
+            learning_session_service=learning_session_context["service"],
+        )
+        assert response["data"]["currentCourse"] == course
+        assert response["data"]["currentCourseNumber"] == course_number
+        assert response["data"]["currentStep"] == 1
+        assert response["data"]["totalProgress"] == total_progress
+
+    with pytest.raises(AppException) as error:
+        await skip_current_course(
+            128,
+            current_profile=learning_session_context["profile"],
+            learning_session_service=learning_session_context["service"],
+        )
+    assert error.value.status_code == 409

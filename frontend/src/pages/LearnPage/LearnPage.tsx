@@ -11,6 +11,7 @@ import {
   fetchReadingCourse,
   fetchRepeatCourse,
   fetchRoleplayCourse,
+  skipLearningCourse,
   startOrResumeLearningSession,
   synthesizeSpeech,
   updateDescriptionCourse,
@@ -307,6 +308,7 @@ export default function LearnPage() {
   const [sttResult, setSttResult] = useState<SpeechResult | null>(null)
   const [roleplayProgress, setRoleplayProgress] = useState(0.70)
   const [isExiting, setIsExiting] = useState(false)
+  const [isSkipping, setIsSkipping] = useState(false)
   const [repeatScores, setRepeatScores] = useState<number[]>([])
   const [descriptionScores, setDescriptionScores] = useState<number[]>([])
   const [roleplayScores, setRoleplayScores] = useState<number[]>([])
@@ -694,6 +696,51 @@ export default function LearnPage() {
     }, PHASE_EXIT_MS)
   }, [])
 
+  const handleSkip = useCallback(async () => {
+    if (!backendSession || phase === 'roleplay' || isSkipping) return
+    setIsSkipping(true)
+    stopAudio()
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    setSpeakingWordIndex(null)
+
+    try {
+      const session = await skipLearningCourse(backendSession.sessionId)
+      setBackendSession(session)
+
+      if (session.currentCourse === 'REPEAT') {
+        const next = await fetchRepeatCourse(session.sessionId)
+        goToPhase('repeat', () => {
+          setRepeat(next)
+          setReading(null)
+          setPageIndex(next.currentStep - 1)
+          setRepeatState('idle')
+          setIsSkipping(false)
+        })
+        return
+      }
+      if (session.currentCourse === 'DESCRIPTION') {
+        const next = await fetchDescriptionCourse(session.sessionId)
+        goToPhase('quiz', () => {
+          setDescription(next)
+          setRepeat(null)
+          setIsSkipping(false)
+        })
+        return
+      }
+
+      const next = await fetchRoleplayCourse(session.sessionId)
+      goToPhase('roleplay', () => {
+        setRoleplay(next)
+        setDescription(null)
+        setRoleplayProgress(0.70)
+        setIsSkipping(false)
+      })
+    } catch {
+      setIsSkipping(false)
+      setError('Could not skip this activity. Please try again.')
+    }
+  }, [backendSession, phase, isSkipping, stopAudio, goToPhase])
+
   const goToNextScene = useCallback(async () => {
     if (isAdvancingRef.current) return
     isAdvancingRef.current = true
@@ -904,7 +951,18 @@ export default function LearnPage() {
         key={phase}
         className={isExiting ? styles.phaseExit : styles.phaseEnter}
       >
-        <LessonHeader title={lessonTitle} progress={headerProgress} onBack={() => navigate(-1)} />
+        <LessonHeader
+          title={lessonTitle}
+          progress={headerProgress}
+          onBack={() => navigate(-1)}
+          onSkip={phase === 'roleplay' ? undefined : () => { void handleSkip() }}
+          skipLabel={
+            phase === 'reading' ? 'Skip to speaking practice'
+            : phase === 'repeat' ? 'Skip to description quiz'
+            : 'Skip to roleplay'
+          }
+          skipDisabled={isSkipping || isExiting || repeatState === 'recording'}
+        />
 
         {phase === 'roleplay' && activeRoleplay && (
           <RoleplayScreen

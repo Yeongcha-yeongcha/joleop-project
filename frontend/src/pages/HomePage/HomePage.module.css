@@ -71,7 +71,7 @@
      contain 으로도 여백이 생기지 않게 한다. */
   width: 140px;
   height: 154px;
-  background: url('/images/window.png') center / contain no-repeat;
+  background: url('/images/window.webp') center / contain no-repeat;
 }
 
 .backgroundLayer::after {

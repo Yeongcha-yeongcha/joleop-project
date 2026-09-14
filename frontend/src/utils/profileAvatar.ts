@@ -58,7 +58,7 @@ export function saveProfileImageOverride(profileId: number, imageUrl: string) {
  * 기존 프로필이 계속 옛 이미지를 보여준다. 백엔드의 profileImageUrl 도 같이 처리된다.
  */
 const LEGACY_IMAGE_REPLACEMENTS: Record<string, string> = {
-  '/images/HomeBearHands.png': '/images/HomePopo.png',
+  '/images/HomeBearHands.webp': '/images/HomePopo.webp',
 }
 
 export function getProfileImage(profile: ChildProfile | null): string | null {
@@ -66,5 +66,8 @@ export function getProfileImage(profile: ChildProfile | null): string | null {
   const images = readRecord(PROFILE_IMAGE_OVERRIDES_KEY)
   const saved = images[String(profile.profileId)] ?? profile.profileImageUrl ?? null
   if (!saved) return null
-  return LEGACY_IMAGE_REPLACEMENTS[saved] ?? saved
+  const normalized = saved.startsWith('/images/')
+    ? saved.replace(/\.png(?=$|[?#])/i, '.webp')
+    : saved
+  return LEGACY_IMAGE_REPLACEMENTS[normalized] ?? normalized
 }

@@ -22,8 +22,8 @@ export const DEFAULT_HOME_BACKGROUND_THEME_ID = 'cream-gradient'
 /**
  * 방 배경 테마.
  *
- * 이전에는 `/images/home-themes/*.png` 를 참조했는데 그 파일들이 저장소에
- * 없어서(루트 .gitignore 의 `*.png` 규칙) 전부 깨진 상태였다. 그래서 이미지
+ * 이전에는 `/images/home-themes/*.webp` 를 참조했는데 그 파일들이 저장소에
+ * 없어서(루트 .gitignore 의 `*.webp` 규칙) 전부 깨진 상태였다. 그래서 이미지
  * 대신 CSS 그라디언트로 정의한다 — 파일 의존이 없고 해상도에 상관없이 선명하다.
  *
  * 색은 흰기가 많은 아주 밝은 톤으로만 쓰고, 한 테마는 한 계열 안에서

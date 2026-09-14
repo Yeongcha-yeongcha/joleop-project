@@ -198,12 +198,12 @@ function saveMockProfiles(profiles: ChildProfile[]) {
 function profileImageUrl(id?: number | null): string {
   const imageId = id ?? Math.floor(Math.random() * 6) + 1
   const assets = [
-    '/images/onboarding/lion-wave.png',
-    '/images/onboarding/lion-thinking.png',
-    '/images/onboarding/lion-backpack.png',
-    '/images/onboarding/lion-flag.png',
-    '/images/onboarding/lion-reading.png',
-    '/images/onboarding/lion-headphones.png',
+    '/images/onboarding/lion-wave.webp',
+    '/images/onboarding/lion-thinking.webp',
+    '/images/onboarding/lion-backpack.webp',
+    '/images/onboarding/lion-flag.webp',
+    '/images/onboarding/lion-reading.webp',
+    '/images/onboarding/lion-headphones.webp',
   ]
   return assets[(imageId - 1) % assets.length]
 }
@@ -305,10 +305,13 @@ export async function fetchBooks(): Promise<Book[]> {
 function publicCoverImageUrl(url?: string | null): string | undefined {
   if (!url) return undefined
   const publicImagesIndex = url.indexOf("/frontend/public/images/")
+  let resolvedUrl = url
   if (publicImagesIndex >= 0) {
-    return `/images/${url.slice(publicImagesIndex + "/frontend/public/images/".length)}`
+    resolvedUrl = `/images/${url.slice(publicImagesIndex + "/frontend/public/images/".length)}`
   }
-  return url
+  return resolvedUrl.startsWith('/images/')
+    ? resolvedUrl.replace(/\.png(?=$|[?#])/i, '.webp')
+    : resolvedUrl
 }
 
 function toFrontendBook(book: BackendBook): Book {
@@ -1016,6 +1019,10 @@ export async function startOrResumeLearningSession(bookId: string, chapterNumber
 
 export async function fetchLearningSession(sessionId: number): Promise<LearningSessionData> {
   return get<LearningSessionData>(`/learning-sessions/${sessionId}`, getProfileToken())
+}
+
+export async function skipLearningCourse(sessionId: number): Promise<LearningSessionData> {
+  return patch<LearningSessionData>(`/learning-sessions/${sessionId}/skip`, {}, getProfileToken())
 }
 
 export async function fetchReadingCourse(sessionId: number): Promise<ReadingData> {

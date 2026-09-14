@@ -69,7 +69,7 @@
      42% = 103px, 여기에 이미지 비율 h/w = 1.098 을 맞추면 폭 94px. */
   width: 94px;
   height: 42%;
-  background: url('/images/window.png') center / contain no-repeat;
+  background: url('/images/window.webp') center / contain no-repeat;
 }
 
 .previewBackdrop::after {

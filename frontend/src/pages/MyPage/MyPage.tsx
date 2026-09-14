@@ -29,13 +29,13 @@ import styles from './MyPage.module.css'
 
 const avatars = [
   // 기본 캐릭터. 홈 화면 마스코트와 같은 에셋을 쓴다.
-  '/images/HomePopo.png',
-  '/images/onboarding/lion-wave.png',
-  '/images/onboarding/lion-thinking.png',
-  '/images/onboarding/lion-backpack.png',
-  '/images/onboarding/lion-flag.png',
-  '/images/onboarding/lion-reading.png',
-  '/images/onboarding/lion-headphones.png',
+  '/images/HomePopo.webp',
+  '/images/onboarding/lion-wave.webp',
+  '/images/onboarding/lion-thinking.webp',
+  '/images/onboarding/lion-backpack.webp',
+  '/images/onboarding/lion-flag.webp',
+  '/images/onboarding/lion-reading.webp',
+  '/images/onboarding/lion-headphones.webp',
 ]
 
 const AVATAR_COST = 50

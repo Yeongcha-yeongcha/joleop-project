@@ -54,6 +54,22 @@ async def get_learning_session(
     )
 
 
+@router.patch("/{sessionId}/skip", tags=["Learning"])
+async def skip_current_course(
+    sessionId: int,
+    current_profile: ChildProfile = Depends(get_current_profile),
+    learning_session_service: LearningSessionService = Depends(
+        get_learning_session_service
+    ),
+) -> dict:
+    return success_response(
+        await learning_session_service.skip_current_course(
+            profile=current_profile,
+            session_id=sessionId,
+        )
+    )
+
+
 @router.get("/{sessionId}/reading", tags=["Learning - Reading"])
 async def get_reading(
     sessionId: int,
