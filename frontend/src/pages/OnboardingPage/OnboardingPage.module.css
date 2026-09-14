@@ -38,15 +38,15 @@
 }
 
 .scene_tree {
-  background-image: url('/images/onboarding/bg-tree-house.png');
+  background-image: url('/images/onboarding/bg-tree-house.webp');
 }
 
 .scene_meadow {
-  background-image: url('/images/onboarding/bg-meadow-house.png');
+  background-image: url('/images/onboarding/bg-meadow-house.webp');
 }
 
 .scene_castle {
-  background-image: url('/images/onboarding/bg-castle-path.png');
+  background-image: url('/images/onboarding/bg-castle-path.webp');
 }
 
 .sceneLeaving {

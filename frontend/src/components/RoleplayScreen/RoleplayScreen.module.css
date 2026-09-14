@@ -129,7 +129,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-image: url('/images/Roleplaying_Background.png');
+  background-image: url('/images/Roleplaying_Background.webp');
   background-size: cover;
   background-position: center;
 }

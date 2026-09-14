@@ -44,7 +44,7 @@ export default function ProfilePinPage() {
 
   return (
     <main className={styles.page}>
-      <img src="/images/onboarding/lion-magnifier.png" alt="" className={styles.lion} />
+      <img src="/images/onboarding/lion-magnifier.webp" alt="" className={styles.lion} />
       <h1>Type Your PIN</h1>
       <form onSubmit={submit} className={styles.form}>
         <input

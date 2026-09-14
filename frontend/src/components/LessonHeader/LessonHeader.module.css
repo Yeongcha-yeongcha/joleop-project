@@ -24,9 +24,56 @@
 }
 
 .title {
+  min-width: 0;
+  flex: 1;
   font-size: 15px;
   font-weight: 500;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skipBtn {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ff9700;
+  box-shadow: 0 4px 0 #d87900;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.skipBtn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #d87900;
+}
+
+.skipBtn:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.skipIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(1px);
+}
+
+.skipIcon span {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 9px solid #fff;
+}
+
+.skipIcon span + span {
+  margin-left: -2px;
 }
 
 .progressTrack {

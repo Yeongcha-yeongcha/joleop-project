@@ -134,11 +134,11 @@ export default function HomePage() {
         <span className={styles.footShadow} aria-hidden="true" />
         <div className={styles.mascotStage}>
           <img
-            src="/images/HomePopo.png"
+            src="/images/HomePopo.webp"
             alt=""
             className={styles.mascot}
             onError={(event) => {
-              event.currentTarget.src = '/images/HomeBearHands.png'
+              event.currentTarget.src = '/images/HomeBearHands.webp'
             }}
           />
           {popoCustomization.hat && <span className={`${styles.popoHat} ${styles[`hat_${popoCustomization.hat}`]}`} />}
@@ -151,7 +151,7 @@ export default function HomePage() {
             onClick={() => navigate('/books')}
             aria-label={selectedBook ? 'Change book' : 'Pick a book'}
           >
-            <img src={selectedBookCover || '/images/BookBtn_unselected.png'} alt="" />
+            <img src={selectedBookCover || '/images/BookBtn_unselected.webp'} alt="" />
           </button>
         </div>
 
@@ -185,7 +185,7 @@ export default function HomePage() {
           aria-label={selectedBook ? 'Change book' : 'Pick a book'}
         >
           <img
-            src={selectedBookCover || '/images/BookBtn_unselected.png'}
+            src={selectedBookCover || '/images/BookBtn_unselected.webp'}
             alt=""
             className={styles.bookCover}
           />

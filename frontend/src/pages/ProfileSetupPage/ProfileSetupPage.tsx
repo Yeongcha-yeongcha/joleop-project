@@ -20,7 +20,7 @@ export default function ProfileSetupPage() {
 
   return (
     <main className={styles.page}>
-      <img src="/images/onboarding/lion-flag.png" alt="" className={styles.lion} />
+      <img src="/images/onboarding/lion-flag.webp" alt="" className={styles.lion} />
       <h1>Make a New User</h1>
       <p>First, choose a 4-number PIN.</p>
       <form onSubmit={submit} className={styles.form}>

@@ -142,6 +142,46 @@ class LearningSessionService:
         )
         return self.session_detail_response(learning_session)
 
+    async def skip_current_course(
+        self,
+        *,
+        profile: ChildProfile,
+        session_id: int,
+    ) -> dict:
+        learning_session = await self.get_owned_session(
+            profile_id=profile.profile_id,
+            session_id=session_id,
+            for_update=True,
+        )
+        next_courses = {
+            CourseType.READING: (CourseType.REPEAT, 2),
+            CourseType.REPEAT: (CourseType.DESCRIPTION, 3),
+            CourseType.DESCRIPTION: (CourseType.ROLEPLAY, 4),
+        }
+        next_course = next_courses.get(learning_session.current_course)
+        if next_course is None:
+            raise AppException(status_code=409, detail="마지막 코스는 건너뛸 수 없습니다.")
+
+        skipped_course = learning_session.current_course
+        now = datetime.now(UTC)
+        progress = await self._get_or_create_book_progress(
+            profile_id=profile.profile_id,
+            book_id=learning_session.book_id,
+            now=now,
+        )
+        learning_session.current_course = next_course[0]
+        learning_session.current_course_number = next_course[1]
+        learning_session.current_step = 1
+        learning_session.total_progress = self.progress_service.COURSE_RANGES[skipped_course][1]
+        learning_session.last_studied_at = now
+        progress.progress = learning_session.total_progress
+        progress.unlocked = True
+        progress.last_studied_at = now
+
+        await self.session.commit()
+        await self.session.refresh(learning_session)
+        return self.session_detail_response(learning_session)
+
     async def get_reading(self, *, profile: ChildProfile, session_id: int) -> dict:
         learning_session = await self.get_owned_session(
             profile_id=profile.profile_id,

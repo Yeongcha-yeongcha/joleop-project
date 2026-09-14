@@ -72,12 +72,12 @@ export default function AuthPage() {
   return (
     <main className={styles.page}>
       <div className={styles.backgroundLion} aria-hidden="true">
-        <img src="/images/onboarding/lion-wave.png" alt="" />
+        <img src="/images/onboarding/lion-wave.webp" alt="" />
       </div>
 
       <section className={styles.card}>
         <header className={styles.header}>
-          <img src="/images/onboarding/lion-headphones.png" alt="" />
+          <img src="/images/onboarding/lion-headphones.webp" alt="" />
           <h1>{mode === 'signup' ? 'Join Lion!' : 'Hello Again!'}</h1>
           <p>{mode === 'signup' ? 'Create a parent account.' : 'Welcome back, parent.'}</p>
         </header>

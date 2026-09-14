@@ -29,12 +29,12 @@ class DemoBook:
 
 
 BOOK_SELECT_IMAGES = [
-    "/images/BookSelect1.png",
-    "/images/BookSelect2.png",
-    "/images/BookSelect3.png",
-    "/images/BookSelect4.png",
-    "/images/BookSelect5.png",
-    "/images/BookSelect6.png",
+    "/images/BookSelect1.webp",
+    "/images/BookSelect2.webp",
+    "/images/BookSelect3.webp",
+    "/images/BookSelect4.webp",
+    "/images/BookSelect5.webp",
+    "/images/BookSelect6.webp",
 ]
 
 
