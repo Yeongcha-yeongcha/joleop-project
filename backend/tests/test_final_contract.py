@@ -439,6 +439,32 @@ async def test_complete_requires_finished_roleplay_mission(roleplay_context) -> 
 
 
 @pytest.mark.asyncio
+async def test_complete_accepts_courses_skipped_before_finished_roleplay(
+    roleplay_context,
+) -> None:
+    roleplay_context["store"].attempts.clear()
+    for _ in range(3):
+        await create_roleplay_message(
+            128,
+            audio=FakeUploadFile(),
+            mission_id=401,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+            speech_to_text_service=roleplay_context["speech"],
+        )
+
+    response = await complete_learning_session(
+        128,
+        current_profile=roleplay_context["profile"],
+        learning_session_service=roleplay_context["service"],
+    )
+
+    assert response["data"]["status"] == "COMPLETED"
+    assert response["data"]["totalScore"] == 30
+    assert response["data"]["stars"] == 0
+
+
+@pytest.mark.asyncio
 async def test_result_requires_completed_session(roleplay_context) -> None:
     with pytest.raises(Exception) as exc:
         await get_learning_session_result(

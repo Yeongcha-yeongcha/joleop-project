@@ -682,6 +682,10 @@ class LearningSessionService:
         now = datetime.now(UTC)
         attempts = await self._attempts(learning_session.session_id)
         roleplay_messages = await self._roleplay_messages(learning_session.session_id)
+        attempts = self._include_skipped_course_attempts(
+            learning_session=learning_session,
+            attempts=attempts,
+        )
         score_result = self.final_score_service.calculate(
             attempts=attempts,
             roleplay_messages=roleplay_messages,
@@ -731,6 +735,36 @@ class LearningSessionService:
             "rewards": rewards,
             "reviewCardsCreated": review_cards_created,
         }
+
+    @staticmethod
+    def _include_skipped_course_attempts(
+        *,
+        learning_session: LearningSession,
+        attempts: list[LearningAttempt],
+    ) -> list[LearningAttempt]:
+        if (
+            learning_session.current_course != CourseType.ROLEPLAY
+            or learning_session.total_progress < 100
+        ):
+            return attempts
+
+        completed_courses = {attempt.course_type for attempt in attempts}
+        scored_attempts = list(attempts)
+        for course_type in (CourseType.REPEAT, CourseType.DESCRIPTION):
+            if course_type in completed_courses:
+                continue
+            scored_attempts.append(
+                LearningAttempt(
+                    session_id=learning_session.session_id,
+                    course_type=course_type,
+                    question_id=0,
+                    transcript="",
+                    score=0,
+                    passed=False,
+                    feedback="Skipped",
+                )
+            )
+        return scored_attempts
 
     async def get_result(self, *, profile: ChildProfile, session_id: int) -> dict:
         learning_session = await self.get_owned_session(
