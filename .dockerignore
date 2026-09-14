@@ -8,7 +8,9 @@
 **/.venv
 **/node_modules
 frontend/dist
-outputs
+outputs/*
+!outputs/run_20260903_114105_819434/
+!outputs/run_20260903_114105_819434/**
 images
 backend/.tts_cache
 .env

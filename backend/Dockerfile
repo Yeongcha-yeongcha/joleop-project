@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY backend /app/backend
 COPY ai /app/ai
 COPY shared /app/shared
+COPY outputs/run_20260903_114105_819434 /app/outputs/run_20260903_114105_819434
 
 WORKDIR /app/backend
 
