@@ -81,6 +81,25 @@ def blank_text_to_sentence(value: str | None) -> str | None:
     return sentence
 
 
+def page_image_url(
+    *,
+    difficulty: Difficulty,
+    lesson_number: int,
+    page_number: int | None,
+) -> str | None:
+    if page_number is None or lesson_number not in {1, 2}:
+        return None
+    level = {
+        Difficulty.BEGINNER: 1,
+        Difficulty.INTERMEDIATE: 2,
+        Difficulty.ADVANCED: 3,
+    }[difficulty]
+    return (
+        f"/images/pages/level{level}/lesson{lesson_number:02d}"
+        f"/p{page_number:02d}.webp"
+    )
+
+
 async def next_display_order(session: AsyncSession) -> int:
     result = await session.execute(select(func.max(Book.display_order)))
     return int(result.scalar_one_or_none() or 0) + 1
@@ -171,13 +190,18 @@ async def replace_book_content(
             book.lesson_name = f"Lesson {current_lesson}"
         reading_step = repeat_step = description_step = 1
         for page_number, text in page_items(lesson):
+            image_url = page_image_url(
+                difficulty=book.difficulty,
+                lesson_number=current_lesson,
+                page_number=page_number,
+            )
             session.add(
                 ReadingChunk(
                     book_id=book.book_id,
                     chapter_number=current_lesson,
                     step=reading_step,
                     text=text,
-                    image_url=None,
+                    image_url=image_url,
                 )
             )
             reading_count += 1
@@ -189,7 +213,7 @@ async def replace_book_content(
                     chapter_number=current_lesson,
                     step=repeat_step,
                     target_text=text,
-                    image_url=None,
+                    image_url=image_url,
                 )
             )
             repeat_count += 1
@@ -204,6 +228,7 @@ async def replace_book_content(
         for scene in (description_item or {}).get("description_scenes", []):
             review_scene = review_by_scene.get(scene.get("scene_number")) or {}
             source_text = normalize_blank_text(review_scene.get("blank_text")) or scene.get("text")
+            scene_page_number = scene.get("page_number")
             session.add(
                 DescriptionQuestion(
                     book_id=book.book_id,
@@ -212,8 +237,12 @@ async def replace_book_content(
                     question_type=question_type(scene.get("desc_type")),
                     instruction=scene.get("guide_hint") or "Look at the picture and answer.",
                     sentence=scene.get("sentence") or blank_text_to_sentence(review_scene.get("blank_text")),
-                    image_url=scene.get("image_path") or None,
-                    page_number=scene.get("page_number"),
+                    image_url=scene.get("image_path") or page_image_url(
+                        difficulty=book.difficulty,
+                        lesson_number=current_lesson,
+                        page_number=scene_page_number,
+                    ),
+                    page_number=scene_page_number,
                     source_text=source_text,
                     blank_word=review_scene.get("blank_word") or scene.get("blank_word"),
                     answer_sentence=scene.get("answer_sentence"),
