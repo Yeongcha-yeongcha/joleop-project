@@ -592,12 +592,12 @@ class ProfileCustomization(UpdatedTimestampMixin, Base):
     )
     selected_theme_id: Mapped[str] = mapped_column(
         String,
-        server_default=text("'cream-book-room'"),
+        server_default=text("'cream-gradient'"),
         nullable=False,
     )
     unlocked_theme_ids: Mapped[list[str]] = mapped_column(
         JSONB,
-        server_default=text("'[\"cream-book-room\"]'::jsonb"),
+        server_default=text("'[\"cream-gradient\"]'::jsonb"),
         nullable=False,
     )
     selected_popo: Mapped[dict[str, Any]] = mapped_column(

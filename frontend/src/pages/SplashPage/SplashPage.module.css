@@ -86,3 +86,15 @@
     transform: scale(1);
   }
 }
+
+@media (min-width: 700px) {
+  .logoMark {
+    width: 220px;
+    height: 220px;
+  }
+
+  .logoMark img {
+    width: 168px;
+    height: 168px;
+  }
+}

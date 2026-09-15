@@ -215,3 +215,22 @@
   background: #e5533d;
   box-shadow: 0 4px 0 #ad321f;
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding: 58px 48px 40px;
+  }
+
+  .grid {
+    width: 100%;
+    max-width: 760px;
+    margin-right: auto;
+    margin-left: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 34px 28px;
+  }
+
+  .settingsPanel {
+    width: min(100%, 520px);
+  }
+}

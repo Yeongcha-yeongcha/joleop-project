@@ -64,6 +64,12 @@ html, body {
   }
 }
 
+@media (min-width: 700px) and (max-width: 1024px) {
+  body {
+    background: white;
+  }
+}
+
 #root {
   height: 100%;
   overflow: hidden;

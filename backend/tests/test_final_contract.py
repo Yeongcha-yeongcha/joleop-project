@@ -23,6 +23,8 @@ from app.models import (
     LearningSession,
     LearningSessionStatus,
     PointTransaction,
+    ReadingChunk,
+    RepeatQuestion,
     ReviewCard,
     RoleplayMessage,
     RoleplayMission,
@@ -183,6 +185,8 @@ class FakeRoleplayStore:
                 ]
             )
         if entity is DescriptionQuestion:
+            return FakeResult(values=[])
+        if entity in {RepeatQuestion, ReadingChunk}:
             return FakeResult(values=[])
         if entity is ReviewCard:
             return FakeResult(None)

@@ -211,7 +211,13 @@ function profileImageUrl(id?: number | null): string {
 // ─── 사용자 통계  GET /users/me/stats ───────────────────
 
 export async function fetchUserStats(): Promise<UserStats> {
-  if (BASE_URL && getProfileToken()) return get('/users/me/stats', getProfileToken())
+  if (BASE_URL && getProfileToken()) {
+    const [stats, customization] = await Promise.all([
+      get<UserStats>('/users/me/stats', getProfileToken()),
+      get<CustomizationData>('/customization', getProfileToken()),
+    ])
+    return { ...stats, hearts: customization.availableStars }
+  }
   throw new Error('Backend API is required to load user stats.')
 }
 
@@ -223,7 +229,7 @@ export async function fetchHome(): Promise<{ currentBook: Book | null; stats: Us
       currentBook: data.currentBook ? toFrontendCurrentBook(data.currentBook) : null,
       stats: {
         streak: data.status.streakDays,
-        hearts: data.status.hearts,
+        hearts: data.customization?.availableStars ?? data.status.hearts,
         xpPercent: data.status.energy / maxEnergy,
         energy: data.status.energy,
         maxEnergy: data.status.maxEnergy,

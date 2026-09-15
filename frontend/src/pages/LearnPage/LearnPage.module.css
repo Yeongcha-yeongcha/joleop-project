@@ -258,6 +258,40 @@
   box-shadow: 0 3px 0 #d87900;
 }
 
+@media (min-width: 700px) {
+  .illustration {
+    height: min(48dvh, 520px);
+    aspect-ratio: auto;
+  }
+
+  .audioControls {
+    grid-template-columns: 90px minmax(280px, 420px) 100px;
+    justify-content: center;
+    gap: 14px;
+    padding: 14px 32px;
+  }
+
+  .textArea {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 30px 56px;
+  }
+
+  .bottomArea {
+    padding-bottom: calc(42px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .btnImg {
+    max-width: 440px;
+  }
+
+  .resultCard {
+    width: min(100%, 460px);
+    padding: 30px 28px 26px;
+  }
+}
+
 @keyframes resultPop {
   from {
     opacity: 0;

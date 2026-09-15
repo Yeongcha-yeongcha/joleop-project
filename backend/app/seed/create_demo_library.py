@@ -19,6 +19,7 @@ from app.models import (
     RoleplayMission,
     UserBookProgress,
 )
+from app.seed.import_ai_content import page_image_url
 
 
 @dataclass(frozen=True)
@@ -181,30 +182,45 @@ async def _replace_content(session, book: Book, snapshot: dict) -> dict[str, int
         "roleplay_missions": 0,
     }
     for chunk in snapshot["reading"]:
+        image_url = page_image_url(
+            difficulty=book.difficulty,
+            lesson_number=chunk.chapter_number,
+            page_number=chunk.step,
+        )
         session.add(
             ReadingChunk(
                 book_id=book.book_id,
                 chapter_number=chunk.chapter_number,
                 step=chunk.step,
                 text=chunk.text,
-                image_url=chunk.image_url,
+                image_url=image_url or chunk.image_url,
             )
         )
         counts["reading_chunks"] += 1
 
     for question in snapshot["repeat"]:
+        image_url = page_image_url(
+            difficulty=book.difficulty,
+            lesson_number=question.chapter_number,
+            page_number=question.step,
+        )
         session.add(
             RepeatQuestion(
                 book_id=book.book_id,
                 chapter_number=question.chapter_number,
                 step=question.step,
                 target_text=question.target_text,
-                image_url=question.image_url,
+                image_url=image_url or question.image_url,
             )
         )
         counts["repeat_questions"] += 1
 
     for question in snapshot["description"]:
+        image_url = page_image_url(
+            difficulty=book.difficulty,
+            lesson_number=question.chapter_number,
+            page_number=question.page_number,
+        )
         session.add(
             DescriptionQuestion(
                 book_id=book.book_id,
@@ -213,7 +229,7 @@ async def _replace_content(session, book: Book, snapshot: dict) -> dict[str, int
                 question_type=question.question_type,
                 instruction=question.instruction,
                 sentence=question.sentence,
-                image_url=question.image_url,
+                image_url=image_url or question.image_url,
                 page_number=question.page_number,
                 source_text=question.source_text,
                 blank_word=question.blank_word,

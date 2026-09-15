@@ -12,6 +12,8 @@ from app.models import (
     DescriptionQuestion,
     LearningSession,
     LearningSessionStatus,
+    ReadingChunk,
+    RepeatQuestion,
     ReviewAttempt,
     ReviewCard,
     ReviewCardType,
@@ -39,6 +41,9 @@ class ReviewService:
         ReviewCardType.CHAT,
     )
     ROLEPLAY_KEYWORD_PREFIX = "roleplay:"
+    MIN_CHAPTER_REVIEW_SENTENCES = 3
+    REPEAT_SOURCE_ID_OFFSET = 1_000_000_000_000
+    READING_SOURCE_ID_OFFSET = 2_000_000_000_000
 
     def __init__(self, *, session: AsyncSession) -> None:
         self.session = session
@@ -64,20 +69,89 @@ class ReviewService:
             )
         ).scalars().all()
 
-        created = 0
+        sources: list[tuple[int, str, str, str]] = []
+        seen_content: set[tuple[str, str]] = set()
+
+        def add_source(
+            source_id: int,
+            source_sentence: str | None,
+            cloze_sentence: str | None,
+            keyword: str | None,
+        ) -> None:
+            sentence = (source_sentence or "").strip()
+            answer = (keyword or "").strip()
+            if not sentence or not answer:
+                return
+            content_key = (self._normalize_review_text(sentence), answer.casefold())
+            if content_key in seen_content:
+                return
+            seen_content.add(content_key)
+            cloze = cloze_sentence or self._blank_keyword(sentence, answer)
+            sources.append((source_id, sentence, cloze.strip(), answer))
+
         for question in questions:
             source_sentence = question.source_text or question.answer_sentence or question.sentence
             keyword = question.blank_word or self._keyword_from_sentence(source_sentence or "")
-            if not source_sentence or not keyword:
-                continue
-            cloze_sentence = question.sentence or self._blank_keyword(source_sentence, keyword)
-            for card_type in (ReviewCardType.WORD, ReviewCardType.SENTENCE, ReviewCardType.CHAT):
+            add_source(
+                question.question_id,
+                source_sentence,
+                question.sentence,
+                keyword,
+            )
+
+        if len(sources) < self.MIN_CHAPTER_REVIEW_SENTENCES:
+            repeat_questions = list((
+                await self.session.execute(
+                    select(RepeatQuestion)
+                    .where(
+                        RepeatQuestion.book_id == book_id,
+                        RepeatQuestion.chapter_number == chapter_number,
+                    )
+                    .order_by(RepeatQuestion.step)
+                )
+            ).scalars().all())
+            for question in repeat_questions:
+                keyword = self._keyword_from_sentence(question.target_text)
+                add_source(
+                    -(self.REPEAT_SOURCE_ID_OFFSET + question.question_id),
+                    question.target_text,
+                    None,
+                    keyword,
+                )
+                if len(sources) >= self.MIN_CHAPTER_REVIEW_SENTENCES:
+                    break
+
+        if len(sources) < self.MIN_CHAPTER_REVIEW_SENTENCES:
+            reading_chunks = list((
+                await self.session.execute(
+                    select(ReadingChunk)
+                    .where(
+                        ReadingChunk.book_id == book_id,
+                        ReadingChunk.chapter_number == chapter_number,
+                    )
+                    .order_by(ReadingChunk.step)
+                )
+            ).scalars().all())
+            for chunk in reading_chunks:
+                keyword = self._keyword_from_sentence(chunk.text)
+                add_source(
+                    -(self.READING_SOURCE_ID_OFFSET + chunk.chunk_id),
+                    chunk.text,
+                    None,
+                    keyword,
+                )
+                if len(sources) >= self.MIN_CHAPTER_REVIEW_SENTENCES:
+                    break
+
+        created = 0
+        for source_id, source_sentence, cloze_sentence, keyword in sources:
+            for card_type in (ReviewCardType.WORD, ReviewCardType.SENTENCE):
                 if await self._create_card_if_missing(
                     profile_id=profile_id,
                     book_id=book_id,
                     chapter_number=chapter_number,
                     card_type=card_type,
-                    source_question_id=question.question_id,
+                    source_question_id=source_id,
                     source_sentence=source_sentence,
                     cloze_sentence=cloze_sentence,
                     keyword=keyword,
@@ -119,8 +193,7 @@ class ReviewService:
         mode: ReviewMode = ReviewMode.SMART_MIX,
     ) -> dict:
         now = datetime.now(UTC)
-        if mode in {ReviewMode.SMART_MIX, ReviewMode.STORY_TALK}:
-            await self._ensure_roleplay_review_cards(profile=profile, now=now)
+        await self._ensure_completed_chapter_cards(profile=profile, now=now)
         cards = await self._due_cards_by_mode(
             profile_id=profile.profile_id,
             limit=limit,
@@ -139,6 +212,7 @@ class ReviewService:
 
     async def summary(self, *, profile: ChildProfile) -> dict:
         now = datetime.now(UTC)
+        await self._ensure_completed_chapter_cards(profile=profile, now=now)
         total_count = await self.session.scalar(
             select(func.count()).select_from(ReviewCard).where(ReviewCard.profile_id == profile.profile_id)
         )
@@ -184,7 +258,7 @@ class ReviewService:
 
     async def story_talk_prompt(self, *, profile: ChildProfile, limit: int = 5) -> dict:
         now = datetime.now(UTC)
-        await self._ensure_roleplay_review_cards(profile=profile, now=now)
+        await self._ensure_completed_chapter_cards(profile=profile, now=now)
         cards = await self._due_cards_by_mode(
             profile_id=profile.profile_id,
             limit=limit,
@@ -495,7 +569,7 @@ class ReviewService:
                 if card.source_question_id is not None:
                     seen_sources.add(card.source_question_id)
         if len(selected) < limit:
-            rest = await self._review_cards(
+            rest = await self._due_cards(
                 profile_id=profile_id,
                 limit=limit - len(selected),
                 now=now,
@@ -522,6 +596,7 @@ class ReviewService:
             .where(
                 ReviewCard.profile_id == profile_id,
                 ReviewCard.card_type == card_type,
+                ReviewCard.next_review_at <= now,
             )
             .order_by(ReviewCard.next_review_at, ReviewCard.card_id)
             .limit(1)
@@ -566,57 +641,11 @@ class ReviewService:
             limit=limit,
             exclude_source_question_ids=exclude_source_question_ids,
         )
-        if len(due_cards) >= limit:
-            return due_cards
-        seen = {card.card_id for card in due_cards}
-        if exclude_ids:
-            seen.update(exclude_ids)
-        seen_sources = {card.source_question_id for card in due_cards if card.source_question_id is not None}
-        if exclude_source_question_ids:
-            seen_sources.update(exclude_source_question_ids)
-        upcoming_cards = await self._review_cards(
-            profile_id=profile_id,
-            limit=limit - len(due_cards),
-            now=now,
-            card_types=card_types,
-            exclude_ids=seen,
-            exclude_source_question_ids=seen_sources,
-            roleplay_only=roleplay_only,
-        )
-        return due_cards + upcoming_cards
+        return due_cards
 
-    async def _review_cards(
-        self,
-        *,
-        profile_id: int,
-        limit: int,
-        now: datetime,
-        card_types: list[ReviewCardType] | None = None,
-        exclude_ids: set[int] | None = None,
-        exclude_source_question_ids: set[int] | None = None,
-        roleplay_only: bool = False,
-    ) -> list[ReviewCard]:
-        stmt = (
-            select(ReviewCard)
-            .options(selectinload(ReviewCard.book))
-            .where(ReviewCard.profile_id == profile_id)
-            .order_by(ReviewCard.next_review_at, ReviewCard.card_id)
-            .limit(limit * 4)
-        )
-        if card_types:
-            stmt = stmt.where(ReviewCard.card_type.in_(card_types))
-        if roleplay_only:
-            stmt = stmt.where(ReviewCard.keyword.like(f"{self.ROLEPLAY_KEYWORD_PREFIX}%"))
-        if exclude_ids:
-            stmt = stmt.where(ReviewCard.card_id.not_in(exclude_ids))
-        return self._diverse_cards(
-            list((await self.session.execute(stmt)).scalars().all()),
-            limit=limit,
-            exclude_source_question_ids=exclude_source_question_ids,
-        )
-
-    @staticmethod
+    @classmethod
     def _diverse_cards(
+        cls,
         cards: list[ReviewCard],
         *,
         limit: int,
@@ -624,27 +653,32 @@ class ReviewService:
     ) -> list[ReviewCard]:
         excluded_sources = exclude_source_question_ids or set()
         selected: list[ReviewCard] = []
-        deferred: list[ReviewCard] = []
         seen_sources: set[int] = set()
+        seen_content: set[tuple[str, str]] = set()
         for card in cards:
             source_id = card.source_question_id
             if source_id is not None and source_id in excluded_sources:
-                deferred.append(card)
                 continue
             if source_id is not None and source_id in seen_sources:
-                deferred.append(card)
+                continue
+            content_key = cls._review_content_key(card)
+            if content_key in seen_content:
                 continue
             selected.append(card)
             if source_id is not None:
                 seen_sources.add(source_id)
+            seen_content.add(content_key)
             if len(selected) >= limit:
                 return selected
-        for card in deferred:
-            if card not in selected:
-                selected.append(card)
-            if len(selected) >= limit:
-                break
         return selected
+
+    @classmethod
+    def _review_content_key(cls, card: ReviewCard) -> tuple[str, str]:
+        if card.card_type == ReviewCardType.WORD:
+            content = f"{card.cloze_sentence}|{card.keyword}"
+        else:
+            content = card.source_sentence
+        return card.card_type.value, cls._normalize_review_text(content)
 
     async def _recent_cards(
         self,
@@ -742,7 +776,7 @@ class ReviewService:
                 "imageUrl": mission.character_image_url,
             }
 
-    async def _ensure_roleplay_review_cards(self, *, profile: ChildProfile, now: datetime) -> None:
+    async def _ensure_completed_chapter_cards(self, *, profile: ChildProfile, now: datetime) -> None:
         completed_sessions = list((
             await self.session.execute(
                 select(LearningSession.book_id, LearningSession.chapter_number)
@@ -755,28 +789,12 @@ class ReviewService:
         ).all())
         created = 0
         for book_id, chapter_number in completed_sessions:
-            missions = list((
-                await self.session.execute(
-                    select(RoleplayMission).where(
-                        RoleplayMission.book_id == book_id,
-                        RoleplayMission.chapter_number == chapter_number,
-                    )
-                )
-            ).scalars().all())
-            for mission in missions:
-                context = roleplay_runtime_context(mission)
-                if await self._create_card_if_missing(
-                    profile_id=profile.profile_id,
-                    book_id=book_id,
-                    chapter_number=chapter_number,
-                    card_type=ReviewCardType.CHAT,
-                    source_question_id=-mission.mission_id,
-                    source_sentence=context["situation"],
-                    cloze_sentence=context["opening_message"],
-                    keyword=f"{self.ROLEPLAY_KEYWORD_PREFIX}{mission.mission_id}",
-                    due_at=now,
-                ):
-                    created += 1
+            created += await self.enqueue_chapter_cards(
+                profile_id=profile.profile_id,
+                book_id=book_id,
+                chapter_number=chapter_number,
+                due_at=now,
+            )
         if created:
             await self.session.commit()
 
@@ -817,6 +835,10 @@ class ReviewService:
     @staticmethod
     def _blank_keyword(sentence: str, keyword: str) -> str:
         return sentence.replace(keyword, "____", 1)
+
+    @staticmethod
+    def _normalize_review_text(value: str) -> str:
+        return " ".join(value.casefold().split())
 
     @staticmethod
     def _keyword_from_sentence(sentence: str) -> str:

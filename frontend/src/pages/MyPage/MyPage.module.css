@@ -711,3 +711,20 @@
     min-height: 116px;
   }
 }
+
+@media (min-width: 700px) {
+  .body {
+    width: 100%;
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 24px 32px calc(36px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .avatarGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pinModal {
+    width: min(100%, 420px);
+  }
+}

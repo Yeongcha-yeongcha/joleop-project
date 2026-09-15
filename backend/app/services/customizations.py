@@ -4,30 +4,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import AppException
 from app.models import ChildProfile, PointTransaction, ProfileCustomization
 
-DEFAULT_THEME_ID = "cream-book-room"
+DEFAULT_THEME_ID = "cream-gradient"
 
 THEME_PRICES = {
-    "cream-book-room": 0,
-    "sky-dream-room": 250,
-    "forest-cozy-room": 250,
-    "sunset-lounge": 250,
-    "night-star-room": 250,
-    "ocean-blue-room": 250,
-    "rainbow-room": 250,
-    "mint-garden-room": 250,
-    "winter-snow-room": 250,
-    "space-adventure-room": 250,
+    "cream-gradient": 0,
+    "pink-stripe": 180,
+    "mint-dot": 180,
+    "lavender-wave": 180,
 }
 
 POPO_ITEMS = {
     "sun-cap": ("hat", 80),
     "star-cap": ("hat", 120),
-    "round-glasses": ("glasses", 90),
-    "cool-glasses": ("glasses", 130),
-    "star-necklace": ("necklace", 90),
-    "heart-necklace": ("necklace", 110),
-    "blue-hoodie": ("outfit", 150),
-    "orange-vest": ("outfit", 150),
+    "heart-sunglass": ("glasses", 90),
+    "cool-sunglass": ("glasses", 130),
+    "rainbow-necklace": ("necklace", 90),
+    "pearl-necklace": ("necklace", 110),
 }
 
 AVATAR_COST = 50
@@ -107,6 +99,26 @@ class CustomizationService:
         )
         customization = result.scalar_one_or_none()
         if customization is not None:
+            if customization.selected_theme_id not in THEME_PRICES:
+                customization.selected_theme_id = DEFAULT_THEME_ID
+            customization.unlocked_theme_ids = list(dict.fromkeys([
+                DEFAULT_THEME_ID,
+                *(
+                    theme_id
+                    for theme_id in self._string_list(customization.unlocked_theme_ids)
+                    if theme_id in THEME_PRICES
+                ),
+            ]))
+            customization.selected_popo = {
+                kind: item_id
+                for kind, item_id in (customization.selected_popo or {}).items()
+                if item_id in POPO_ITEMS and POPO_ITEMS[item_id][0] == kind
+            }
+            customization.unlocked_popo_item_ids = [
+                item_id
+                for item_id in self._string_list(customization.unlocked_popo_item_ids)
+                if item_id in POPO_ITEMS
+            ]
             return customization
 
         current_avatar_index = max((profile.profile_image_id or 1) - 1, 0)

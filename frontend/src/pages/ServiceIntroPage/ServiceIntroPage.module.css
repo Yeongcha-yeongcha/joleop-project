@@ -116,3 +116,28 @@
   transform: translateY(3px);
   box-shadow: 0 3px 0 rgba(155, 87, 0, 0.24);
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding: 56px 64px 48px;
+  }
+
+  .imageBubble {
+    width: 240px;
+    height: 240px;
+  }
+
+  .imageBubble img {
+    width: 186px;
+    height: 186px;
+  }
+
+  .copy p {
+    max-width: 520px;
+  }
+
+  .primaryButton {
+    width: min(100%, 520px);
+    justify-self: center;
+  }
+}

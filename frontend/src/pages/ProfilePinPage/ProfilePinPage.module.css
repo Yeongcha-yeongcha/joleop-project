@@ -100,3 +100,21 @@
 .form > button:disabled {
   opacity: 0.55;
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding-top: 72px;
+  }
+
+  .form {
+    max-width: 420px;
+  }
+
+  .keypad {
+    width: 340px;
+  }
+
+  .keypad button {
+    height: 66px;
+  }
+}

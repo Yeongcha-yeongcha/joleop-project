@@ -64,6 +64,7 @@ export default function HomePage() {
       if (usesBackendApi()) {
         fetchHome()
           .then((home) => {
+            useAppStore.setState({ userStats: home.stats })
             if (home.customization) {
               setSelectedThemeId(home.customization.selectedThemeId)
               setPopoCustomization(home.customization.selectedPopo)
@@ -89,13 +90,6 @@ export default function HomePage() {
   const bookBackground = resolveHeroBackgroundImage(selectedBook)
   // 책 표지 배경이 있으면 그 이미지를, 없으면 방 테마의 CSS 패턴을 쓴다.
   const activeBackground = bookBackground ? imageBackground(bookBackground) : selectedTheme
-  const normalizedBookTitle = (selectedBook?.title ?? '').toLowerCase()
-  // 방 테마는 전부 밝은 색이므로, 어두운 배경은 책 표지 배경일 때만 나온다.
-  const isDarkTheme =
-    normalizedBookTitle.includes('dragon') ||
-    normalizedBookTitle.includes('star') ||
-    normalizedBookTitle.includes('moon') ||
-    normalizedBookTitle.includes('space')
 
   // 화면 양옆에 하나씩 떠 있는 허브 버튼. 캐릭터는 가운데를 그대로 쓴다.
   const hubButtons = [
@@ -112,10 +106,7 @@ export default function HomePage() {
 
   return (
     <div
-      className={[
-        styles.page,
-        isDarkTheme ? styles.darkLabels : '',
-      ].join(' ')}
+      className={styles.page}
       style={{
         '--home-background': activeBackground.background,
         '--home-background-size': activeBackground.backgroundSize,
@@ -125,7 +116,7 @@ export default function HomePage() {
       } as CSSProperties}
     >
       <header className={styles.header}>
-        <StatsBar stats={userStats} tone={isDarkTheme ? 'dark' : 'light'} />
+        <StatsBar stats={userStats} tone="light" />
       </header>
       <span className={styles.headerShadow} aria-hidden="true" />
 

@@ -104,6 +104,9 @@ export default function CustomizePage() {
     setPopoCustomization(data.selectedPopo)
     setPreviewPopo(data.selectedPopo)
     setPopoUnlocks(data.unlockedPopoItemIds)
+    useAppStore.setState((state) => ({
+      userStats: { ...state.userStats, hearts: data.availableStars },
+    }))
   }
 
   const chooseTheme = async (theme: HomeBackgroundTheme) => {

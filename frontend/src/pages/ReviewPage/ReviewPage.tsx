@@ -34,8 +34,8 @@ interface ReviewItem {
 }
 
 const modeCards: Array<{ mode: ReviewMode; title: string; description: string }> = [
-  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Fill 3 word blanks, then say 2 words.' },
-  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Build 3 sentences, then say 2 sentences.' },
+  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Alternate 3 word blanks with 2 speaking turns.' },
+  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Alternate 3 sentence builds with 2 speaking turns.' },
   { mode: 'STORY_TALK', title: 'Story Talk', description: 'Replay finished roleplays at the right time.' },
 ]
 
@@ -301,12 +301,17 @@ function reviewItemsFromCards(cards: ReviewCardData[], allowRoleplay: boolean) {
   return filteredCards.map((card, cardIndex) => cardToReviewItem(card, filteredCards, cardIndex))
 }
 
-function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: number): ReviewItem {
-  const kind = cardKind(card, index)
+function cardToReviewItem(
+  card: ReviewCardData,
+  cards: ReviewCardData[],
+  index: number,
+  forcedKind?: ReviewKind,
+): ReviewItem {
+  const kind = forcedKind ?? cardKind(card, index)
   if (kind === 'sentenceOrder' || kind === 'sentenceRepeat') {
     const sentence = sentenceForOrder(card)
     return {
-      id: `review-${card.cardId}`,
+      id: `review-${card.cardId}-${index}-${kind}`,
       cardId: card.cardId,
       kind,
       bookTitle: card.bookTitle || 'Story',
@@ -319,7 +324,7 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     }
   }
   return {
-    id: `review-${card.cardId}`,
+    id: `review-${card.cardId}-${index}-${kind}`,
     cardId: card.cardId,
     kind,
     bookTitle: card.bookTitle || 'Story',
@@ -335,6 +340,37 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     memory: card.memoryScore,
     roleplay: roleplayCardToMission(card),
   }
+}
+
+function fiveStepModeItems(cards: ReviewCardData[], mode: ReviewMode): ReviewItem[] {
+  const matchingCards = cards.filter((card) => (
+    mode === 'WORD_PLAYGROUND' ? card.cardType === 'WORD' : card.cardType === 'SENTENCE'
+  ))
+  const seen = new Set<string>()
+  const modeCards = matchingCards.filter((card) => {
+    const content = mode === 'WORD_PLAYGROUND'
+      ? `${card.clozeSentence}|${card.keyword}`
+      : card.sourceSentence
+    const key = content.toLocaleLowerCase().replace(/\s+/g, ' ').trim()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  if (!modeCards.length) return []
+
+  const kinds: ReviewKind[] = mode === 'WORD_PLAYGROUND'
+    ? ['wordCloze', 'wordRepeat', 'wordCloze', 'wordRepeat', 'wordCloze']
+    : ['sentenceOrder', 'sentenceRepeat', 'sentenceOrder', 'sentenceRepeat', 'sentenceOrder']
+
+  const sourceIndexes = modeCards.length >= 3
+    ? [0, 1, 2, 0, 1]
+    : modeCards.length === 2 ? [0, 1, 1, 0] : [0, 0]
+
+  return sourceIndexes.map((sourceIndex, index) => {
+    const kind = kinds[index]
+    const card = modeCards[sourceIndex]
+    return cardToReviewItem(card, modeCards, index, kind)
+  })
 }
 
 export default function ReviewPage() {
@@ -409,8 +445,8 @@ export default function ReviewPage() {
       setStarted(true)
       return
     }
-    const data = await fetchDueReviews(8, mode)
-    setReviewQueue(reviewItemsFromCards(data.cards, false).slice(0, 5))
+    const data = await fetchDueReviews(5, mode)
+    setReviewQueue(fiveStepModeItems(data.cards, mode))
     setStarted(true)
   }
 
@@ -434,8 +470,21 @@ export default function ReviewPage() {
   const moveNext = (isCorrect: boolean) => {
     if (!current) return
     setResults((prev) => ({ ...prev, [current.id]: isCorrect }))
-    if (current.cardId && usesBackendApi()) {
-      void submitReviewAttempt(current.cardId, isCorrect ? 'GOOD' : 'AGAIN', isCorrect, isCorrect ? 100 : 40)
+    const hasLaterExercise = reviewQueue
+      .slice(index + 1)
+      .some((item) => item.cardId === current.cardId)
+    if (current.cardId && !hasLaterExercise && usesBackendApi()) {
+      const priorResults = reviewQueue
+        .slice(0, index)
+        .filter((item) => item.cardId === current.cardId)
+        .map((item) => results[item.id])
+      const cardCorrect = isCorrect && priorResults.every(Boolean)
+      void submitReviewAttempt(
+        current.cardId,
+        cardCorrect ? 'GOOD' : 'AGAIN',
+        cardCorrect,
+        cardCorrect ? 100 : 40,
+      )
     }
     setFeedback(isCorrect ? 'correct' : 'wrong')
     window.setTimeout(() => {

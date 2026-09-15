@@ -45,6 +45,22 @@
   }
 }
 
+/* iPad portrait/landscape: use the available canvas instead of a phone frame. */
+@media (min-width: 700px) {
+  .app-shell {
+    width: 100vw;
+    max-width: 1024px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+  }
+
+  .app-nav-button {
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    left: 24px;
+    width: 48px;
+    height: 48px;
+  }
+}
+
 /* 페이지 진입 애니메이션 */
 .page-enter {
   width: 100%;

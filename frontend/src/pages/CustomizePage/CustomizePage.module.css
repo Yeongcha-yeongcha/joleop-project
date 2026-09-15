@@ -401,9 +401,34 @@
   font-weight: 900;
 }
 
-@media (min-width: 560px) {
-  .page {
-    max-width: 390px;
+@media (min-width: 700px) {
+  .body {
+    width: 100%;
+    max-width: 920px;
     margin: 0 auto;
+    padding: 24px 32px calc(36px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .preview {
+    height: 320px;
+  }
+
+  .previewBackdrop::before {
+    width: 128px;
+  }
+
+  .popoStage {
+    bottom: 28px;
+    width: 210px;
+  }
+
+  .themeGrid,
+  .popoGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 26px 18px;
+  }
+
+  .themeButton {
+    min-height: 300px;
   }
 }
