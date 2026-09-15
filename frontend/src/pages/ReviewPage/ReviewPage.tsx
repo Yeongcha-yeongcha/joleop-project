@@ -34,8 +34,8 @@ interface ReviewItem {
 }
 
 const modeCards: Array<{ mode: ReviewMode; title: string; description: string }> = [
-  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Fill 3 word blanks, then say 2 words.' },
-  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Build 3 sentences, then say 2 sentences.' },
+  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Alternate 3 word blanks with 2 speaking turns.' },
+  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Alternate 3 sentence builds with 2 speaking turns.' },
   { mode: 'STORY_TALK', title: 'Story Talk', description: 'Replay finished roleplays at the right time.' },
 ]
 
@@ -301,12 +301,17 @@ function reviewItemsFromCards(cards: ReviewCardData[], allowRoleplay: boolean) {
   return filteredCards.map((card, cardIndex) => cardToReviewItem(card, filteredCards, cardIndex))
 }
 
-function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: number): ReviewItem {
-  const kind = cardKind(card, index)
+function cardToReviewItem(
+  card: ReviewCardData,
+  cards: ReviewCardData[],
+  index: number,
+  forcedKind?: ReviewKind,
+): ReviewItem {
+  const kind = forcedKind ?? cardKind(card, index)
   if (kind === 'sentenceOrder' || kind === 'sentenceRepeat') {
     const sentence = sentenceForOrder(card)
     return {
-      id: `review-${card.cardId}`,
+      id: `review-${card.cardId}-${index}-${kind}`,
       cardId: card.cardId,
       kind,
       bookTitle: card.bookTitle || 'Story',
@@ -319,7 +324,7 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     }
   }
   return {
-    id: `review-${card.cardId}`,
+    id: `review-${card.cardId}-${index}-${kind}`,
     cardId: card.cardId,
     kind,
     bookTitle: card.bookTitle || 'Story',
@@ -335,6 +340,22 @@ function cardToReviewItem(card: ReviewCardData, cards: ReviewCardData[], index: 
     memory: card.memoryScore,
     roleplay: roleplayCardToMission(card),
   }
+}
+
+function fiveStepModeItems(cards: ReviewCardData[], mode: ReviewMode): ReviewItem[] {
+  const modeCards = cards.filter((card) => (
+    mode === 'WORD_PLAYGROUND' ? card.cardType === 'WORD' : card.cardType === 'SENTENCE'
+  ))
+  if (!modeCards.length) return []
+
+  const kinds: ReviewKind[] = mode === 'WORD_PLAYGROUND'
+    ? ['wordCloze', 'wordRepeat', 'wordCloze', 'wordRepeat', 'wordCloze']
+    : ['sentenceOrder', 'sentenceRepeat', 'sentenceOrder', 'sentenceRepeat', 'sentenceOrder']
+
+  return kinds.map((kind, index) => {
+    const card = modeCards[index % modeCards.length]
+    return cardToReviewItem(card, modeCards, index, kind)
+  })
 }
 
 export default function ReviewPage() {
@@ -409,8 +430,8 @@ export default function ReviewPage() {
       setStarted(true)
       return
     }
-    const data = await fetchDueReviews(8, mode)
-    setReviewQueue(reviewItemsFromCards(data.cards, false).slice(0, 5))
+    const data = await fetchDueReviews(5, mode)
+    setReviewQueue(fiveStepModeItems(data.cards, mode))
     setStarted(true)
   }
 
