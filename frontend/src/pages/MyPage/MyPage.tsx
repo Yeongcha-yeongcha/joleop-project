@@ -169,9 +169,8 @@ export default function MyPage() {
 
   useEffect(() => {
     fetchUserStats().then((stats) => {
-      const spent = Number(window.localStorage.getItem(POINT_SPENT_KEY) || '0')
       setStats(stats)
-      setPoints(Math.max(0, stats.hearts - spent))
+      setPoints(stats.hearts)
     })
     if (usesBackendApi()) {
       fetchCustomization()

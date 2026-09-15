@@ -495,3 +495,51 @@
     transition: none;
   }
 }
+
+@media (min-width: 700px) {
+  .introPage {
+    padding: 48px 48px calc(48px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .introContent {
+    gap: 42px;
+  }
+
+  .thumbnail {
+    width: 250px;
+    height: 250px;
+  }
+
+  .missionCard {
+    width: min(560px, 100%);
+  }
+
+  .chatHeader,
+  .chatArea,
+  .chatBottom {
+    width: 100%;
+    max-width: 820px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .chatHeader {
+    padding-top: 18px;
+  }
+
+  .npcBubble,
+  .userBubble {
+    max-width: 68%;
+    padding: 13px 17px;
+    font-size: 17px;
+  }
+
+  .finishCard,
+  .finishPanel {
+    max-width: 520px;
+  }
+
+  .btnImg {
+    max-width: 440px;
+  }
+}

@@ -131,3 +131,25 @@
     min-height: 196px;
   }
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+  }
+
+  .chapterCard {
+    min-height: 230px;
+  }
+}
+
+@media (min-width: 960px) and (orientation: landscape) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

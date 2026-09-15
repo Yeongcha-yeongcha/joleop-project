@@ -84,9 +84,9 @@
   left: 50%;
   /* 캐릭터 발 위치 = stage 아래 여백(34px) + 이미지 하단 투명 여백(4.4%).
      거기서 10px 더 내려 바닥에 붙게 둔다. */
-  bottom: calc(34px + min(74cqw, 44dvh) * 0.028 - 10px);
-  width: calc(min(74cqw, 44dvh) * 0.54);
-  height: calc(min(74cqw, 44dvh) * 0.125);
+  bottom: calc(24px + min(2.072cqw, 1.232dvh));
+  width: min(39.96cqw, 23.76dvh);
+  height: min(9.25cqw, 5.5dvh);
   border-radius: 50%;
   transform: translateX(-50%);
   background: rgba(120, 92, 44, 0.42);
@@ -333,13 +333,6 @@
   box-shadow: 0 4px 0 #d47900;
 }
 
-@media (min-width: 560px) {
-  .page {
-    max-width: 390px;
-    margin: 0 auto;
-  }
-}
-
 @media (max-height: 780px) {
   /* .mascot 에는 max-height 를 걸지 않는다. stage 가 상한을 쥐고 있어야
      손에 든 책의 % 좌표가 캐릭터와 정확히 맞는다. */
@@ -349,9 +342,9 @@
   }
 
   .footShadow {
-    bottom: calc(26px + min(66cqw, 40dvh) * 0.028 - 10px);
-    width: calc(min(66cqw, 40dvh) * 0.54);
-    height: calc(min(66cqw, 40dvh) * 0.125);
+    bottom: calc(16px + min(1.848cqw, 1.12dvh));
+    width: min(35.64cqw, 21.6dvh);
+    height: min(8.25cqw, 5dvh);
   }
 
   .panel {
@@ -363,6 +356,61 @@
   .startButton {
     min-height: 58px;
   }
+}
+
+@media (min-width: 700px) {
+  .header {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .headerShadow {
+    right: 24px;
+    left: 24px;
+  }
+
+  .backgroundLayer::before {
+    left: 48px;
+    top: 124px;
+    width: 180px;
+    height: 198px;
+  }
+
+  .hero {
+    padding-right: 56px;
+    padding-left: 56px;
+  }
+
+  .mascotStage {
+    width: min(48cqw, 44dvh, 420px);
+  }
+
+  .footShadow {
+    bottom: calc(24px + min(1.344cqw, 1.232dvh, 11.76px));
+    width: min(25.92cqw, 23.76dvh, 226.8px);
+    height: min(6cqw, 5.5dvh, 52.5px);
+  }
+
+  .panel {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    display: grid;
+    gap: 14px 18px;
+    padding: 14px 32px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .progressTrack {
+    grid-column: 1 / -1;
+  }
+
+  .bookCard {
+    min-height: 104px;
+  }
+
+  .startButton {
+    align-self: stretch;
+    min-height: 104px;
+  }
+
 }
 
 /*
@@ -426,16 +474,10 @@
   font-size: 18px;
   font-weight: 900;
   line-height: 1.05;
-  letter-spacing: -0.3px;
+  letter-spacing: 0;
   white-space: nowrap;
   paint-order: stroke fill;
   -webkit-text-stroke: 8px #ffffff;
-}
-
-/* 배경 사진이 어두운 테마에서는 라벨을 밝게 뒤집는다.
-   컨테이너가 없어져 라벨이 배경과 직접 맞닿기 때문이다. */
-.darkLabels .hubLabel {
-  color: #fffaf0;
 }
 
 .hubButton:active {
@@ -483,5 +525,17 @@
   .hub_left_bottom,
   .hub_right_bottom {
     bottom: 14px;
+  }
+}
+
+@media (min-width: 700px) {
+  .hub_left_top,
+  .hub_left_bottom {
+    left: 42px;
+  }
+
+  .hub_right_top,
+  .hub_right_bottom {
+    right: 42px;
   }
 }

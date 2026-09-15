@@ -214,3 +214,33 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.75; }
 }
+
+@media (min-width: 700px) {
+  .illustration {
+    height: min(48dvh, 520px);
+    aspect-ratio: auto;
+  }
+
+  .quizCard {
+    width: min(560px, calc(100% - 64px));
+  }
+
+  .quizCardText {
+    font-size: 18px;
+  }
+
+  .sentenceBoxWrapper {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 22px 42px;
+  }
+
+  .bottomArea {
+    padding-bottom: calc(42px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .btnImg {
+    max-width: 440px;
+  }
+}

@@ -59,3 +59,13 @@
 .form button:disabled {
   opacity: 0.55;
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding-top: 72px;
+  }
+
+  .form {
+    max-width: 480px;
+  }
+}

@@ -215,3 +215,22 @@
   font-size: 14px;
   font-weight: 800;
 }
+
+@media (min-width: 700px) {
+  .page {
+    padding: 56px 48px;
+  }
+
+  .backgroundLion {
+    right: 6%;
+    top: 8%;
+    width: 230px;
+    height: 230px;
+  }
+
+  .card {
+    max-width: 430px;
+    min-height: 570px;
+    padding: 34px 36px 30px;
+  }
+}

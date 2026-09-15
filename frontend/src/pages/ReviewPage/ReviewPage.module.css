@@ -1918,10 +1918,25 @@
   overflow: hidden;
 }
 
-@media (min-width: 560px) {
-  .page {
-    max-width: 390px;
+@media (min-width: 700px) {
+  .body {
+    width: 100%;
+    max-width: 920px;
     margin: 0 auto;
+    padding: 24px 32px calc(36px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .helpPanel {
+    width: min(100%, 520px);
+  }
+
+  .reviewRoleplayShell {
+    margin-right: -32px;
+    margin-left: -32px;
+  }
+
+  .feedback {
+    width: min(480px, calc(100vw - 80px));
   }
 }
 
