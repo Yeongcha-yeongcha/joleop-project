@@ -1004,6 +1004,10 @@ export interface ReviewRoleplayMessageData {
   card: ReviewCardData
 }
 
+export interface ReviewSpeechTranscriptData {
+  transcript: string
+}
+
 export interface ReviewAttemptData {
   card: ReviewCardData
   attempt: {
@@ -1140,6 +1144,13 @@ export async function fetchStoryTalk(limit = 5): Promise<StoryTalkData> {
 
 export async function sendStoryTalkMessage(cardIds: number[], message: string): Promise<StoryTalkMessageData> {
   return post<StoryTalkMessageData>('/reviews/story-talk/messages', { cardIds, message }, getProfileToken())
+}
+
+export async function transcribeReviewSpeech(audio: Blob, transcript?: string): Promise<ReviewSpeechTranscriptData> {
+  const form = new FormData()
+  form.append('audio', audio, 'recording.webm')
+  if (transcript?.trim()) form.append('transcript', transcript.trim())
+  return postForm<ReviewSpeechTranscriptData>('/reviews/speech/transcribe', form, getProfileToken())
 }
 
 export async function sendReviewRoleplayMessage(

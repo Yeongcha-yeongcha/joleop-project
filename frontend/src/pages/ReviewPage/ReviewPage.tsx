@@ -7,6 +7,7 @@ import {
   sendReviewRoleplayMessage,
   synthesizeSpeech,
   submitReviewAttempt,
+  transcribeReviewSpeech,
   usesBackendApi,
   type ReviewCardData,
   type ReviewMode,
@@ -36,9 +37,9 @@ interface ReviewItem {
 }
 
 const modeCards: Array<{ mode: ReviewMode; title: string; description: string }> = [
-  { mode: 'WORD_PLAYGROUND', title: 'Word Playground', description: 'Alternate 3 word blanks with 2 speaking turns.' },
-  { mode: 'SENTENCE_QUEST', title: 'Sentence Quest', description: 'Alternate 3 sentence builds with 2 speaking turns.' },
-  { mode: 'STORY_TALK', title: 'Story Talk', description: 'Replay finished roleplays at the right time.' },
+  { mode: 'WORD_PLAYGROUND', title: 'Word Review', description: 'Practice 3 word picks and 2 speaking turns.' },
+  { mode: 'SENTENCE_QUEST', title: 'Sentence Review', description: 'Practice 3 sentence builds and 2 speaking turns.' },
+  { mode: 'STORY_TALK', title: 'Story Review', description: 'Replay story roleplays at the right time.' },
 ]
 
 const modeIcons: Record<ReviewMode, string> = {
@@ -58,6 +59,10 @@ const smartFlowCards = [
   { label: 'Sentence', icon: '', tone: 'sentence' },
   { label: 'Word', icon: 'C', tone: 'word' },
 ]
+
+const REVIEW_INITIAL_SILENCE_TIMEOUT_MS = 4200
+const REVIEW_AFTER_SPEECH_TIMEOUT_MS = 1200
+const REVIEW_MAX_RECORD_MS = 9000
 
 function activeProfileKey() {
   try {
@@ -155,75 +160,124 @@ function wordUseCount(words: string[], target: string) {
   return words.filter((word) => word === target).length
 }
 
-function recognizeSentence(onTranscript?: (transcript: string) => void): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
-    if (!Recognition) {
-      reject(new Error('Speech recognition is not available.'))
+function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promise<{ audio: Blob; transcript: string }> {
+  return new Promise(async (resolve, reject) => {
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch {
+      reject(new Error('Microphone permission is needed.'))
       return
     }
-    const recognition = new Recognition()
-    const finalParts: string[] = []
-    let transcript = ''
+
+    const chunks: Blob[] = []
+    const mediaRecorder = new MediaRecorder(stream)
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const recognition = Recognition ? new Recognition() : null
+    let finalTranscript = ''
+    let interimTranscript = ''
     let settled = false
     let hasSpeech = false
-    let silenceTimer: number | undefined
-    const finish = () => {
-      if (settled) return
-      settled = true
-      window.clearTimeout(timer)
-      if (silenceTimer) window.clearTimeout(silenceTimer)
+    let silenceTimer = window.setTimeout(() => finish(), REVIEW_INITIAL_SILENCE_TIMEOUT_MS)
+    const maxRecordTimer = window.setTimeout(() => finish(), REVIEW_MAX_RECORD_MS)
+
+    const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
+
+    const cleanup = () => {
+      window.clearTimeout(silenceTimer)
+      window.clearTimeout(maxRecordTimer)
       try {
-        recognition.stop()
+        recognition?.abort()
       } catch {
         // Recognition can already be stopped by the browser.
       }
-      resolve(transcript.trim())
+      stream.getTracks().forEach((track) => track.stop())
     }
+
+    const finish = () => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(silenceTimer)
+      if (mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop()
+        return
+      }
+      complete()
+    }
+
+    const complete = () => {
+      const transcript = currentTranscript()
+      cleanup()
+      resolve({
+        audio: new Blob(chunks, { type: 'audio/webm' }),
+        transcript,
+      })
+    }
+
     const restartSilenceTimer = () => {
-      if (silenceTimer) window.clearTimeout(silenceTimer)
-      silenceTimer = window.setTimeout(finish, 1200)
+      window.clearTimeout(silenceTimer)
+      silenceTimer = window.setTimeout(
+        () => finish(),
+        hasSpeech ? REVIEW_AFTER_SPEECH_TIMEOUT_MS : REVIEW_INITIAL_SILENCE_TIMEOUT_MS,
+      )
     }
-    const timer = window.setTimeout(finish, 9000)
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data)
+    }
+    mediaRecorder.onerror = () => {
+      cleanup()
+      reject(new Error('Recording failed.'))
+    }
+    mediaRecorder.onstop = complete
+    mediaRecorder.start()
+
+    if (!recognition) {
+      restartSilenceTimer()
+      return
+    }
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
     recognition.continuous = true
     recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
-      let interim = ''
-      for (let index = 0; index < event.results.length; index += 1) {
+      interimTranscript = ''
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const text = event.results[index][0]?.transcript ?? ''
         if (event.results[index].isFinal) {
-          finalParts[index] = text
+          finalTranscript = `${finalTranscript} ${text}`.trim()
         } else {
-          interim = `${interim} ${text}`.trim()
+          interimTranscript = `${interimTranscript} ${text}`.trim()
         }
       }
-      transcript = `${finalParts.filter(Boolean).join(' ')} ${interim}`.trim()
-      hasSpeech = Boolean(transcript)
-      onTranscript?.(transcript)
+      hasSpeech = Boolean(currentTranscript())
+      onTranscript?.(currentTranscript())
+      restartSilenceTimer()
+    }
+    ;(recognition as SpeechRecognition & { onspeechend?: () => void }).onspeechend = () => {
+      hasSpeech = hasSpeech || Boolean(currentTranscript())
       restartSilenceTimer()
     }
     recognition.onerror = () => {
-      if (settled) return
-      settled = true
-      window.clearTimeout(timer)
-      if (silenceTimer) window.clearTimeout(silenceTimer)
-      if (hasSpeech) {
-        resolve(transcript.trim())
-        return
-      }
-      reject(new Error('Speech recognition failed.'))
+      restartSilenceTimer()
     }
     recognition.onend = () => {
-      if (settled) return
-      settled = true
-      window.clearTimeout(timer)
-      if (silenceTimer) window.clearTimeout(silenceTimer)
-      resolve(transcript.trim())
+      if (!settled && !hasSpeech) {
+        try {
+          recognition.start()
+        } catch {
+          restartSilenceTimer()
+        }
+        return
+      }
+      if (!settled) restartSilenceTimer()
     }
-    recognition.start()
+    try {
+      recognition.start()
+    } catch {
+      restartSilenceTimer()
+    }
   })
 }
 
@@ -390,14 +444,33 @@ function fiveStepModeItems(cards: ReviewCardData[], mode: ReviewMode): ReviewIte
     ? ['wordCloze', 'wordRepeat', 'wordCloze', 'wordRepeat', 'wordCloze']
     : ['sentenceOrder', 'sentenceRepeat', 'sentenceOrder', 'sentenceRepeat', 'sentenceOrder']
 
-  const sourceIndexes = modeCards.length >= 3
-    ? [0, 1, 2, 0, 1]
-    : modeCards.length === 2 ? [0, 1, 1, 0] : [0, 0]
-
-  return sourceIndexes.map((sourceIndex, index) => {
-    const kind = kinds[index]
+  return kinds.map((kind, index) => {
+    const sourceIndex = index % modeCards.length
     const card = modeCards[sourceIndex]
     return cardToReviewItem(card, modeCards, index, kind)
+  })
+}
+
+function smartMixItems(cards: ReviewCardData[]): ReviewItem[] {
+  const filteredCards = uniqueReviewCards(cards.filter((card) => card.cardType !== 'CHAT'))
+  const wordCards = filteredCards.filter((card) => card.cardType === 'WORD')
+  const sentenceCards = filteredCards.filter((card) => card.cardType === 'SENTENCE')
+  const fallbackCards = filteredCards.length ? filteredCards : uniqueReviewCards(cards).filter((card) => card.cardType !== 'CHAT')
+  if (!fallbackCards.length) return []
+
+  const kinds: ReviewKind[] = ['wordCloze', 'sentenceOrder', 'wordRepeat', 'sentenceRepeat', 'wordCloze']
+  let wordIndex = 0
+  let sentenceIndex = 0
+
+  return kinds.map((kind, index) => {
+    const sourceCards = kind.startsWith('word')
+      ? (wordCards.length ? wordCards : fallbackCards)
+      : (sentenceCards.length ? sentenceCards : fallbackCards)
+    const sourceIndex = kind.startsWith('word')
+      ? wordIndex++ % sourceCards.length
+      : sentenceIndex++ % sourceCards.length
+    const card = sourceCards[sourceIndex]
+    return cardToReviewItem(card, sourceCards, index, kind)
   })
 }
 
@@ -419,6 +492,9 @@ export default function ReviewPage() {
   const [spokenTranscript, setSpokenTranscript] = useState('')
 
   const current = reviewQueue[index]
+  const activeReviewRoleplay = started && selectedMode === 'STORY_TALK' && current?.roleplay
+    ? current.roleplay
+    : null
   const doneCount = Object.keys(results).length
   const isFinished = started && reviewQueue.length > 0 && doneCount >= reviewQueue.length
   const resultScore = useMemo(() => {
@@ -446,9 +522,9 @@ export default function ReviewPage() {
       })
       .catch(() => setAttendanceDates(readReviewAttendanceDates()))
     if (!usesBackendApi()) return
-    fetchDueReviews(5, 'SMART_MIX')
+    fetchDueReviews(12, 'SMART_MIX')
       .then((data) => {
-        setReviewQueue(reviewItemsFromCards(data.cards, false))
+        setReviewQueue(smartMixItems(data.cards))
       })
       .catch(() => undefined)
   }, [location.key])
@@ -475,8 +551,8 @@ export default function ReviewPage() {
       setStarted(true)
       return
     }
-    const data = await fetchDueReviews(5, mode)
-    setReviewQueue(fiveStepModeItems(data.cards, mode))
+    const data = await fetchDueReviews(mode === 'SMART_MIX' ? 12 : 8, mode)
+    setReviewQueue(mode === 'SMART_MIX' ? smartMixItems(data.cards) : fiveStepModeItems(data.cards, mode))
     setStarted(true)
   }
 
@@ -566,7 +642,12 @@ export default function ReviewPage() {
     setIsListening(true)
     setSpokenTranscript('')
     try {
-      const transcript = await recognizeSentence(setSpokenTranscript)
+      const speech = await recordReviewSpeech(setSpokenTranscript)
+      const transcript = speech.transcript.trim()
+        ? speech.transcript
+        : usesBackendApi()
+          ? (await transcribeReviewSpeech(speech.audio)).transcript
+          : ''
       setSpokenTranscript(transcript)
       if (!transcript.trim()) {
         setSpokenTranscript('I could not hear you. Please try again.')
@@ -673,6 +754,18 @@ export default function ReviewPage() {
         }
       />
 
+      {activeReviewRoleplay ? (
+        <section className={styles.fullRoleplayShell}>
+          <RoleplayScreen
+            roleplay={{ ...activeReviewRoleplay, history: reviewRoleplayHistory }}
+            onProgressChange={() => undefined}
+            onFinish={completeReviewRoleplay}
+            onExit={exitReviewRoleplay}
+            onSpeakText={speakReviewText}
+            onRecord={recordReviewRoleplay}
+          />
+        </section>
+      ) : (
       <div className={styles.body}>
 
       {!started ? (
@@ -697,17 +790,17 @@ export default function ReviewPage() {
                 <div className={styles.helpModes}>
                   <article>
                     <b>A</b>
-                    <strong>Word Playground</strong>
+                    <strong>Word Review</strong>
                     <p>Fill 3 story blanks with DB words. Then say 2 words out loud.</p>
                   </article>
                   <article>
                     <b>□</b>
-                    <strong>Sentence Quest</strong>
+                    <strong>Sentence Review</strong>
                     <p>First build 3 short sentences. Then say 2 sentences out loud.</p>
                   </article>
                   <article>
                     <b>🎭</b>
-                    <strong>Story Talk</strong>
+                    <strong>Story Review</strong>
                     <p>Replay a finished roleplay when memory needs a boost.</p>
                   </article>
                 </div>
@@ -737,12 +830,12 @@ export default function ReviewPage() {
             <div className={styles.smartTop}>
               <img src="/images/onboarding/lion-headphones.webp" alt="" />
               <div>
-                <h2>Start Smart Mix</h2>
+                <h2>Daily Review</h2>
                 <p>5 mixed review cards from saved words and sentences.</p>
               </div>
             </div>
 
-            <div className={styles.smartFlow} aria-label="Smart Mix cards">
+            <div className={styles.smartFlow} aria-label="Daily Review cards">
               {smartFlowCards.map((item, itemIndex) => (
                 <div className={styles.flowStep} key={`${item.label}-${itemIndex}`}>
                   <b className={styles[`flowIcon_${item.tone}`]}>{item.icon}</b>
@@ -753,7 +846,7 @@ export default function ReviewPage() {
             </div>
 
             <button className={styles.smartButton} onClick={() => beginMode('SMART_MIX')}>
-              Start Smart Mix
+              Start Daily Review
               <span aria-hidden="true">›</span>
             </button>
             {!usesBackendApi() && <p className={styles.emptyHint}>Connect the backend to load saved review cards.</p>}
@@ -792,7 +885,6 @@ export default function ReviewPage() {
             onExit={exitReviewRoleplay}
             onSpeakText={speakReviewText}
             onRecord={recordReviewRoleplay}
-            variant="review"
           />
         </section>
       ) : selectedMode === 'WORD_PLAYGROUND' ? (
@@ -800,7 +892,7 @@ export default function ReviewPage() {
           <div className={styles.modeHeader}>
             <button onClick={restart} aria-label="Back to review">‹</button>
             <div>
-              <span>Word Playground</span>
+              <span>Word Review</span>
               <h2>{current.prompt}</h2>
             </div>
             <b>{index + 1}/{reviewQueue.length}</b>
@@ -838,7 +930,7 @@ export default function ReviewPage() {
           <div className={styles.modeHeader}>
             <button onClick={restart} aria-label="Back to review">‹</button>
             <div>
-              <span>Sentence Quest</span>
+              <span>Sentence Review</span>
               <h2>{current.prompt}</h2>
             </div>
             <b>{index + 1}/{reviewQueue.length}</b>
@@ -888,7 +980,7 @@ export default function ReviewPage() {
         </section>
       ) : selectedMode === 'STORY_TALK' ? (
         <section className={styles.emptyReview}>
-          <span>Story Talk</span>
+          <span>Story Review</span>
           <h2>No roleplay review ready.</h2>
           <p>Completed roleplays will appear here when the memory schedule says it is time to practice again.</p>
           <button onClick={restart}>Back to Review</button>
@@ -978,6 +1070,7 @@ export default function ReviewPage() {
         </section>
       )}
       </div>
+      )}
     </main>
   )
 }

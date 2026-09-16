@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
 from app.api.deps import get_current_profile, get_review_service, get_speech_to_text_service
+from app.core.exceptions import AudioValidationException
 from app.models import ChildProfile, ReviewMode
 from app.schemas.common import success_response
 from app.schemas.review import ReviewAttemptRequest, ReviewSeedChapterRequest, StoryTalkMessageRequest
@@ -70,6 +71,11 @@ async def create_story_talk_roleplay_message(
         if submitted_transcript and submitted_transcript.strip()
         else await speech_to_text_service.transcribe(audio)
     )
+    if not message.strip():
+        raise AudioValidationException(
+            code="SPEECH_NOT_RECOGNIZED",
+            detail="음성을 인식하지 못했습니다. 다시 말해 주세요.",
+        )
     try:
         history = json.loads(history_json or "[]")
     except json.JSONDecodeError:
@@ -82,6 +88,28 @@ async def create_story_talk_roleplay_message(
             history=history if isinstance(history, list) else [],
         )
     )
+
+
+@router.post("/speech/transcribe")
+async def transcribe_review_speech(
+    audio: UploadFile = File(...),
+    transcript: str | None = Form(default=None),
+    current_profile: ChildProfile = Depends(get_current_profile),
+    speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
+) -> dict:
+    _ = current_profile
+    submitted_transcript = transcript if isinstance(transcript, str) else None
+    message = (
+        submitted_transcript.strip()
+        if submitted_transcript and submitted_transcript.strip()
+        else await speech_to_text_service.transcribe(audio)
+    )
+    if not message.strip():
+        raise AudioValidationException(
+            code="SPEECH_NOT_RECOGNIZED",
+            detail="음성을 인식하지 못했습니다. 다시 말해 주세요.",
+        )
+    return success_response({"transcript": message})
 
 
 @router.post("/attempts")

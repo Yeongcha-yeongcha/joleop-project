@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import SplashPage from './pages/SplashPage/SplashPage'
 import AuthPage from './pages/AuthPage/AuthPage'
 import KakaoCallbackPage from './pages/KakaoCallbackPage/KakaoCallbackPage'
@@ -24,7 +24,6 @@ function AnimatedRoutes() {
 
   return (
     <div className="app-shell">
-      <AppNavButton />
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageWrapper><SplashPage /></PageWrapper>} />
         <Route path="/start" element={<PageWrapper><AuthPage /></PageWrapper>} />
@@ -79,59 +78,6 @@ function ButtonSound() {
   }, [])
 
   return null
-}
-
-function AppNavButton() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const path = location.pathname
-  const activeProfile = window.localStorage.getItem('yeongcha:active-profile')
-  const hasParentToken = window.localStorage.getItem('yeongcha:parent-access-token')
-
-  const hiddenRoutes = ['/', '/start', '/oauth/kakao/callback', '/onboarding']
-  const routesWithOwnNav = ['/home', '/customize', '/review', '/mypage', '/books']
-  if (
-    hiddenRoutes.includes(path) ||
-    routesWithOwnNav.includes(path) ||
-    path.startsWith('/books/') ||
-    path.startsWith('/learn/')
-  ) {
-    return null
-  }
-
-  const shouldGoHome = Boolean(activeProfile) && !path.startsWith('/profiles') && path !== '/start'
-  const label = shouldGoHome ? 'Go home' : 'Go back'
-  const text = shouldGoHome ? '⌂' : '←'
-
-  const fallbackPath = (() => {
-    if (path === '/profiles') return '/start'
-    if (path.startsWith('/profiles/')) return '/profiles'
-    if (path === '/intro') return '/profiles/new'
-    if (path === '/onboarding') return hasParentToken ? '/profiles' : '/start'
-    return '/start'
-  })()
-
-  const handleClick = () => {
-    if (path === '/profiles') {
-      navigate('/start', { replace: true })
-      return
-    }
-    if (shouldGoHome) {
-      navigate('/home')
-      return
-    }
-    if (window.history.length > 1) {
-      navigate(-1)
-      return
-    }
-    navigate(fallbackPath, { replace: true })
-  }
-
-  return (
-    <button className="app-nav-button" onClick={handleClick} aria-label={label}>
-      {text}
-    </button>
-  )
 }
 
 function PageWrapper({

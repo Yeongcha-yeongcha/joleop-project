@@ -23,6 +23,9 @@ import {
 import styles from './CustomizePage.module.css'
 
 type Tab = 'background' | 'popo'
+type PendingPurchase =
+  | { type: 'theme'; theme: HomeBackgroundTheme }
+  | { type: 'popo'; item: PopoItem }
 
 const HOME_THEME_KEY = 'yeongcha:home-background-theme'
 const THEME_UNLOCKS_KEY = 'yeongcha:home-background-theme-unlocks'
@@ -58,6 +61,7 @@ export default function CustomizePage() {
   const [popoSpent, setPopoSpent] = useState(() => Number(window.localStorage.getItem(POPO_SPENT_KEY) || '0'))
   const [customization, setCustomization] = useState<CustomizationData | null>(null)
   const [message, setMessage] = useState('')
+  const [pendingPurchase, setPendingPurchase] = useState<PendingPurchase | null>(null)
 
   const points = customization?.availableStars ?? Math.max(0, userStats.hearts - themeSpent - popoSpent)
   const previewTheme = useMemo(() => (
@@ -68,8 +72,6 @@ export default function CustomizePage() {
   ), [themeUnlocks])
   const isThemeOwned = (theme: HomeBackgroundTheme) => theme.owned || unlockedThemeIds.has(theme.id)
   const isPopoOwned = (item: PopoItem) => popoUnlocks.includes(item.id)
-  const previewItems = POPO_ITEMS.filter((item) => previewPopo[item.kind] === item.id)
-  const previewCost = previewItems.reduce((sum, item) => sum + (isPopoOwned(item) ? 0 : item.price), 0)
 
   useEffect(() => {
     if (!usesBackendApi()) return
@@ -129,6 +131,10 @@ export default function CustomizePage() {
       setMessage(`You need ${theme.price} stars for ${theme.name}.`)
       return
     }
+    setPendingPurchase({ type: 'theme', theme })
+  }
+
+  const buyTheme = async (theme: HomeBackgroundTheme) => {
     if (usesBackendApi()) {
       try {
         applyCustomization(await selectCustomizationTheme(theme.id))
@@ -143,51 +149,75 @@ export default function CustomizePage() {
     setMessage(`${theme.name} is yours!`)
   }
 
-  const choosePopoItem = (item: PopoItem) => {
-    const isPreviewed = previewPopo[item.kind] === item.id
-    const nextPreview = { ...previewPopo }
-    if (isPreviewed) {
-      delete nextPreview[item.kind]
-      setPreviewPopo(nextPreview)
-      setMessage(`${item.name} is off in preview.`)
-      return
-    }
-
-    nextPreview[item.kind] = item.id
-    setPreviewPopo(nextPreview)
-    setMessage(isPopoOwned(item)
-      ? `${item.name} is in preview. Tap Save Look to wear it at home.`
-      : `${item.name} is preview only. Buy it with Save Look to wear it at home.`)
-  }
-
-  const savePopoLook = async () => {
-    if (previewCost > points) {
-      setMessage(`You need ${previewCost} stars to save this look.`)
-      return
-    }
+  const applyPopoLook = async (nextPopo: PopoCustomization, successMessage: string) => {
     if (usesBackendApi()) {
       try {
-        applyCustomization(await savePopoCustomization(previewPopo))
-        setMessage(previewCost > 0 ? `Bought for ${previewCost} stars. Popo will wear this at home!` : 'Popo will wear this at home!')
+        applyCustomization(await savePopoCustomization(nextPopo))
+        setMessage(successMessage)
       } catch {
         setMessage('Could not save Popo look.')
       }
       return
     }
-    const nextUnlocks = Array.from(new Set([...popoUnlocks, ...previewItems.map((item) => item.id)]))
-    const nextSpent = popoSpent + previewCost
-    setPopoUnlocks(nextUnlocks)
-    setPopoSpent(nextSpent)
-    window.localStorage.setItem(POPO_UNLOCKS_KEY, JSON.stringify(nextUnlocks))
-    window.localStorage.setItem(POPO_SPENT_KEY, String(nextSpent))
-    setPopoCustomization(previewPopo)
-    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(previewPopo))
-    setMessage(previewCost > 0 ? `Bought for ${previewCost} stars. Popo will wear this at home!` : 'Popo will wear this at home!')
+    setPopoCustomization(nextPopo)
+    setPreviewPopo(nextPopo)
+    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(nextPopo))
+    setMessage(successMessage)
   }
 
-  const resetPopoPreview = () => {
-    setPreviewPopo(popoCustomization)
-    setMessage('Preview is back to saved look.')
+  const choosePopoItem = async (item: PopoItem) => {
+    if (!isPopoOwned(item)) {
+      if (points < item.price) {
+        setMessage(`You need ${item.price} stars for ${item.name}.`)
+        return
+      }
+      setPendingPurchase({ type: 'popo', item })
+      return
+    }
+    const isPreviewed = previewPopo[item.kind] === item.id
+    const nextPreview = { ...previewPopo }
+    if (isPreviewed) {
+      delete nextPreview[item.kind]
+      await applyPopoLook(nextPreview, `${item.name} is off.`)
+      return
+    }
+
+    nextPreview[item.kind] = item.id
+    await applyPopoLook(nextPreview, `${item.name} is on!`)
+  }
+
+  const buyPopoItem = async (item: PopoItem) => {
+    const nextPopo = { ...previewPopo, [item.kind]: item.id }
+    if (usesBackendApi()) {
+      try {
+        applyCustomization(await savePopoCustomization(nextPopo))
+        setMessage(`${item.name} is yours!`)
+      } catch {
+        setMessage('Could not buy this item.')
+      }
+      return
+    }
+    const nextUnlocks = popoUnlocks.includes(item.id) ? popoUnlocks : [...popoUnlocks, item.id]
+    const nextSpent = popoSpent + item.price
+    setPopoUnlocks(nextUnlocks)
+    setPopoSpent(nextSpent)
+    setPopoCustomization(nextPopo)
+    setPreviewPopo(nextPopo)
+    window.localStorage.setItem(POPO_UNLOCKS_KEY, JSON.stringify(nextUnlocks))
+    window.localStorage.setItem(POPO_SPENT_KEY, String(nextSpent))
+    window.localStorage.setItem(POPO_CUSTOMIZATION_KEY, JSON.stringify(nextPopo))
+    setMessage(`${item.name} is yours!`)
+  }
+
+  const confirmPurchase = async () => {
+    const purchase = pendingPurchase
+    if (!purchase) return
+    setPendingPurchase(null)
+    if (purchase.type === 'theme') {
+      await buyTheme(purchase.theme)
+      return
+    }
+    await buyPopoItem(purchase.item)
   }
 
   return (
@@ -287,7 +317,7 @@ export default function CustomizePage() {
               const equipped = popoCustomization[item.kind] === item.id
               return (
                 <article key={item.id} className={`${styles.popoCard} ${previewed ? styles.selected : ''}`}>
-                  <button className={styles.popoButton} onClick={() => choosePopoItem(item)}>
+                  <button className={styles.popoButton} onClick={() => { void choosePopoItem(item) }}>
                     {item.thumbnail ? (
                       <span className={styles.itemPreview}>
                         <img src={item.thumbnail} alt="" className={styles.itemThumb} />
@@ -297,7 +327,7 @@ export default function CustomizePage() {
                     )}
                     <strong>{item.name}</strong>
                     <em>
-                      {previewed ? 'Preview Off' : equipped ? 'Wearing' : owned ? 'Preview' : (
+                      {previewed ? 'Off' : equipped ? 'Wearing' : owned ? 'Use' : (
                         <>
                           <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
                           {item.price}
@@ -309,23 +339,33 @@ export default function CustomizePage() {
               )
             })}
           </section>
-          <div className={styles.saveActions}>
-            <button onClick={resetPopoPreview}>Reset Preview</button>
-            <button onClick={savePopoLook}>
-              {previewCost > 0 ? (
-                <>
-                  Buy &amp; Save
-                  <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
-                  {previewCost}
-                </>
-              ) : 'Save Look'}
-            </button>
-          </div>
         </>
       )}
 
       <p className={styles.message}>{message}</p>
       </div>
+      {pendingPurchase && (
+        <div className={styles.modalBackdrop} role="presentation">
+          <section className={styles.purchaseModal} role="dialog" aria-modal="true" aria-label="Confirm purchase">
+            <strong>Buy this style?</strong>
+            <p>
+              {pendingPurchase.type === 'theme'
+                ? pendingPurchase.theme.name
+                : pendingPurchase.item.name}
+            </p>
+            <span>
+              <img src={ICONS.star} alt="" className={styles.badgeIcon} aria-hidden="true" />
+              {pendingPurchase.type === 'theme'
+                ? pendingPurchase.theme.price
+                : pendingPurchase.item.price}
+            </span>
+            <div>
+              <button onClick={() => setPendingPurchase(null)}>Cancel</button>
+              <button onClick={() => { void confirmPurchase() }}>Buy</button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   )
 }
