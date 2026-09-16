@@ -595,16 +595,7 @@
 
 .smartHero .heroBadge::after,
 .modeArea h2::after {
-  content: '';
-  width: 18px;
-  height: 18px;
-  margin-left: 9px;
-  display: inline-block;
-  background:
-    radial-gradient(circle, #ffd447 0 42%, transparent 45%),
-    linear-gradient(45deg, transparent 42%, #ffd447 43% 57%, transparent 58%);
-  vertical-align: middle;
-  transform: rotate(12deg);
+  content: none;
 }
 
 .missionBadge {
@@ -2020,6 +2011,18 @@
   height: calc(100dvh - 130px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   margin: calc(-24px - env(safe-area-inset-top, 0px)) -18px 0;
   overflow: hidden;
+}
+
+.fullRoleplayShell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.fullRoleplayShell > div {
+  flex: 1;
+  min-height: 0;
 }
 
 @media (min-width: 700px) {

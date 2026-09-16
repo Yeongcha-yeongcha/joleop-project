@@ -5,6 +5,7 @@ from app.api.deps import (
     get_learning_session_service,
     get_speech_to_text_service,
 )
+from app.core.exceptions import AudioValidationException
 from app.models import ChildProfile
 from app.schemas.common import success_response
 from app.schemas.learning import (
@@ -258,6 +259,11 @@ async def create_roleplay_message(
         if submitted_transcript and submitted_transcript.strip()
         else await speech_to_text_service.transcribe(audio)
     )
+    if not transcript.strip():
+        raise AudioValidationException(
+            code="SPEECH_NOT_RECOGNIZED",
+            detail="음성을 인식하지 못했습니다. 다시 말해 주세요.",
+        )
     return success_response(
         await learning_session_service.create_roleplay_message(
             profile=current_profile,

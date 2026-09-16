@@ -1009,7 +1009,7 @@ export default function LearnPage() {
                 aria-label="Story picture"
               >
                 {displayPage?.imageUrl
-                  ? <img src={displayPage.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <img src={displayPage.imageUrl} alt="" className={styles.sceneImage} />
                   : <span>📖</span>
                 }
               </div>

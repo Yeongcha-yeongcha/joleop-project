@@ -303,13 +303,6 @@
   flex: 0 0 auto;
 }
 
-.saveActions button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
 .popoButton {
   width: 100%;
   min-height: 170px;
@@ -361,37 +354,6 @@
   font-size: 25px;
 }
 
-.clearActions {
-  margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 9px;
-}
-
-.clearActions button,
-.saveActions button {
-  min-height: 38px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.86);
-  color: #7d581d;
-  box-shadow: 0 4px 0 rgba(206, 179, 127, 0.2);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.saveActions {
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: 1fr 1.35fr;
-  gap: 9px;
-}
-
-.saveActions button:last-child {
-  background: #ff9700;
-  color: white;
-  box-shadow: 0 5px 0 #d87700;
-}
-
 .message {
   min-height: 20px;
   margin-top: 12px;
@@ -399,6 +361,82 @@
   text-align: center;
   font-size: 13px;
   font-weight: 900;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(44, 33, 21, 0.38);
+  backdrop-filter: blur(4px);
+}
+
+.purchaseModal {
+  width: min(100%, 320px);
+  padding: 22px 18px 18px;
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  border-radius: 16px;
+  background: #fffdf7;
+  color: #35220d;
+  box-shadow: 0 8px 0 #dca553, 0 22px 36px rgba(65, 42, 13, 0.24);
+  text-align: center;
+}
+
+.purchaseModal strong {
+  color: #2e1d0d;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.purchaseModal p {
+  color: #7b5a22;
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.purchaseModal > span {
+  min-height: 42px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: #fff0c7;
+  color: #453018;
+  box-shadow: inset 0 -4px 0 rgba(224, 173, 55, 0.2);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.purchaseModal div {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 5px;
+}
+
+.purchaseModal button {
+  min-height: 46px;
+  border-radius: 12px;
+  background: #fff0c7;
+  color: #7b5a22;
+  box-shadow: 0 5px 0 #ead596;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.purchaseModal button:last-child {
+  background: #ff9700;
+  color: white;
+  box-shadow: 0 5px 0 #d87700;
 }
 
 @media (min-width: 700px) {

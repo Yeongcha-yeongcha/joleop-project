@@ -4,6 +4,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import UnauthorizedException
 from app.db.session import get_db_session
 from app.models import ChildProfile, Parent
@@ -14,7 +15,11 @@ from app.services.learning_sessions import LearningSessionService
 from app.services.onboarding import OnboardingService
 from app.services.profiles import ProfileService
 from app.services.reviews import ReviewService
-from app.services.speech import MockSpeechToTextService, SpeechToTextService
+from app.services.speech import (
+    FasterWhisperSpeechToTextService,
+    MockSpeechToTextService,
+    SpeechToTextService,
+)
 from app.services.tts import TextToSpeechService
 
 
@@ -58,8 +63,18 @@ def get_customization_service(
     return CustomizationService(session=session)
 
 
+_speech_to_text_service: SpeechToTextService | None = None
+
+
 def get_speech_to_text_service() -> SpeechToTextService:
-    return MockSpeechToTextService()
+    global _speech_to_text_service
+    if _speech_to_text_service is None:
+        provider = settings.STT_PROVIDER.strip().lower()
+        if provider in {"mock", "none"}:
+            _speech_to_text_service = MockSpeechToTextService()
+        else:
+            _speech_to_text_service = FasterWhisperSpeechToTextService()
+    return _speech_to_text_service
 
 
 def get_text_to_speech_service() -> TextToSpeechService:

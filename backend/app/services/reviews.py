@@ -235,23 +235,23 @@ class ReviewService:
             "modes": [
                 {
                     "mode": ReviewMode.SMART_MIX.value,
-                    "title": "Start Smart Mix",
-                    "description": "Word games, sentence quests, and story talk together.",
+                    "title": "Daily Review",
+                    "description": "Today's word and sentence review.",
                 },
                 {
                     "mode": ReviewMode.WORD_PLAYGROUND.value,
-                    "title": "Word Playground",
-                    "description": "Spelling, matching cards, and word finding.",
+                    "title": "Word Review",
+                    "description": "Pick and say saved words.",
                 },
                 {
                     "mode": ReviewMode.SENTENCE_QUEST.value,
-                    "title": "Sentence Quest",
-                    "description": "Missing words, word order, and speaking practice.",
+                    "title": "Sentence Review",
+                    "description": "Build and say saved sentences.",
                 },
                 {
                     "mode": ReviewMode.STORY_TALK.value,
-                    "title": "Story Talk",
-                    "description": "Talk about the story using your review words.",
+                    "title": "Story Review",
+                    "description": "Replay story roleplays.",
                 },
             ],
         }
@@ -810,7 +810,7 @@ class ReviewService:
     def _fallback_story_topic(cards: list[ReviewCard]) -> dict:
         if not cards:
             return {
-                "title": "Story Talk",
+                "title": "Story Review",
                 "opening": "Tell me one thing you remember from your story.",
                 "targetWords": [],
                 "starterQuestions": [
@@ -822,7 +822,7 @@ class ReviewService:
         keywords = list(dict.fromkeys(card.keyword for card in cards if card.keyword))[:5]
         sentence = cards[0].source_sentence
         return {
-            "title": "Story Talk",
+            "title": "Story Review",
             "opening": f"Let's talk about this story moment: {sentence}",
             "targetWords": keywords,
             "starterQuestions": [

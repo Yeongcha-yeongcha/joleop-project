@@ -28,9 +28,9 @@ function TrophyAnimation({ className }: { className?: string }) {
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_MAX_RECORD_MS = 5200
-const ROLEPLAY_SILENCE_MS = 750
-const ROLEPLAY_MIN_RECORD_MS = 1800
+const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 4200
+const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1200
+const ROLEPLAY_MAX_RECORD_MS = 9000
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -84,19 +84,18 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     const mediaRecorder = new MediaRecorder(stream)
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
     const recognition = Recognition ? new Recognition() : null
-    const finalParts: string[] = []
+    let finalTranscript = ''
     let interimTranscript = ''
     let settled = false
-    let maxTimer: number | null = null
-    let silenceTimer: number | null = null
-    let canFinishForSilence = false
-    const deadline = Date.now() + durationMs
+    let hasSpeech = false
+    let silenceTimer = window.setTimeout(() => finish(), ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS)
+    const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
-    const currentTranscript = () => [...finalParts, interimTranscript].join(' ').trim()
+    const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
 
     const cleanup = () => {
-      if (maxTimer !== null) window.clearTimeout(maxTimer)
-      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      window.clearTimeout(silenceTimer)
+      window.clearTimeout(maxRecordTimer)
       try {
         recognition?.abort()
       } catch {
@@ -108,15 +107,21 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     const finish = () => {
       if (settled) return
       settled = true
-      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+      window.clearTimeout(silenceTimer)
+      if (mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop()
+        return
+      }
+      complete()
     }
 
-    const restartSilenceTimer = () => {
-      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
-      if (!currentTranscript()) return
-      silenceTimer = window.setTimeout(() => {
-        if (canFinishForSilence) finish()
-      }, ROLEPLAY_SILENCE_MS)
+    const complete = () => {
+      const transcript = currentTranscript()
+      cleanup()
+      resolve({
+        audio: new Blob(chunks, { type: 'audio/webm' }),
+        transcript,
+      })
     }
 
     mediaRecorder.ondataavailable = (event) => {
@@ -126,61 +131,59 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       cleanup()
       reject(new Error('Recording failed.'))
     }
-    mediaRecorder.onstop = () => {
-      const transcript = currentTranscript()
-      cleanup()
-      resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
-        transcript,
-      })
+    mediaRecorder.onstop = complete
+    mediaRecorder.start()
+
+    const restartSilenceTimer = () => {
+      window.clearTimeout(silenceTimer)
+      silenceTimer = window.setTimeout(
+        () => finish(),
+        hasSpeech ? ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS : ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS,
+      )
     }
 
-    mediaRecorder.start()
-    window.setTimeout(() => {
-      canFinishForSilence = true
-      if (currentTranscript()) finish()
-    }, ROLEPLAY_MIN_RECORD_MS)
-    maxTimer = window.setTimeout(finish, durationMs)
-
-    if (!recognition) return
-
-    const restartIfNoSpeechYet = () => {
-      if (settled || currentTranscript() || Date.now() >= deadline) {
-        if (Date.now() >= deadline) finish()
-        return
-      }
-      try {
-        recognition.start()
-      } catch {
-        window.setTimeout(restartIfNoSpeechYet, 120)
-      }
+    if (!recognition) {
+      restartSilenceTimer()
+      return
     }
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
-    recognition.continuous = false
+    recognition.continuous = true
+    recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
       interimTranscript = ''
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const transcript = event.results[index][0]?.transcript ?? ''
-        if (event.results[index].isFinal) finalParts.push(transcript)
+        if (event.results[index].isFinal) finalTranscript = `${finalTranscript} ${transcript}`.trim()
         else interimTranscript = `${interimTranscript} ${transcript}`.trim()
       }
+      hasSpeech = Boolean(currentTranscript())
+      restartSilenceTimer()
+    }
+    ;(recognition as SpeechRecognition & { onspeechend?: () => void }).onspeechend = () => {
+      hasSpeech = hasSpeech || Boolean(currentTranscript())
       restartSilenceTimer()
     }
     recognition.onerror = () => {
-      if (currentTranscript()) {
-        finish()
+      restartSilenceTimer()
+    }
+    recognition.onend = () => {
+      if (!settled && !hasSpeech) {
+        try {
+          recognition.start()
+        } catch {
+          restartSilenceTimer()
+        }
         return
       }
-      restartIfNoSpeechYet()
+      if (!settled) restartSilenceTimer()
     }
-    recognition.onend = restartIfNoSpeechYet
 
     try {
       recognition.start()
     } catch {
-      restartIfNoSpeechYet()
+      restartSilenceTimer()
     }
   })
 }
