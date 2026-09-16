@@ -121,6 +121,12 @@ async function handleResponse<T>(res: Response, method: string, path: string): P
     const envelope = body as ApiEnvelope<T> | null
     const errorMessage = envelope?.error?.message ?? `${method} ${path} → ${res.status}`
     const errorCode = envelope?.error?.code
+    if (res.status === 401) {
+      clearParentSession()
+      if (window.location.pathname !== '/start') {
+        window.location.assign('/start')
+      }
+    }
     throw new ApiError(errorMessage, { status: res.status, code: errorCode })
   }
   return unwrap(body as T | ApiEnvelope<T>)

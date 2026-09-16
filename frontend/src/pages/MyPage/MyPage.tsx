@@ -398,29 +398,31 @@ export default function MyPage() {
       />
 
       <div className={styles.body}>
-        <div className={styles.avatarBlock}>
+      <section className={`${styles.card} ${styles.profileCard}`}>
+        <div className={styles.profilePreview}>
           <div className={styles.currentAvatar} style={{ background: avatarColor }}>
             {avatarPreview ? <img src={avatarPreview} alt="" /> : null}
           </div>
+          <span>This is me!</span>
         </div>
-
-      <section className={styles.card}>
-        <div className={styles.sectionTitle}>
-          <span><LineIcon type="profile" /></span>
-          <strong>Profile</strong>
-        </div>
-        <label htmlFor="profile-nickname" className={styles.fieldLabel}>Name</label>
-        <div className={styles.inputRow}>
-          <input
-            id="profile-nickname"
-            value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
-            maxLength={30}
-            disabled={!profile || isSaving}
-          />
-          <button onClick={saveNickname} disabled={!profile || isSaving || !nickname.trim()}>
-            Save
-          </button>
+        <div className={styles.profileForm}>
+          <div className={styles.sectionTitle}>
+            <span><LineIcon type="profile" /></span>
+            <strong>Profile</strong>
+          </div>
+          <label htmlFor="profile-nickname" className={styles.fieldLabel}>Name</label>
+          <div className={styles.inputRow}>
+            <input
+              id="profile-nickname"
+              value={nickname}
+              onChange={(event) => setNickname(event.target.value)}
+              maxLength={30}
+              disabled={!profile || isSaving}
+            />
+            <button onClick={saveNickname} disabled={!profile || isSaving || !nickname.trim()}>
+              Save
+            </button>
+          </div>
         </div>
       </section>
 
@@ -560,6 +562,17 @@ export default function MyPage() {
             <span><LineIcon type="lock" /></span>
             <strong>Parent Area</strong>
             <em>Enter PIN</em>
+            <i aria-hidden="true">
+              <b />
+              <b />
+              <b />
+              <b />
+            </i>
+            <small>
+              <span>Learning<br />Report</span>
+              <span>Account<br />Settings</span>
+              <span>App<br />Settings</span>
+            </small>
           </button>
         )}
       </section>

@@ -6,9 +6,8 @@ import { ApiError, clearProfileSession, fetchHome, usesBackendApi } from '../../
 import {
   DEFAULT_HOME_BACKGROUND_THEME_ID,
   findHomeBackgroundTheme,
-  imageBackground,
 } from '../../data/homeBackgroundThemes'
-import { resolveBookCover, resolveHeroBackgroundImage } from '../../utils/bookAssets'
+import { resolveBookCover } from '../../utils/bookAssets'
 import { ICONS } from '../../constants/assets'
 import { resolvePopoSpots, type PopoCustomization } from '../../data/popoItems'
 import styles from './HomePage.module.css'
@@ -87,9 +86,6 @@ export default function HomePage() {
   const selectedTheme = useMemo(() => findHomeBackgroundTheme(selectedThemeId), [selectedThemeId])
 
   const selectedBookCover = resolveBookCover(selectedBook)
-  const bookBackground = resolveHeroBackgroundImage(selectedBook)
-  // 책 표지 배경이 있으면 그 이미지를, 없으면 방 테마의 CSS 패턴을 쓴다.
-  const activeBackground = bookBackground ? imageBackground(bookBackground) : selectedTheme
 
   // 화면 양옆에 하나씩 떠 있는 허브 버튼. 캐릭터는 가운데를 그대로 쓴다.
   const hubButtons = [
@@ -108,11 +104,11 @@ export default function HomePage() {
     <div
       className={styles.page}
       style={{
-        '--home-background': activeBackground.background,
-        '--home-background-size': activeBackground.backgroundSize,
-        '--home-background-position': activeBackground.backgroundPosition,
-        '--room-floor': activeBackground.floor,
-        '--room-floor-shade': activeBackground.floorShade,
+        '--home-background': selectedTheme.background,
+        '--home-background-size': selectedTheme.backgroundSize,
+        '--home-background-position': selectedTheme.backgroundPosition,
+        '--room-floor': selectedTheme.floor,
+        '--room-floor-shade': selectedTheme.floorShade,
       } as CSSProperties}
     >
       <header className={styles.header}>

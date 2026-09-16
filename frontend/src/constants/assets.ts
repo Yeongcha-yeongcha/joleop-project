@@ -17,14 +17,6 @@ export const IMAGES = {
   // My Library
   myLibraryBg: '/images/MyLibrary_Background.webp',
   bookLocked: '/images/Book_locked.webp',
-  bookBackgrounds: {
-    dragon: '/images/home-themes/cream-book-room.webp',
-    lemonade: '/images/home-themes/sunset-lounge.webp',
-    snack: '/images/home-themes/sky-dream-room.webp',
-    ocean: '/images/home-themes/ocean-blue-room.webp',
-    forest: '/images/home-themes/forest-cozy-room.webp',
-    space: '/images/home-themes/space-adventure-room.webp',
-  },
 
   // 학습 화면 버튼
   nextBtnActive: '/images/NextBtn_active.webp',

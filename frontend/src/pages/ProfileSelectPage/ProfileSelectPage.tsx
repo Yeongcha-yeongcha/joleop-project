@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchProfiles, logoutParent, type ChildProfile } from '../../services/api'
+import { fetchProfiles, getParentToken, logoutParent, type ChildProfile } from '../../services/api'
 import { getProfileColor, getProfileImage } from '../../utils/profileAvatar'
 import styles from './ProfileSelectPage.module.css'
 
@@ -24,10 +24,15 @@ export default function ProfileSelectPage() {
   } | null
 
   useEffect(() => {
+    if (!getParentToken()) {
+      navigate('/start', { replace: true })
+      return
+    }
     fetchProfiles()
       .then((data) => setProfiles(data.profiles))
+      .catch(() => setProfiles([]))
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [navigate])
 
   const changeParentPassword = () => {
     const nextPassword = window.prompt('Type a new account password.')

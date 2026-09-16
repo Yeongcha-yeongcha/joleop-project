@@ -88,7 +88,7 @@ function AppNavButton() {
   const activeProfile = window.localStorage.getItem('yeongcha:active-profile')
   const hasParentToken = window.localStorage.getItem('yeongcha:parent-access-token')
 
-  const hiddenRoutes = ['/', '/onboarding']
+  const hiddenRoutes = ['/', '/start', '/oauth/kakao/callback', '/onboarding']
   const routesWithOwnNav = ['/home', '/customize', '/review', '/mypage', '/books']
   if (
     hiddenRoutes.includes(path) ||
@@ -112,6 +112,10 @@ function AppNavButton() {
   })()
 
   const handleClick = () => {
+    if (path === '/profiles') {
+      navigate('/start', { replace: true })
+      return
+    }
     if (shouldGoHome) {
       navigate('/home')
       return

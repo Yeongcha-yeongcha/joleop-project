@@ -13,8 +13,10 @@ import {
 } from '../../services/api'
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
+import type { UserStats } from '../../types'
 import type { ChapterResult } from '../../utils/chapterProgress'
 import PageHeader from '../../components/PageHeader/PageHeader'
+import StatsBar from '../../components/StatsBar/StatsBar'
 import styles from './ReviewPage.module.css'
 
 type ReviewKind = 'wordCloze' | 'wordRepeat' | 'sentenceOrder' | 'sentenceRepeat' | 'chat'
@@ -296,8 +298,34 @@ function roleplayCardToMission(card: ReviewCardData): RoleplayMission | undefine
   }
 }
 
+function normalizeReviewKey(value: string) {
+  return value.replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+function reviewCardContentKey(card: ReviewCardData) {
+  if (card.cardType === 'CHAT') {
+    return `chat:${card.roleplayMissionId ?? normalizeReviewKey(card.sourceSentence)}`
+  }
+  if (card.cardType === 'WORD') {
+    return `word:${normalizeReviewKey(card.clozeSentence)}|${card.keyword.trim().toLowerCase()}`
+  }
+  return `sentence:${normalizeReviewKey(card.sourceSentence || card.clozeSentence)}`
+}
+
+function uniqueReviewCards(cards: ReviewCardData[]) {
+  const seen = new Set<string>()
+  return cards.filter((card) => {
+    const key = reviewCardContentKey(card)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function reviewItemsFromCards(cards: ReviewCardData[], allowRoleplay: boolean) {
-  const filteredCards = allowRoleplay ? cards.filter((card) => card.cardType === 'CHAT') : cards.filter((card) => card.cardType !== 'CHAT')
+  const filteredCards = uniqueReviewCards(
+    allowRoleplay ? cards.filter((card) => card.cardType === 'CHAT') : cards.filter((card) => card.cardType !== 'CHAT'),
+  )
   return filteredCards.map((card, cardIndex) => cardToReviewItem(card, filteredCards, cardIndex))
 }
 
@@ -386,6 +414,7 @@ export default function ReviewPage() {
   const [selectedMode, setSelectedMode] = useState<ReviewMode>('SMART_MIX')
   const [reviewRoleplayHistory, setReviewRoleplayHistory] = useState<RoleplayHistoryTurn[]>([])
   const [attendanceDates, setAttendanceDates] = useState<string[]>([])
+  const [userStats, setUserStats] = useState<UserStats>({ streak: 0, hearts: 0, xpPercent: 0 })
   const [isListening, setIsListening] = useState(false)
   const [spokenTranscript, setSpokenTranscript] = useState('')
 
@@ -412,6 +441,7 @@ export default function ReviewPage() {
     setReviewRoleplayHistory([])
     fetchUserStats()
       .then((stats) => {
+        setUserStats(stats)
         setAttendanceDates(Array.from(new Set([...(stats.attendanceDates ?? []), ...readReviewAttendanceDates()])))
       })
       .catch(() => setAttendanceDates(readReviewAttendanceDates()))
@@ -686,6 +716,10 @@ export default function ReviewPage() {
             </div>
           )}
 
+          <div className={styles.statsWrap}>
+            <StatsBar stats={userStats} tone="light" />
+          </div>
+
           <section className={styles.weekCard} aria-label="This week">
             <h2>This Week</h2>
             <div>
@@ -720,6 +754,7 @@ export default function ReviewPage() {
 
             <button className={styles.smartButton} onClick={() => beginMode('SMART_MIX')}>
               Start Smart Mix
+              <span aria-hidden="true">›</span>
             </button>
             {!usesBackendApi() && <p className={styles.emptyHint}>Connect the backend to load saved review cards.</p>}
           </section>

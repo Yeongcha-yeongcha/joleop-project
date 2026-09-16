@@ -85,7 +85,7 @@ scripts/
 
 docs/
   API_REQUESTS.md        # API 요청 예시
-  AWS_DEPLOY.md          # AWS App Runner + Amplify 배포 절차
+  AWS_DEPLOY.md          # Git push부터 ECS Express + Amplify 배포까지의 실행 절차
   GITHUB_STRUCTURE.md    # 저장소 구조 설명
 
 plans/
@@ -191,7 +191,7 @@ COMFYUI_CFG=7.0
 
 ## AWS 배포
 
-AWS 배포 기본 경로는 `Backend: App Runner`, `Frontend: Amplify Hosting`, `Database: RDS PostgreSQL`입니다.
+AWS 배포 기본 경로는 `Backend: ECS Express Mode`, `Frontend: Amplify Hosting`, `Database: RDS PostgreSQL`입니다.
 
 ```txt
 docs/AWS_DEPLOY.md
