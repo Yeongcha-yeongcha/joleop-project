@@ -99,24 +99,6 @@ export const HOME_BACKGROUND_THEMES: HomeBackgroundTheme[] = [
   },
 ]
 
-/** 방 배경을 CSS 변수로 넘길 때 쓰는 값 묶음. */
-export type RoomBackgroundStyle = Pick<
-  HomeBackgroundTheme,
-  'background' | 'backgroundSize' | 'backgroundPosition' | 'floor' | 'floorShade'
->
-
-/** 책 표지 배경처럼 실제 이미지 URL 을 쓸 때의 값. 발판은 기본 테마를 따른다. */
-export function imageBackground(url: string): RoomBackgroundStyle {
-  const base = HOME_BACKGROUND_THEMES[0]
-  return {
-    background: `url("${url}")`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    floor: base.floor,
-    floorShade: base.floorShade,
-  }
-}
-
 export function findHomeBackgroundTheme(id: string | undefined): HomeBackgroundTheme {
   return (
     HOME_BACKGROUND_THEMES.find((theme) => theme.id === id) ?? HOME_BACKGROUND_THEMES[0]
