@@ -183,6 +183,13 @@ COMFYUI_BASE_URL=http://127.0.0.1:8188
 COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors
 COMFYUI_WIDTH=832
 COMFYUI_HEIGHT=1216
+GENERATE_TABLET_IMAGES=true
+COMFYUI_TABLET_WIDTH=1536
+COMFYUI_TABLET_HEIGHT=1152
+COMFYUI_TABLET_MODE=outpaint
+COMFYUI_TABLET_DENOISE=0.85
+COMFYUI_OUTPAINT_FEATHERING=48
+TABLET_IMAGE_SUFFIX=-tablet
 COMFYUI_STEPS=28
 COMFYUI_CFG=7.0
 ```
@@ -469,6 +476,15 @@ images/{book_id}_ep{episode}_p{page_number}.png
 ```txt
 images/lion_ep1_p1.png
 images/lion_ep1_p2.png
+```
+
+`GENERATE_TABLET_IMAGES=true`이면 같은 장면의 iPad용 4:3 이미지도 함께 생성됩니다.
+기본값인 `COMFYUI_TABLET_MODE=outpaint`에서는 모바일 이미지를 중앙 원본으로 유지하고
+좌우 배경만 ComfyUI로 확장합니다. 완전히 새로 생성하려면 `COMFYUI_TABLET_MODE=generate`로 바꿉니다.
+
+```txt
+images/lion_ep1_p1-tablet.png
+images/lion_ep1_p2-tablet.png
 ```
 
 `generate_images=false`이면 실제 PNG 파일은 만들지 않고, `image_path`와 `image_prompt`만 JSON에 저장합니다.

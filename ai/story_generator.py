@@ -784,7 +784,7 @@ Sentences:
 
 Output ONLY a JSON array of strings, one prompt per sentence.
 Each prompt must include the fixed style phrase, the protagonist consistency note, and the scene content.
-Example: ["Bright 2D mobile children's storybook app illustration, same cute rabbit protagonist, ...", ...]"""
+Example: ["Bright 2D responsive children's storybook app illustration, same cute rabbit protagonist, ...", ...]"""
 
     try:
         text = generate_text([{"role": "user", "content": prompt}], max_tokens=800)
@@ -793,7 +793,7 @@ Example: ["Bright 2D mobile children's storybook app illustration, same cute rab
     except Exception:
         return [
             (
-                "Bright 2D mobile children's storybook app illustration, "
+                "Bright 2D responsive children's storybook app illustration, "
                 f"same protagonist ({protagonist}), consistent character design, "
                 f"scene: {s[:120]}"
             )

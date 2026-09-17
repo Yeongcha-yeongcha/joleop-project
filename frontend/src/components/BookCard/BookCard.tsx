@@ -12,6 +12,7 @@
 
 import type { Book } from '../../types'
 import { IMAGES } from '../../constants/assets'
+import StoryBookCover from '../StoryBookCover/StoryBookCover'
 import styles from './BookCard.module.css'
 
 interface Props {
@@ -21,10 +22,6 @@ interface Props {
 
 export default function BookCard({ book, onSelect }: Props) {
   const isLocked = book.status === 'locked'
-  const coverStyle = { backgroundColor: book.coverColor ?? '#f6b34f' }
-  const lessonNumber = String(Math.max(1, book.currentLesson || 1)).padStart(2, '0')
-  const sceneImage = `/images/pages/level${book.level}/lesson${lessonNumber}/p01.webp`
-  const fallbackSceneImage = `/images/pages/level${book.level}/lesson01/p01.webp`
 
   if (isLocked) {
     return (
@@ -50,41 +47,7 @@ export default function BookCard({ book, onSelect }: Props) {
         aria-label={`Choose ${book.title}`}
         style={{ cursor: 'pointer' }}
       >
-        {book.coverImage ? (
-          <>
-            <img src={book.coverImage} className={styles.coverImage} alt={book.title} />
-            <img
-              src={sceneImage}
-              className={styles.coverSceneInset}
-              alt=""
-              onError={(event) => {
-                if (event.currentTarget.dataset.fallback !== 'true') {
-                  event.currentTarget.dataset.fallback = 'true'
-                  event.currentTarget.src = fallbackSceneImage
-                  return
-                }
-                event.currentTarget.hidden = true
-              }}
-            />
-          </>
-        ) : (
-          <div className={styles.colorCover} style={coverStyle} aria-hidden="true">
-            <img
-              src={sceneImage}
-              className={styles.sceneCoverImage}
-              alt=""
-              onError={(event) => {
-                if (event.currentTarget.dataset.fallback !== 'true') {
-                  event.currentTarget.dataset.fallback = 'true'
-                  event.currentTarget.src = fallbackSceneImage
-                  return
-                }
-                event.currentTarget.hidden = true
-              }}
-            />
-            <span>{book.title}</span>
-          </div>
-        )}
+        <StoryBookCover book={book} variant="library" />
       </div>
 
       {/* 설명 카드 — 클릭 불가 */}

@@ -63,6 +63,18 @@ COMFYUI_BASE_URL    = os.getenv("COMFYUI_BASE_URL", "http://127.0.0.1:8188")
 COMFYUI_CHECKPOINT  = os.getenv("COMFYUI_CHECKPOINT", "sd_xl_base_1.0.safetensors")
 COMFYUI_WIDTH       = int(os.getenv("COMFYUI_WIDTH", "832"))
 COMFYUI_HEIGHT      = int(os.getenv("COMFYUI_HEIGHT", "1216"))
+GENERATE_TABLET_IMAGES = os.getenv("GENERATE_TABLET_IMAGES", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+COMFYUI_TABLET_WIDTH  = int(os.getenv("COMFYUI_TABLET_WIDTH", "1536"))
+COMFYUI_TABLET_HEIGHT = int(os.getenv("COMFYUI_TABLET_HEIGHT", "1152"))
+COMFYUI_TABLET_MODE   = os.getenv("COMFYUI_TABLET_MODE", "outpaint")
+COMFYUI_TABLET_DENOISE = float(os.getenv("COMFYUI_TABLET_DENOISE", "0.85"))
+COMFYUI_OUTPAINT_FEATHERING = int(os.getenv("COMFYUI_OUTPAINT_FEATHERING", "48"))
+TABLET_IMAGE_SUFFIX   = os.getenv("TABLET_IMAGE_SUFFIX", "-tablet")
 COMFYUI_STEPS       = int(os.getenv("COMFYUI_STEPS", "28"))
 COMFYUI_CFG         = float(os.getenv("COMFYUI_CFG", "7.0"))
 COMFYUI_SAMPLER     = os.getenv("COMFYUI_SAMPLER", "euler")
@@ -136,13 +148,13 @@ MODELS = ModelConfig()
 
 
 IMAGE_STYLE_GUIDE = """
-Consistent mobile children's storybook app illustration style:
+Consistent responsive children's storybook app illustration style:
 - bright 2D digital illustration, cute educational mobile game look
 - rounded friendly characters with big expressive eyes and soft simple shapes
 - clean vector-like edges, smooth cel shading, warm highlights
 - saturated cheerful colors, forest/fairy-tale palette, high readability
 - simple background depth with layered hills, trees, sky, or room elements
-- portrait mobile composition, clear center subject, no clutter
+- clear center subject, generous safe area, no clutter
 - same character design, same proportions, same line weight, same lighting
 - no photorealism, no watercolor texture, no sketch lines, no 3D render
 """
