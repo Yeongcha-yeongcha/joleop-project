@@ -2,12 +2,12 @@ import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import StatsBar from '../../components/StatsBar/StatsBar'
+import StoryBookCover from '../../components/StoryBookCover/StoryBookCover'
 import { ApiError, clearProfileSession, fetchHome, usesBackendApi } from '../../services/api'
 import {
   DEFAULT_HOME_BACKGROUND_THEME_ID,
   findHomeBackgroundTheme,
 } from '../../data/homeBackgroundThemes'
-import { resolveBookCover } from '../../utils/bookAssets'
 import { ICONS } from '../../constants/assets'
 import { resolvePopoSpots, type PopoCustomization } from '../../data/popoItems'
 import styles from './HomePage.module.css'
@@ -85,8 +85,6 @@ export default function HomePage() {
 
   const selectedTheme = useMemo(() => findHomeBackgroundTheme(selectedThemeId), [selectedThemeId])
 
-  const selectedBookCover = resolveBookCover(selectedBook)
-
   // 화면 양옆에 하나씩 떠 있는 허브 버튼. 캐릭터는 가운데를 그대로 쓴다.
   const hubButtons = [
     { side: 'left' as const, slot: 'top' as const, path: '/review', label: 'Review', icon: ICONS.brain, tourId: 'nav-review' },
@@ -138,7 +136,7 @@ export default function HomePage() {
             onClick={() => navigate('/books')}
             aria-label={selectedBook ? 'Change book' : 'Pick a book'}
           >
-            <img src={selectedBookCover || '/images/BookBtn_unselected.webp'} alt="" />
+            <StoryBookCover book={selectedBook} variant="held" />
           </button>
         </div>
 
@@ -171,11 +169,7 @@ export default function HomePage() {
           onClick={() => navigate('/books')}
           aria-label={selectedBook ? 'Change book' : 'Pick a book'}
         >
-          <img
-            src={selectedBookCover || '/images/BookBtn_unselected.webp'}
-            alt=""
-            className={styles.bookCover}
-          />
+          <StoryBookCover book={selectedBook} variant="current" className={styles.bookCover} />
           <span className={styles.bookMeta}>
             <em>
               <img src={ICONS.bookmark} alt="" className={styles.metaIcon} aria-hidden="true" />

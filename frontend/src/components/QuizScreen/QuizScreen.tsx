@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../types'
 import { IMAGES } from '../../constants/assets'
+import ResponsiveSceneImage from '../ResponsiveSceneImage/ResponsiveSceneImage'
 import styles from './QuizScreen.module.css'
 
 const QUIZ_MAX_RECORD_MS = 3800
@@ -164,7 +165,7 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
           aria-label="Quiz picture"
         >
           {quiz.imageUrl
-            ? <img src={quiz.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <ResponsiveSceneImage src={quiz.imageUrl} alt="" className={styles.sceneImage} />
             : <span>📖</span>
           }
         </div>

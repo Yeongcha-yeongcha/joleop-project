@@ -360,6 +360,9 @@ function reviewCardContentKey(card: ReviewCardData) {
   if (card.cardType === 'CHAT') {
     return `chat:${card.roleplayMissionId ?? normalizeReviewKey(card.sourceSentence)}`
   }
+  if (card.sourceQuestionId !== undefined && card.sourceQuestionId !== null) {
+    return `question:${card.sourceQuestionId}`
+  }
   if (card.cardType === 'WORD') {
     return `word:${normalizeReviewKey(card.clozeSentence)}|${card.keyword.trim().toLowerCase()}`
   }
@@ -428,25 +431,15 @@ function fiveStepModeItems(cards: ReviewCardData[], mode: ReviewMode): ReviewIte
   const matchingCards = cards.filter((card) => (
     mode === 'WORD_PLAYGROUND' ? card.cardType === 'WORD' : card.cardType === 'SENTENCE'
   ))
-  const seen = new Set<string>()
-  const modeCards = matchingCards.filter((card) => {
-    const content = mode === 'WORD_PLAYGROUND'
-      ? `${card.clozeSentence}|${card.keyword}`
-      : card.sourceSentence
-    const key = content.toLocaleLowerCase().replace(/\s+/g, ' ').trim()
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+  const modeCards = uniqueReviewCards(matchingCards)
   if (!modeCards.length) return []
 
   const kinds: ReviewKind[] = mode === 'WORD_PLAYGROUND'
     ? ['wordCloze', 'wordRepeat', 'wordCloze', 'wordRepeat', 'wordCloze']
     : ['sentenceOrder', 'sentenceRepeat', 'sentenceOrder', 'sentenceRepeat', 'sentenceOrder']
 
-  return kinds.map((kind, index) => {
-    const sourceIndex = index % modeCards.length
-    const card = modeCards[sourceIndex]
+  return modeCards.slice(0, 5).map((card, index) => {
+    const kind = kinds[index % kinds.length]
     return cardToReviewItem(card, modeCards, index, kind)
   })
 }
@@ -459,19 +452,49 @@ function smartMixItems(cards: ReviewCardData[]): ReviewItem[] {
   if (!fallbackCards.length) return []
 
   const kinds: ReviewKind[] = ['wordCloze', 'sentenceOrder', 'wordRepeat', 'sentenceRepeat', 'wordCloze']
-  let wordIndex = 0
-  let sentenceIndex = 0
+  const usedCardIds = new Set<number>()
+  const usedKeys = new Set<string>()
 
-  return kinds.map((kind, index) => {
-    const sourceCards = kind.startsWith('word')
+  const takeCard = (sourceCards: ReviewCardData[]) => {
+    const card = sourceCards.find((candidate) => {
+      const key = reviewCardContentKey(candidate)
+      return !usedCardIds.has(candidate.cardId) && !usedKeys.has(key)
+    })
+    if (!card) return undefined
+    usedCardIds.add(card.cardId)
+    usedKeys.add(reviewCardContentKey(card))
+    return card
+  }
+
+  const items: ReviewItem[] = []
+
+  kinds.forEach((kind) => {
+    const preferredCards = kind.startsWith('word')
       ? (wordCards.length ? wordCards : fallbackCards)
       : (sentenceCards.length ? sentenceCards : fallbackCards)
-    const sourceIndex = kind.startsWith('word')
-      ? wordIndex++ % sourceCards.length
-      : sentenceIndex++ % sourceCards.length
-    const card = sourceCards[sourceIndex]
-    return cardToReviewItem(card, sourceCards, index, kind)
+    const backupCards = fallbackCards.filter((card) => (
+      kind.startsWith('word') ? card.cardType === 'WORD' : card.cardType === 'SENTENCE'
+    ))
+    const card = takeCard(preferredCards) ?? takeCard(backupCards)
+    if (!card) return
+    items.push(cardToReviewItem(card, preferredCards, items.length, kind))
   })
+
+  if (items.length >= 5) return items
+
+  fallbackCards.forEach((card) => {
+    if (items.length >= 5) return
+    const key = reviewCardContentKey(card)
+    if (usedCardIds.has(card.cardId) || usedKeys.has(key)) return
+    const kind = card.cardType === 'SENTENCE'
+      ? (items.length % 2 === 0 ? 'sentenceOrder' : 'sentenceRepeat')
+      : (items.length % 2 === 0 ? 'wordCloze' : 'wordRepeat')
+    usedCardIds.add(card.cardId)
+    usedKeys.add(key)
+    items.push(cardToReviewItem(card, fallbackCards, items.length, kind))
+  })
+
+  return items
 }
 
 export default function ReviewPage() {

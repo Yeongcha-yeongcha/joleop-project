@@ -935,6 +935,7 @@ export interface ReviewCardData {
   bookTitle: string
   chapterNumber: number
   cardType?: 'WORD' | 'SENTENCE' | 'CHAT'
+  sourceQuestionId?: number | null
   sourceSentence: string
   clozeSentence: string
   keyword: string

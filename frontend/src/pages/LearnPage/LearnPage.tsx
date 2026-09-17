@@ -34,6 +34,7 @@ import LessonHeader from '../../components/LessonHeader/LessonHeader'
 import StatusScreen from '../../components/StatusScreen/StatusScreen'
 import QuizScreen from '../../components/QuizScreen/QuizScreen'
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
+import ResponsiveSceneImage from '../../components/ResponsiveSceneImage/ResponsiveSceneImage'
 import type { LessonPage, QuizQuestion, RoleplayMission } from '../../types'
 import {
   type ChapterResult,
@@ -1009,7 +1010,7 @@ export default function LearnPage() {
                 aria-label="Story picture"
               >
                 {displayPage?.imageUrl
-                  ? <img src={displayPage.imageUrl} alt="" className={styles.sceneImage} />
+                  ? <ResponsiveSceneImage src={displayPage.imageUrl} alt="" className={styles.sceneImage} />
                   : <span>📖</span>
                 }
               </div>

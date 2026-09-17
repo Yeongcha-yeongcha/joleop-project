@@ -6,12 +6,27 @@
 
 .illustration {
   width: 100%;
-  aspect-ratio: 1 / 0.85;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 832 / 1216;
+  max-height: min(56svh, 560px);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 72px;
+  background: #fff8df;
+}
+
+.sceneImage {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center center;
+  background: #fff8df;
 }
 
 .quizCard {
@@ -217,8 +232,10 @@
 
 @media (min-width: 700px) {
   .illustration {
-    height: min(48dvh, 520px);
-    aspect-ratio: auto;
+    width: min(100%, 920px);
+    aspect-ratio: 4 / 3;
+    max-height: min(48svh, 520px);
+    margin: 0 auto;
   }
 
   .quizCard {
@@ -242,5 +259,23 @@
 
   .btnImg {
     max-width: 440px;
+  }
+}
+
+@media (min-width: 700px) and (max-height: 760px) {
+  .illustration {
+    max-height: min(42svh, 390px);
+  }
+
+  .sentenceBoxWrapper {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+}
+
+@media (max-width: 699px) and (orientation: landscape) {
+  .illustration {
+    aspect-ratio: 16 / 9;
+    max-height: 44svh;
   }
 }

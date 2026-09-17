@@ -732,6 +732,7 @@ class ReviewService:
             "bookTitle": card.book.title if card.book else "",
             "chapterNumber": card.chapter_number,
             "cardType": card.card_type.value,
+            "sourceQuestionId": card.source_question_id,
             "sourceSentence": card.source_sentence,
             "clozeSentence": card.cloze_sentence,
             "keyword": card.keyword,
