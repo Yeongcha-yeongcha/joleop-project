@@ -118,6 +118,17 @@ docker build \
   .
 ```
 
+Ollama를 백엔드 컨테이너에 같이 넣어 테스트할 때는 아래처럼 빌드합니다. 이 이미지는
+컨테이너 시작 시 `OLLAMA_MODEL`을 내려받을 수 있어 첫 시작이 오래 걸릴 수 있습니다.
+
+```bash
+docker build \
+  --build-arg INSTALL_OLLAMA=true \
+  -f backend/Dockerfile \
+  -t 054422645032.dkr.ecr.ap-southeast-2.amazonaws.com/yeongcha-backend:latest \
+  .
+```
+
 빌드가 성공하면 ECR에 푸시합니다.
 
 ```bash
@@ -162,6 +173,10 @@ CORS_ORIGINS=https://daeun.d2pvyyx48vb41m.amplifyapp.com
 EDGE_TTS_CACHE_DIR=/tmp/tts-cache
 TTS_PROVIDER=edge
 EDGE_TTS_VOICE=en-US-JennyNeural
+LLM_PROVIDER=ollama
+OLLAMA_EMBEDDED=true
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1:8b
 KAKAO_CLIENT_ID=Kakao REST API 키
 KAKAO_CLIENT_SECRET=
 KAKAO_REDIRECT_URI=https://daeun.d2pvyyx48vb41m.amplifyapp.com/oauth/kakao/callback
