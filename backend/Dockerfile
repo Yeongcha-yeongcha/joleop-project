@@ -10,7 +10,7 @@ ARG INSTALL_OLLAMA=false
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install -y --no-install-recommends curl zstd \
     && rm -rf /var/lib/apt/lists/*
 
 RUN if [ "$INSTALL_OLLAMA" = "true" ]; then \
