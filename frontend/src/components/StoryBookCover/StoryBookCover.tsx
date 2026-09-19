@@ -19,21 +19,23 @@ export default function StoryBookCover({ book, className = '', variant = 'librar
   return (
     <span className={[styles.cover, styles[variant], className].filter(Boolean).join(' ')}>
       <img src={resolveBookCover(book)} className={styles.base} alt="" />
-      <img
-        src={resolveBookSceneImage(book)}
-        className={styles.scene}
-        alt=""
-        onError={(event) => {
-          const nextIndex = Number(event.currentTarget.dataset.fallbackIndex ?? '0')
-          const nextSrc = fallbacks[nextIndex]
-          if (nextSrc) {
-            event.currentTarget.dataset.fallbackIndex = String(nextIndex + 1)
-            event.currentTarget.src = nextSrc
-            return
-          }
-          event.currentTarget.hidden = true
-        }}
-      />
+      <span className={styles.sceneFrame}>
+        <img
+          src={resolveBookSceneImage(book)}
+          className={styles.scene}
+          alt=""
+          onError={(event) => {
+            const nextIndex = Number(event.currentTarget.dataset.fallbackIndex ?? '0')
+            const nextSrc = fallbacks[nextIndex]
+            if (nextSrc) {
+              event.currentTarget.dataset.fallbackIndex = String(nextIndex + 1)
+              event.currentTarget.src = nextSrc
+              return
+            }
+            event.currentTarget.hidden = true
+          }}
+        />
+      </span>
     </span>
   )
 }
