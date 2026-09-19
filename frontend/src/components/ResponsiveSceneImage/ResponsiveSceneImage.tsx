@@ -7,6 +7,7 @@ interface Props {
 }
 
 const TABLET_QUERY = '(min-width: 700px)'
+const PAGE_IMAGE_PATH_PATTERN = /^\/images\/pages\/level\d+\/(lesson\d+)\/(p\d+)\.webp$/i
 
 function getTabletImageUrl(src: string): string {
   const queryIndex = src.indexOf('?')
@@ -15,8 +16,13 @@ function getTabletImageUrl(src: string): string {
   const path = splitIndex === undefined ? src : src.slice(0, splitIndex)
   const suffix = splitIndex === undefined ? '' : src.slice(splitIndex)
   const dotIndex = path.lastIndexOf('.')
+  const pageImageMatch = path.match(PAGE_IMAGE_PATH_PATTERN)
 
   if (path.includes('-tablet')) return src
+  if (pageImageMatch) {
+    const [, lesson, page] = pageImageMatch
+    return `/images/pages/ipad/${lesson}/${page}.webp${suffix}`
+  }
   if (dotIndex <= path.lastIndexOf('/')) return `${path}-tablet${suffix}`
 
   return `${path.slice(0, dotIndex)}-tablet${path.slice(dotIndex)}${suffix}`
