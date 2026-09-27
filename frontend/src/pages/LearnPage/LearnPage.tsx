@@ -14,6 +14,7 @@ import {
   skipLearningCourse,
   startOrResumeLearningSession,
   synthesizeSpeech,
+  transcribeReviewSpeech,
   updateDescriptionCourse,
   updateReadingCourse,
   updateRepeatCourse,
@@ -68,6 +69,9 @@ const PHASE_EXIT_MS = 230
 const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 5000
 const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 1400
 const REPEAT_AUTO_ADVANCE_MS = 420
+const REPEAT_PREVIEW_FIRST_DELAY_MS = 1000
+const REPEAT_PREVIEW_INTERVAL_MS = 1600
+const REPEAT_MAX_PREVIEW_REQUESTS = 2
 const TTS_HIGHLIGHT_LEAD_SECONDS = 0.1
 const TTS_HIGHLIGHT_START_PADDING_SECONDS = 0.02
 const TTS_HIGHLIGHT_END_PADDING_SECONDS = 0.16
@@ -76,6 +80,11 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   bobo: 'popo',
   pogo: 'popo',
   poppy: 'popo',
+  po: 'popo',
+  poe: 'popo',
+  poh: 'popo',
+  bo: 'popo',
+  bow: 'popo',
   poepoe: 'popo',
   bowbow: 'popo',
   purple: 'popo',
@@ -88,6 +97,10 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   photo: 'toto',
   titi: 'toto',
   total: 'toto',
+  to: 'toto',
+  toe: 'toto',
+  tow: 'toto',
+  doh: 'toto',
   toetoe: 'toto',
   towtow: 'toto',
   pipi: 'pipi',
@@ -98,16 +111,25 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   phoebe: 'pipi',
   peepee: 'pipi',
   pp: 'pipi',
+  pee: 'pipi',
+  pea: 'pipi',
   peapea: 'pipi',
   beebee: 'pipi',
   gigi: 'gigi',
   geegee: 'gigi',
   jeejee: 'gigi',
   gg: 'gigi',
+  gi: 'gigi',
+  gee: 'gigi',
+  ji: 'gigi',
+  jee: 'gigi',
   jiji: 'gigi',
   momo: 'momo',
   mowmow: 'momo',
   mama: 'momo',
+  mo: 'momo',
+  mow: 'momo',
+  moe: 'momo',
   moemoe: 'momo',
 }
 const STORY_CHARACTER_NAMES = new Set(['popo', 'toto', 'pipi', 'gigi', 'momo'])
@@ -162,7 +184,12 @@ function areSimilarWords(a: string, b: string): boolean {
     previous = current
   }
   const similarity = 1 - previous[b.length] / Math.max(a.length, b.length)
-  return similarity >= (STORY_CHARACTER_NAMES.has(b) ? 0.68 : 0.80)
+  const threshold = STORY_CHARACTER_NAMES.has(b)
+    ? 0.55
+    : b.length <= 3
+      ? 0.80
+      : 0.72
+  return similarity >= threshold
 }
 
 function repeatHighlights(expected: string, result: SpeechResult): RepeatWordResult[] {
@@ -363,7 +390,10 @@ export default function LearnPage() {
   const chapterNumber = Math.max(1, Number.parseInt(searchParams.get('chapter') || String(selectedBook?.currentLesson ?? 1), 10) || 1)
   const shouldRestart = searchParams.has('restart')
 
-  const recordRepeatSpeech = useCallback((expected: string): Promise<{ audio: Blob; transcript: string; result: SpeechResult }> => (
+  const recordRepeatSpeech = useCallback((
+    expected: string,
+    onPreview?: (audio: Blob) => Promise<string>,
+  ): Promise<{ audio: Blob; transcript: string; result: SpeechResult }> => (
     new Promise(async (resolve, reject) => {
       const isAppleMobile = isAppleMobileDevice()
       if (isAppleMobile) prepareAppleAudioCapture()
@@ -379,11 +409,14 @@ export default function LearnPage() {
       const mediaRecorder = isAppleMobile
         ? null
         : new MediaRecorder(stream, supportedAudioRecorderOptions())
-      const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+      const Recognition = isAppleMobile
+        ? null
+        : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
       const recognition = Recognition ? new Recognition() : null
       let pcmCapture: PcmWavCapture | null = null
       let finalTranscript = ''
       let interimTranscript = ''
+      let previewTranscript = ''
       let settled = false
       let hasSpeech = false
       const expectedWordCount = Array.from(expected.matchAll(/[A-Za-z0-9']+/g)).length
@@ -391,16 +424,26 @@ export default function LearnPage() {
       let silenceTimer: number | null = null
       const maxRecordTimer = window.setTimeout(() => finish(), maxRecordMs)
       let autoAdvanceTimer: number | null = null
+      let previewTimer: number | null = null
+      let previewRequestCount = 0
+      let previewRequestInFlight = false
+      let lastBrowserResultAt = 0
 
       const cleanup = () => {
         if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         window.clearTimeout(maxRecordTimer)
         if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer)
+        if (previewTimer !== null) window.clearTimeout(previewTimer)
         recognition?.abort()
         stream.getTracks().forEach((track) => track.stop())
       }
 
-      const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
+      const currentTranscript = () => {
+        const browserTranscript = `${finalTranscript} ${interimTranscript}`.trim()
+        return browserTranscript.length >= previewTranscript.length
+          ? browserTranscript
+          : previewTranscript
+      }
 
       const updateResult = () => {
         const result = evaluateRepeatSpeech(expected, normalizeSpeechText(currentTranscript()))
@@ -441,6 +484,39 @@ export default function LearnPage() {
         )
       }
 
+      const schedulePreview = (delay: number) => {
+        if (!isAppleMobile || !onPreview || settled || previewRequestCount >= REPEAT_MAX_PREVIEW_REQUESTS) return
+        if (previewTimer !== null) window.clearTimeout(previewTimer)
+        previewTimer = window.setTimeout(async () => {
+          previewTimer = null
+          if (settled || !pcmCapture || previewRequestInFlight) return
+          if (lastBrowserResultAt && performance.now() - lastBrowserResultAt < REPEAT_PREVIEW_INTERVAL_MS) {
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+            return
+          }
+          const audio = pcmCapture.snapshot()
+          if (audio.size <= 44) {
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+            return
+          }
+          previewRequestCount += 1
+          previewRequestInFlight = true
+          try {
+            const transcript = normalizeSpeechText(await onPreview(audio))
+            if (!settled && transcript.trim()) {
+              previewTranscript = transcript.trim()
+              hasSpeech = true
+              updateResult()
+            }
+          } catch {
+            // Final server evaluation still runs with the complete recording.
+          } finally {
+            previewRequestInFlight = false
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+          }
+        }, delay)
+      }
+
       if (mediaRecorder) {
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) chunks.push(event.data)
@@ -459,6 +535,7 @@ export default function LearnPage() {
             return
           }
           pcmCapture = capture
+          schedulePreview(REPEAT_PREVIEW_FIRST_DELAY_MS)
         } catch {
           cleanup()
           reject(new Error('Recording failed. Please reload the app and try again.'))
@@ -482,6 +559,7 @@ export default function LearnPage() {
       recognition.interimResults = true
       recognition.maxAlternatives = 1
       recognition.onresult = (event) => {
+        lastBrowserResultAt = performance.now()
         interimTranscript = ''
         for (let index = event.resultIndex; index < event.results.length; index += 1) {
           const transcript = event.results[index][0]?.transcript ?? ''
@@ -893,9 +971,14 @@ export default function LearnPage() {
     setRepeatState('recording')
     try {
       const expected = currentPage?.text ?? ''
-      const speech = await recordRepeatSpeech(expected)
-      // Apple WebKit recognition only drives live colors. The recorded audio is
-      // always evaluated by server STT because later browser sessions can hang.
+      const speech = await recordRepeatSpeech(
+        expected,
+        isAppleMobileDevice()
+          ? async (audio) => (await transcribeReviewSpeech(audio)).transcript
+          : undefined,
+      )
+      // iPad uses recorded WAV plus server STT because repeated WebKit speech
+      // recognition sessions can hang after audio playback.
       const browserTranscript = !isAppleMobileDevice() && speech.result.correct
         ? speech.transcript
         : undefined

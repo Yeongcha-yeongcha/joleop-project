@@ -6,6 +6,11 @@ SPEECH_NAME_ALIASES = {
     "bobo": "popo",
     "pogo": "popo",
     "poppy": "popo",
+    "po": "popo",
+    "poe": "popo",
+    "poh": "popo",
+    "bo": "popo",
+    "bow": "popo",
     "poepoe": "popo",
     "bowbow": "popo",
     "purple": "popo",
@@ -18,6 +23,10 @@ SPEECH_NAME_ALIASES = {
     "photo": "toto",
     "titi": "toto",
     "total": "toto",
+    "to": "toto",
+    "toe": "toto",
+    "tow": "toto",
+    "doh": "toto",
     "toetoe": "toto",
     "towtow": "toto",
     "pipi": "pipi",
@@ -28,16 +37,25 @@ SPEECH_NAME_ALIASES = {
     "phoebe": "pipi",
     "peepee": "pipi",
     "pp": "pipi",
+    "pee": "pipi",
+    "pea": "pipi",
     "peapea": "pipi",
     "beebee": "pipi",
     "gigi": "gigi",
     "geegee": "gigi",
     "jeejee": "gigi",
     "gg": "gigi",
+    "gi": "gigi",
+    "gee": "gigi",
+    "ji": "gigi",
+    "jee": "gigi",
     "jiji": "gigi",
     "momo": "momo",
     "mowmow": "momo",
     "mama": "momo",
+    "mo": "momo",
+    "mow": "momo",
+    "moe": "momo",
     "moemoe": "momo",
 }
 STORY_CHARACTER_NAMES = {"popo", "toto", "pipi", "gigi", "momo"}
@@ -148,7 +166,11 @@ class RepeatEvaluationService:
                         if recognized is not None
                         else 0
                     )
-                    threshold = 0.68 if expected in STORY_CHARACTER_NAMES else 0.80
+                    threshold = (
+                        0.55
+                        if expected in STORY_CHARACTER_NAMES
+                        else 0.80 if len(expected) <= 3 else 0.72
+                    )
                     results[target_index]["correct"] = similarity >= threshold
 
         return results

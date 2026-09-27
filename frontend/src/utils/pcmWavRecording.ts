@@ -1,4 +1,5 @@
 export interface PcmWavCapture {
+  snapshot: () => Blob
   stop: () => Blob
 }
 
@@ -6,7 +7,21 @@ interface AudioSessionNavigator extends Navigator {
   audioSession?: { type: string }
 }
 
+let sharedCaptureContext: AudioContext | null = null
+
+function getCaptureContext() {
+  const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext
+  if (!AudioContextConstructor) return null
+  if (!sharedCaptureContext || sharedCaptureContext.state === 'closed') {
+    sharedCaptureContext = new AudioContextConstructor()
+  }
+  return sharedCaptureContext
+}
+
 export function prepareAppleAudioCapture() {
+  const context = getCaptureContext()
+  if (context?.state === 'suspended') void context.resume().catch(() => undefined)
+
   const audioSession = (navigator as AudioSessionNavigator).audioSession
   if (!audioSession) return
   try {
@@ -20,10 +35,10 @@ export async function startPcmWavCapture(
   stream: MediaStream,
   onLevel?: (rms: number) => void,
 ): Promise<PcmWavCapture> {
-  const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext
-  if (!AudioContextConstructor) throw new Error('Audio recording is not supported.')
+  const context = getCaptureContext()
+  if (!context) throw new Error('Audio recording is not supported.')
+  if (context.state === 'suspended') await context.resume()
 
-  const context = new AudioContextConstructor()
   const audioSession = (navigator as AudioSessionNavigator).audioSession
   if (audioSession) {
     try {
@@ -53,16 +68,16 @@ export async function startPcmWavCapture(
 
   source.connect(processor)
   processor.connect(context.destination)
-  if (context.state === 'suspended') void context.resume().catch(() => undefined)
 
+  const snapshot = () => encodePcmWav(chunks, context.sampleRate)
   return {
+    snapshot,
     stop: () => {
       if (!stopped) {
         stopped = true
         processor.onaudioprocess = null
         source.disconnect()
         processor.disconnect()
-        void context.close().catch(() => undefined)
         if (audioSession) {
           try {
             audioSession.type = 'playback'
@@ -72,7 +87,7 @@ export async function startPcmWavCapture(
           }
         }
       }
-      return encodePcmWav(chunks, context.sampleRate)
+      return snapshot()
     },
   }
 }

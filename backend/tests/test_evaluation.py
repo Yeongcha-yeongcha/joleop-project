@@ -71,6 +71,16 @@ def test_repeat_evaluation_accepts_split_character_name_transcriptions() -> None
     assert all(word["correct"] for word in result["wordResults"])
 
 
+def test_repeat_evaluation_accepts_single_syllable_character_name_transcriptions() -> None:
+    result = RepeatEvaluationService().evaluate(
+        target_text="Popo, Toto, Pipi, Gigi, and Momo are friends.",
+        transcript="Poe, Toe, Pee, Jee, and Moe are friends",
+    )
+
+    assert result["passed"] is True
+    assert all(word["correct"] for word in result["wordResults"])
+
+
 def test_repeat_evaluation_allows_small_non_name_spelling_error() -> None:
     result = RepeatEvaluationService().evaluate(
         target_text="We help our friend today.",
@@ -78,6 +88,16 @@ def test_repeat_evaluation_allows_small_non_name_spelling_error() -> None:
     )
 
     assert result["passed"] is True
+
+
+def test_repeat_evaluation_accepts_similar_pronunciation_transcriptions() -> None:
+    result = RepeatEvaluationService().evaluate(
+        target_text="The little bird is gentle.",
+        transcript="The liddle berd is jentle",
+    )
+
+    assert result["passed"] is True
+    assert all(word["correct"] for word in result["wordResults"])
 
 
 def test_repeat_evaluation_still_rejects_different_sentence() -> None:
