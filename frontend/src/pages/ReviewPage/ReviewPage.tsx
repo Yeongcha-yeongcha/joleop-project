@@ -173,8 +173,9 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
     }
 
     const chunks: Blob[] = []
+    const isAppleMobile = isAppleMobileDevice()
     const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
-    const Recognition = isAppleMobileDevice()
+    const Recognition = isAppleMobile
       ? null
       : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
@@ -234,7 +235,8 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
       reject(new Error('Recording failed.'))
     }
     mediaRecorder.onstop = complete
-    mediaRecorder.start(250)
+    if (isAppleMobile) mediaRecorder.start()
+    else mediaRecorder.start(250)
 
     if (!recognition) {
       silenceTimer = window.setTimeout(() => finish(), 7000)

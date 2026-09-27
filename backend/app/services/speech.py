@@ -57,8 +57,16 @@ class GroqSpeechToTextService(SpeechToTextService):
             "response_format": "json",
             "temperature": "0",
         }
-        if settings.GROQ_STT_PROMPT.strip():
-            form_data["prompt"] = settings.GROQ_STT_PROMPT.strip()
+        prompt = " ".join(
+            part
+            for part in (
+                settings.GROQ_STT_PROMPT.strip(),
+                "Vocabulary spelling: Popo, Toto, Pipi, Gigi, Momo.",
+            )
+            if part
+        )
+        if prompt:
+            form_data["prompt"] = prompt
         request = {
             "files": {"file": (filename, data, content_type)},
             "data": form_data,

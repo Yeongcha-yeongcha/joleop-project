@@ -6,6 +6,8 @@ SPEECH_NAME_ALIASES = {
     "bobo": "popo",
     "pogo": "popo",
     "poppy": "popo",
+    "poepoe": "popo",
+    "bowbow": "popo",
     "purple": "popo",
     "people": "popo",
     "polo": "popo",
@@ -16,6 +18,8 @@ SPEECH_NAME_ALIASES = {
     "photo": "toto",
     "titi": "toto",
     "total": "toto",
+    "toetoe": "toto",
+    "towtow": "toto",
     "pipi": "pipi",
     "pippi": "pipi",
     "bibi": "pipi",
@@ -24,23 +28,52 @@ SPEECH_NAME_ALIASES = {
     "phoebe": "pipi",
     "peepee": "pipi",
     "pp": "pipi",
+    "peapea": "pipi",
+    "beebee": "pipi",
     "gigi": "gigi",
     "geegee": "gigi",
     "jeejee": "gigi",
     "gg": "gigi",
+    "jiji": "gigi",
     "momo": "momo",
     "mowmow": "momo",
     "mama": "momo",
+    "moemoe": "momo",
 }
 STORY_CHARACTER_NAMES = {"popo", "toto", "pipi", "gigi", "momo"}
 
 
 def normalize_story_names(text: str) -> str:
-    text = re.sub(r"\bpo\s+po\b", "popo", text, flags=re.I)
-    text = re.sub(r"\bto\s+to\b", "toto", text, flags=re.I)
-    text = re.sub(r"\bpi\s+pi\b", "pipi", text, flags=re.I)
-    text = re.sub(r"\b(?:gi|gee|jee)\s+(?:gi|gee|jee)\b", "gigi", text, flags=re.I)
-    text = re.sub(r"\b(?:mo|mow)\s+(?:mo|mow)\b", "momo", text, flags=re.I)
+    text = re.sub(
+        r"\b(?:po|poe|poh|bo|bow)[\s-]+(?:po|poe|poh|bo|bow)\b",
+        "popo",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:to|toe|tow|do|doh)[\s-]+(?:to|toe|tow|do|doh)\b",
+        "toto",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:pi|pee|pea|pe|bi|bee)[\s-]+(?:pi|pee|pea|pe|bi|bee)\b",
+        "pipi",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:gi|gee|ji|jee)[\s-]+(?:gi|gee|ji|jee)\b",
+        "gigi",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:mo|mow|moe)[\s-]+(?:mo|mow|moe)\b",
+        "momo",
+        text,
+        flags=re.I,
+    )
     return text
 
 
@@ -75,7 +108,9 @@ class RepeatEvaluationService:
     @classmethod
     def word_results(cls, *, target_text: str, transcript: str) -> list[dict]:
         target_words = cls._words(target_text)
-        transcript_words = [word for _, word in cls._words(transcript)]
+        transcript_words = [
+            word for _, word in cls._words(normalize_story_names(transcript))
+        ]
         if not target_words:
             return []
 

@@ -36,8 +36,9 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     }
 
     const chunks: Blob[] = []
+    const isAppleMobile = isAppleMobileDevice()
     const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
-    const Recognition = isAppleMobileDevice()
+    const Recognition = isAppleMobile
       ? null
       : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
@@ -84,7 +85,8 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
       })
     }
 
-    mediaRecorder.start(250)
+    if (isAppleMobile) mediaRecorder.start()
+    else mediaRecorder.start(250)
     maxTimer = window.setTimeout(finish, durationMs)
 
     if (!recognition) {

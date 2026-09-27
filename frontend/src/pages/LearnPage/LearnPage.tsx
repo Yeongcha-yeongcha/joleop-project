@@ -71,6 +71,8 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   bobo: 'popo',
   pogo: 'popo',
   poppy: 'popo',
+  poepoe: 'popo',
+  bowbow: 'popo',
   purple: 'popo',
   people: 'popo',
   polo: 'popo',
@@ -81,6 +83,8 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   photo: 'toto',
   titi: 'toto',
   total: 'toto',
+  toetoe: 'toto',
+  towtow: 'toto',
   pipi: 'pipi',
   pippi: 'pipi',
   bibi: 'pipi',
@@ -89,13 +93,17 @@ const SPEECH_NAME_ALIASES: Record<string, string> = {
   phoebe: 'pipi',
   peepee: 'pipi',
   pp: 'pipi',
+  peapea: 'pipi',
+  beebee: 'pipi',
   gigi: 'gigi',
   geegee: 'gigi',
   jeejee: 'gigi',
   gg: 'gigi',
+  jiji: 'gigi',
   momo: 'momo',
   mowmow: 'momo',
   mama: 'momo',
+  moemoe: 'momo',
 }
 const STORY_CHARACTER_NAMES = new Set(['popo', 'toto', 'pipi', 'gigi', 'momo'])
 
@@ -106,11 +114,11 @@ function normalizeSpeechWord(word: string): string {
 
 function normalizeSpeechText(text: string): string {
   return text
-    .replace(/\bpo\s+po\b/gi, 'Popo')
-    .replace(/\bto\s+to\b/gi, 'Toto')
-    .replace(/\bpi\s+pi\b/gi, 'Pipi')
-    .replace(/\b(?:gi|gee|jee)\s+(?:gi|gee|jee)\b/gi, 'Gigi')
-    .replace(/\b(?:mo|mow)\s+(?:mo|mow)\b/gi, 'Momo')
+    .replace(/\b(?:po|poe|poh|bo|bow)[\s-]+(?:po|poe|poh|bo|bow)\b/gi, 'Popo')
+    .replace(/\b(?:to|toe|tow|do|doh)[\s-]+(?:to|toe|tow|do|doh)\b/gi, 'Toto')
+    .replace(/\b(?:pi|pee|pea|pe|bi|bee)[\s-]+(?:pi|pee|pea|pe|bi|bee)\b/gi, 'Pipi')
+    .replace(/\b(?:gi|gee|ji|jee)[\s-]+(?:gi|gee|ji|jee)\b/gi, 'Gigi')
+    .replace(/\b(?:mo|mow|moe)[\s-]+(?:mo|mow|moe)\b/gi, 'Momo')
 }
 
 function getWordHighlights(expected: string, recognized: string) {
@@ -429,7 +437,8 @@ export default function LearnPage() {
         reject(new Error('Recording failed.'))
       }
       mediaRecorder.onstop = complete
-      mediaRecorder.start(250)
+      if (isAppleMobile) mediaRecorder.start()
+      else mediaRecorder.start(250)
 
       const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
       if (isAppleMobile || !recognition) {

@@ -30,9 +30,10 @@ function TrophyAnimation({ className }: { className?: string }) {
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 5000
+const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 8000
 const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1800
-const ROLEPLAY_MAX_RECORD_MS = 12000
+const ROLEPLAY_MAX_RECORD_MS = 16000
+const ROLEPLAY_VOICE_RMS_THRESHOLD = 0.018
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -83,10 +84,11 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     const chunks: Blob[] = []
+    const isAppleMobile = isAppleMobileDevice()
     const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
     // WebKit can hang on the second recognition after an audio element plays.
     // On iPad/iPhone, record once and let the backend transcribe the audio instead.
-    const Recognition = isAppleMobileDevice()
+    const Recognition = isAppleMobile
       ? null
       : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
@@ -96,6 +98,11 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     let hasSpeech = false
     let recognitionRetries = 0
     let silenceTimer: number | null = null
+    let audioContext: AudioContext | null = null
+    let audioSource: MediaStreamAudioSourceNode | null = null
+    let analyser: AnalyserNode | null = null
+    let voiceActivityFrame: number | null = null
+    let quietStartedAt: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
     const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
@@ -108,6 +115,10 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       } catch {
         // Recognition may already be stopped.
       }
+      if (voiceActivityFrame !== null) window.cancelAnimationFrame(voiceActivityFrame)
+      audioSource?.disconnect()
+      analyser?.disconnect()
+      if (audioContext) void audioContext.close().catch(() => undefined)
       stream.getTracks().forEach((track) => track.stop())
     }
 
@@ -139,7 +150,8 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       reject(new Error('Recording failed.'))
     }
     mediaRecorder.onstop = complete
-    mediaRecorder.start(250)
+    if (isAppleMobile) mediaRecorder.start()
+    else mediaRecorder.start(250)
 
     const restartSilenceTimer = () => {
       if (silenceTimer !== null) window.clearTimeout(silenceTimer)
@@ -151,6 +163,52 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     restartSilenceTimer()
 
     if (!recognition) {
+      if (isAppleMobile) {
+        const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext
+        if (AudioContextConstructor) {
+          try {
+            audioContext = new AudioContextConstructor()
+            if (audioContext.state === 'suspended') {
+              void audioContext.resume().catch(() => undefined)
+            }
+            audioSource = audioContext.createMediaStreamSource(stream)
+            analyser = audioContext.createAnalyser()
+            analyser.fftSize = 1024
+            audioSource.connect(analyser)
+            const samples = new Uint8Array(analyser.fftSize)
+
+            const monitorVoiceActivity = () => {
+              if (settled || !analyser) return
+              analyser.getByteTimeDomainData(samples)
+              const sumOfSquares = samples.reduce((sum, sample) => {
+                const normalized = (sample - 128) / 128
+                return sum + normalized * normalized
+              }, 0)
+              const rms = Math.sqrt(sumOfSquares / samples.length)
+              const now = performance.now()
+
+              if (rms >= ROLEPLAY_VOICE_RMS_THRESHOLD) {
+                hasSpeech = true
+                quietStartedAt = null
+                if (silenceTimer !== null) {
+                  window.clearTimeout(silenceTimer)
+                  silenceTimer = null
+                }
+              } else if (hasSpeech) {
+                quietStartedAt ??= now
+                if (now - quietStartedAt >= ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS) {
+                  finish()
+                  return
+                }
+              }
+              voiceActivityFrame = window.requestAnimationFrame(monitorVoiceActivity)
+            }
+            voiceActivityFrame = window.requestAnimationFrame(monitorVoiceActivity)
+          } catch {
+            // The initial-silence and maximum timers still finish the recording.
+          }
+        }
+      }
       return
     }
 

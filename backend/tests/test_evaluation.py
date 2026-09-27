@@ -61,6 +61,16 @@ def test_repeat_evaluation_accepts_common_character_name_transcriptions() -> Non
     assert all(word["correct"] for word in result["wordResults"])
 
 
+def test_repeat_evaluation_accepts_split_character_name_transcriptions() -> None:
+    result = RepeatEvaluationService().evaluate(
+        target_text="Popo, Toto, Pipi, Gigi, and Momo are friends.",
+        transcript="Poe Poe, Toe Toe, Pee Pee, Jee Jee, and Moe Moe are friends",
+    )
+
+    assert result["passed"] is True
+    assert all(word["correct"] for word in result["wordResults"])
+
+
 def test_repeat_evaluation_allows_small_non_name_spelling_error() -> None:
     result = RepeatEvaluationService().evaluate(
         target_text="We help our friend today.",
