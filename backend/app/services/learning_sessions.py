@@ -594,6 +594,7 @@ class LearningSessionService:
             raise QuestionNotFoundException()
 
         turn = await self._roleplay_message_count(learning_session.session_id) + 1
+        used_fallback_transcript = not transcript.strip()
         transcript = clean_roleplay_transcript(
             mission,
             transcript or self._roleplay_fallback_transcript(mission, turn),
@@ -643,6 +644,7 @@ class LearningSessionService:
             },
             "score": message.score,
             "source": roleplay_result.get("source"),
+            "userTranscriptSource": "fallback" if used_fallback_transcript else "speech",
             "missionCompleted": mission_completed,
             "courseProgress": self.progress_service.course_progress(
                 current_step=min(turn, required_turns),

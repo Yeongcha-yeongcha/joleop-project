@@ -261,6 +261,11 @@ async def create_roleplay_message(
             transcript = await speech_to_text_service.transcribe(audio)
         except Exception:
             transcript = ""
+    if not transcript.strip():
+        raise AudioValidationException(
+            code="SPEECH_NOT_RECOGNIZED",
+            detail="음성을 인식하지 못했습니다. 다시 말해 주세요.",
+        )
     return success_response(
         await learning_session_service.create_roleplay_message(
             profile=current_profile,

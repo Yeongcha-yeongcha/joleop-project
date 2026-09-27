@@ -11,7 +11,11 @@ from app.api.v1.learning_sessions import (
     get_learning_session_result,
     get_roleplay,
 )
-from app.core.exceptions import SessionAlreadyCompletedException, validation_exception_handler
+from app.core.exceptions import (
+    AudioValidationException,
+    SessionAlreadyCompletedException,
+    validation_exception_handler,
+)
 from app.main import app
 from app.models import (
     Book,
@@ -340,19 +344,18 @@ async def test_roleplay_audio(roleplay_context) -> None:
 
 
 @pytest.mark.asyncio
-async def test_roleplay_empty_audio_uses_fallback_transcript(roleplay_context) -> None:
-    response = await create_roleplay_message(
-        128,
-        audio=EmptyUploadFile(),
-        mission_id=401,
-        current_profile=roleplay_context["profile"],
-        learning_session_service=roleplay_context["service"],
-        speech_to_text_service=roleplay_context["speech"],
-    )
+async def test_roleplay_empty_audio_requires_retry(roleplay_context) -> None:
+    with pytest.raises(AudioValidationException) as exc:
+        await create_roleplay_message(
+            128,
+            audio=EmptyUploadFile(),
+            mission_id=401,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+            speech_to_text_service=roleplay_context["speech"],
+        )
 
-    assert response["data"]["user"]["transcript"] == "I can help the test character."
-    assert response["data"]["turn"] == 1
-    assert response["data"]["missionCompleted"] is False
+    assert exc.value.error_code == "SPEECH_NOT_RECOGNIZED"
 
 
 @pytest.mark.asyncio

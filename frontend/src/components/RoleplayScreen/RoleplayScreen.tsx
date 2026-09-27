@@ -52,6 +52,13 @@ const REVEAL_STAR_START_MS = 250  // 회색 별을 잠깐 보여주고 점등 �
  */
 const STAR_INTERVAL_MS = 500
 
+const ROLEPLAY_RECORDER_OPTIONS = [
+  'audio/webm;codecs=opus',
+  'audio/webm',
+  'audio/mp4',
+  'audio/ogg;codecs=opus',
+]
+
 type RoleplayView = 'intro' | 'chat'
 type RecordState = 'idle' | 'recording'
 
@@ -70,6 +77,11 @@ interface Props {
   variant?: 'lesson' | 'review'
 }
 
+function supportedRoleplayRecorderOptions(): MediaRecorderOptions | undefined {
+  const mimeType = ROLEPLAY_RECORDER_OPTIONS.find((type) => MediaRecorder.isTypeSupported(type))
+  return mimeType ? { mimeType } : undefined
+}
+
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
   return new Promise(async (resolve, reject) => {
     let stream: MediaStream
@@ -81,13 +93,14 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
+    const mediaRecorder = new MediaRecorder(stream, supportedRoleplayRecorderOptions())
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
     const recognition = Recognition ? new Recognition() : null
     let finalTranscript = ''
     let interimTranscript = ''
     let settled = false
     let hasSpeech = false
+    let recognitionRetries = 0
     let silenceTimer: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
@@ -149,7 +162,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
       interimTranscript = ''
@@ -173,12 +186,16 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       restartSilenceTimer()
     }
     recognition.onend = () => {
-      if (!settled && !hasSpeech) {
-        try {
-          recognition.start()
-        } catch {
-          restartSilenceTimer()
-        }
+      if (!settled && !hasSpeech && recognitionRetries < 2) {
+        recognitionRetries += 1
+        window.setTimeout(() => {
+          if (settled || hasSpeech) return
+          try {
+            recognition.start()
+          } catch {
+            restartSilenceTimer()
+          }
+        }, 250)
         return
       }
       if (!settled) restartSilenceTimer()

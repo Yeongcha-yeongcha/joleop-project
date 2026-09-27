@@ -922,8 +922,11 @@ export default function LearnPage() {
     })
     setRoleplayProgress(0.70 + (result.courseProgress / 100) * 0.30)
     setRoleplayScores((scores) => [...scores, result.score])
+    const heardUserTranscript = result.userTranscriptSource === 'fallback'
+      ? ''
+      : result.user.transcript
     return {
-      userTranscript: result.user.transcript,
+      userTranscript: heardUserTranscript,
       characterText: result.character.text,
       missionCompleted: result.missionCompleted,
       score: result.score,

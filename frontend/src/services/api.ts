@@ -912,6 +912,7 @@ export interface RoleplayMessageData {
   }
   score: number
   source?: 'llm' | 'fallback' | string | null
+  userTranscriptSource?: 'speech' | 'fallback' | string | null
   missionCompleted: boolean
   courseProgress: number
   totalProgress: number
