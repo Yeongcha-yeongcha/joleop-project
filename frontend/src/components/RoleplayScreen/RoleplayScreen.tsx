@@ -7,6 +7,11 @@ import StarRow from '../StarRow/StarRow'
 import { playEffect, wait } from '../../utils/sound'
 import { isAppleMobileDevice } from '../../utils/appleDevice'
 import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
+import {
+  prepareAppleAudioCapture,
+  startPcmWavCapture,
+  type PcmWavCapture,
+} from '../../utils/pcmWavRecording'
 import styles from './RoleplayScreen.module.css'
 
 function TrophyAnimation({ className }: { className?: string }) {
@@ -33,7 +38,7 @@ const PROGRESS_CHAT_RANGE = 0.30
 const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 8000
 const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1800
 const ROLEPLAY_MAX_RECORD_MS = 16000
-const ROLEPLAY_VOICE_RMS_THRESHOLD = 0.018
+const ROLEPLAY_VOICE_RMS_THRESHOLD = 0.008
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -75,6 +80,8 @@ interface Props {
 
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
   return new Promise(async (resolve, reject) => {
+    const isAppleMobile = isAppleMobileDevice()
+    if (isAppleMobile) prepareAppleAudioCapture()
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -84,8 +91,9 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     const chunks: Blob[] = []
-    const isAppleMobile = isAppleMobileDevice()
-    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+    const mediaRecorder = isAppleMobile
+      ? null
+      : new MediaRecorder(stream, supportedAudioRecorderOptions())
     // WebKit can hang on the second recognition after an audio element plays.
     // On iPad/iPhone, record once and let the backend transcribe the audio instead.
     const Recognition = isAppleMobile
@@ -98,10 +106,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     let hasSpeech = false
     let recognitionRetries = 0
     let silenceTimer: number | null = null
-    let audioContext: AudioContext | null = null
-    let audioSource: MediaStreamAudioSourceNode | null = null
-    let analyser: AnalyserNode | null = null
-    let voiceActivityFrame: number | null = null
+    let pcmCapture: PcmWavCapture | null = null
     let quietStartedAt: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
@@ -115,10 +120,6 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       } catch {
         // Recognition may already be stopped.
       }
-      if (voiceActivityFrame !== null) window.cancelAnimationFrame(voiceActivityFrame)
-      audioSource?.disconnect()
-      analyser?.disconnect()
-      if (audioContext) void audioContext.close().catch(() => undefined)
       stream.getTracks().forEach((track) => track.stop())
     }
 
@@ -126,7 +127,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       if (settled) return
       settled = true
       if (silenceTimer !== null) window.clearTimeout(silenceTimer)
-      if (mediaRecorder.state !== 'inactive') {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop()
         return
       }
@@ -135,23 +136,27 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
 
     const complete = () => {
       const transcript = currentTranscript()
+      const audio = pcmCapture
+        ? pcmCapture.stop()
+        : new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' })
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
+        audio,
         transcript,
       })
     }
 
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) chunks.push(event.data)
+    if (mediaRecorder) {
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunks.push(event.data)
+      }
+      mediaRecorder.onerror = () => {
+        cleanup()
+        reject(new Error('Recording failed.'))
+      }
+      mediaRecorder.onstop = complete
+      mediaRecorder.start(250)
     }
-    mediaRecorder.onerror = () => {
-      cleanup()
-      reject(new Error('Recording failed.'))
-    }
-    mediaRecorder.onstop = complete
-    if (isAppleMobile) mediaRecorder.start()
-    else mediaRecorder.start(250)
 
     const restartSilenceTimer = () => {
       if (silenceTimer !== null) window.clearTimeout(silenceTimer)
@@ -164,49 +169,30 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
 
     if (!recognition) {
       if (isAppleMobile) {
-        const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext
-        if (AudioContextConstructor) {
-          try {
-            audioContext = new AudioContextConstructor()
-            if (audioContext.state === 'suspended') {
-              void audioContext.resume().catch(() => undefined)
-            }
-            audioSource = audioContext.createMediaStreamSource(stream)
-            analyser = audioContext.createAnalyser()
-            analyser.fftSize = 1024
-            audioSource.connect(analyser)
-            const samples = new Uint8Array(analyser.fftSize)
-
-            const monitorVoiceActivity = () => {
-              if (settled || !analyser) return
-              analyser.getByteTimeDomainData(samples)
-              const sumOfSquares = samples.reduce((sum, sample) => {
-                const normalized = (sample - 128) / 128
-                return sum + normalized * normalized
-              }, 0)
-              const rms = Math.sqrt(sumOfSquares / samples.length)
-              const now = performance.now()
-
-              if (rms >= ROLEPLAY_VOICE_RMS_THRESHOLD) {
-                hasSpeech = true
-                quietStartedAt = null
-                if (silenceTimer !== null) {
-                  window.clearTimeout(silenceTimer)
-                  silenceTimer = null
-                }
-              } else if (hasSpeech) {
-                quietStartedAt ??= now
-                if (now - quietStartedAt >= ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS) {
-                  finish()
-                  return
-                }
+        try {
+          const capture = await startPcmWavCapture(stream, (rms) => {
+            if (settled) return
+            const now = performance.now()
+            if (rms >= ROLEPLAY_VOICE_RMS_THRESHOLD) {
+              hasSpeech = true
+              quietStartedAt = null
+              if (silenceTimer !== null) {
+                window.clearTimeout(silenceTimer)
+                silenceTimer = null
               }
-              voiceActivityFrame = window.requestAnimationFrame(monitorVoiceActivity)
+            } else if (hasSpeech) {
+              quietStartedAt ??= now
+              if (now - quietStartedAt >= ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS) finish()
             }
-            voiceActivityFrame = window.requestAnimationFrame(monitorVoiceActivity)
-          } catch {
-            // The initial-silence and maximum timers still finish the recording.
+          })
+          if (settled) {
+            capture.stop()
+            return
           }
+          pcmCapture = capture
+        } catch {
+          cleanup()
+          reject(new Error('Recording failed. Please reload the app and try again.'))
         }
       }
       return

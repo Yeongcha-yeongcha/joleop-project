@@ -44,6 +44,11 @@ import {
 } from '../../utils/chapterProgress'
 import { isAppleMobileDevice } from '../../utils/appleDevice'
 import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
+import {
+  prepareAppleAudioCapture,
+  startPcmWavCapture,
+  type PcmWavCapture,
+} from '../../utils/pcmWavRecording'
 import styles from './LearnPage.module.css'
 
 type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
@@ -360,6 +365,8 @@ export default function LearnPage() {
 
   const recordRepeatSpeech = useCallback((expected: string): Promise<{ audio: Blob; transcript: string; result: SpeechResult }> => (
     new Promise(async (resolve, reject) => {
+      const isAppleMobile = isAppleMobileDevice()
+      if (isAppleMobile) prepareAppleAudioCapture()
       let stream: MediaStream
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -369,10 +376,12 @@ export default function LearnPage() {
       }
 
       const chunks: Blob[] = []
-      const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
-      const isAppleMobile = isAppleMobileDevice()
+      const mediaRecorder = isAppleMobile
+        ? null
+        : new MediaRecorder(stream, supportedAudioRecorderOptions())
       const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
       const recognition = Recognition ? new Recognition() : null
+      let pcmCapture: PcmWavCapture | null = null
       let finalTranscript = ''
       let interimTranscript = ''
       let settled = false
@@ -403,7 +412,7 @@ export default function LearnPage() {
         if (settled) return
         settled = true
         if (silenceTimer !== null) window.clearTimeout(silenceTimer)
-        if (mediaRecorder.state !== 'inactive') {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop()
           return
         }
@@ -413,9 +422,12 @@ export default function LearnPage() {
       const complete = () => {
         const transcript = normalizeSpeechText(currentTranscript())
         const result = evaluateRepeatSpeech(expected, transcript, true)
+        const audio = pcmCapture
+          ? pcmCapture.stop()
+          : new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' })
         cleanup()
         resolve({
-          audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
+          audio,
           transcript,
           result,
         })
@@ -429,16 +441,30 @@ export default function LearnPage() {
         )
       }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunks.push(event.data)
+      if (mediaRecorder) {
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunks.push(event.data)
+        }
+        mediaRecorder.onerror = () => {
+          cleanup()
+          reject(new Error('Recording failed.'))
+        }
+        mediaRecorder.onstop = complete
+        mediaRecorder.start(250)
+      } else {
+        try {
+          const capture = await startPcmWavCapture(stream)
+          if (settled) {
+            capture.stop()
+            return
+          }
+          pcmCapture = capture
+        } catch {
+          cleanup()
+          reject(new Error('Recording failed. Please reload the app and try again.'))
+          return
+        }
       }
-      mediaRecorder.onerror = () => {
-        cleanup()
-        reject(new Error('Recording failed.'))
-      }
-      mediaRecorder.onstop = complete
-      if (isAppleMobile) mediaRecorder.start()
-      else mediaRecorder.start(250)
 
       const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
       if (isAppleMobile || !recognition) {

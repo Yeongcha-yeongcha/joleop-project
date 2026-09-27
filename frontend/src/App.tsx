@@ -16,6 +16,7 @@ import BookChoicePage from './pages/BookChoicePage/BookChoicePage'
 import ChapterSelectPage from './pages/ChapterSelectPage/ChapterSelectPage'
 import LearnPage from './pages/LearnPage/LearnPage'
 import OnboardingTour from './components/OnboardingTour/OnboardingTour'
+import { unlockAudioPlayback } from './utils/audioPlayback'
 import { playButtonSound } from './utils/sound'
 import './App.css'
 
@@ -64,12 +65,13 @@ function ButtonSound() {
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
-      if (mutedRef.current) return
       const target = event.target
       if (!(target instanceof Element)) return
       const hit = target.closest('button, [role="button"]')
       if (!hit) return
       if (hit instanceof HTMLButtonElement && hit.disabled) return
+      unlockAudioPlayback()
+      if (mutedRef.current) return
       playButtonSound()
     }
     // 캡처 단계로 붙여 stopPropagation 을 쓰는 핸들러에도 영향받지 않게 한다.
