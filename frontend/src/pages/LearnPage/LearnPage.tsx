@@ -643,13 +643,6 @@ export default function LearnPage() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
     setSpeakingWordIndex(null)
 
-    // HTML audio playback can prevent a later WebKit recognition session from
-    // producing interim results. Native speech synthesis keeps live preview available.
-    if (isAppleMobileDevice()) {
-      speakWithBrowserVoice()
-      return
-    }
-
     if (isBackendMode) {
       try {
         const audio = await synthesizeSpeech(currentPage.text, speechRate === 0.55 ? 'slow' : 'normal')
@@ -714,9 +707,7 @@ export default function LearnPage() {
 
   // Auto-play audio when the reading or speaking page changes.
   useEffect(() => {
-    if ((phase === 'reading' || phase === 'repeat') && currentPage?.text && isAppleMobileDevice()) {
-      void speakCurrentPage()
-    } else if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
+    if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
       void playAudioWithHighlights(currentPage.audioUrl, currentPage.text).catch(() => {
         speakWithBrowserVoice()
       })
