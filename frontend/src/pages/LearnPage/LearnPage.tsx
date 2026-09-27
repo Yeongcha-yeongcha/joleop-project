@@ -42,6 +42,8 @@ import {
   saveChapterResult,
   starsForScore,
 } from '../../utils/chapterProgress'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import styles from './LearnPage.module.css'
 
 type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
@@ -66,21 +68,36 @@ const TTS_HIGHLIGHT_START_PADDING_SECONDS = 0.02
 const TTS_HIGHLIGHT_END_PADDING_SECONDS = 0.16
 const SPEECH_NAME_ALIASES: Record<string, string> = {
   popo: 'popo',
+  bobo: 'popo',
+  pogo: 'popo',
+  poppy: 'popo',
   purple: 'popo',
   people: 'popo',
   polo: 'popo',
   papa: 'popo',
   toto: 'toto',
+  coco: 'toto',
+  dodo: 'toto',
+  photo: 'toto',
   titi: 'toto',
   total: 'toto',
   pipi: 'pipi',
+  pippi: 'pipi',
+  bibi: 'pipi',
+  pepe: 'pipi',
+  peppy: 'pipi',
+  phoebe: 'pipi',
   peepee: 'pipi',
   pp: 'pipi',
   gigi: 'gigi',
+  geegee: 'gigi',
+  jeejee: 'gigi',
   gg: 'gigi',
   momo: 'momo',
+  mowmow: 'momo',
   mama: 'momo',
 }
+const STORY_CHARACTER_NAMES = new Set(['popo', 'toto', 'pipi', 'gigi', 'momo'])
 
 function normalizeSpeechWord(word: string): string {
   const normalized = word.toLowerCase().replace(/[^a-z0-9']/g, '')
@@ -92,8 +109,8 @@ function normalizeSpeechText(text: string): string {
     .replace(/\bpo\s+po\b/gi, 'Popo')
     .replace(/\bto\s+to\b/gi, 'Toto')
     .replace(/\bpi\s+pi\b/gi, 'Pipi')
-    .replace(/\bgi\s+gi\b/gi, 'Gigi')
-    .replace(/\bmo\s+mo\b/gi, 'Momo')
+    .replace(/\b(?:gi|gee|jee)\s+(?:gi|gee|jee)\b/gi, 'Gigi')
+    .replace(/\b(?:mo|mow)\s+(?:mo|mow)\b/gi, 'Momo')
 }
 
 function getWordHighlights(expected: string, recognized: string) {
@@ -131,7 +148,8 @@ function areSimilarWords(a: string, b: string): boolean {
     }
     previous = current
   }
-  return 1 - previous[b.length] / Math.max(a.length, b.length) >= 0.84
+  const similarity = 1 - previous[b.length] / Math.max(a.length, b.length)
+  return similarity >= (STORY_CHARACTER_NAMES.has(b) ? 0.68 : 0.80)
 }
 
 function repeatHighlights(expected: string, result: SpeechResult): RepeatWordResult[] {
@@ -343,8 +361,10 @@ export default function LearnPage() {
       }
 
       const chunks: Blob[] = []
-      const mediaRecorder = new MediaRecorder(stream)
-      const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+      const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+      const Recognition = isAppleMobileDevice()
+        ? null
+        : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
       const recognition = Recognition ? new Recognition() : null
       let finalTranscript = ''
       let interimTranscript = ''
@@ -413,6 +433,8 @@ export default function LearnPage() {
       mediaRecorder.start(250)
 
       if (!recognition) {
+        const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
+        silenceTimer = window.setTimeout(() => finish(), backendOnlyRecordMs)
         return
       }
 

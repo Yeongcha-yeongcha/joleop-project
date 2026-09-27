@@ -12,6 +12,8 @@ import {
   type ReviewCardData,
   type ReviewMode,
 } from '../../services/api'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
 import type { UserStats } from '../../types'
@@ -171,8 +173,10 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+    const Recognition = isAppleMobileDevice()
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let finalTranscript = ''
     let interimTranscript = ''
@@ -233,6 +237,7 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
     mediaRecorder.start(250)
 
     if (!recognition) {
+      silenceTimer = window.setTimeout(() => finish(), 7000)
       return
     }
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../types'
 import { IMAGES } from '../../constants/assets'
 import ResponsiveSceneImage from '../ResponsiveSceneImage/ResponsiveSceneImage'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import styles from './QuizScreen.module.css'
 
 const QUIZ_MAX_RECORD_MS = 9000
@@ -34,8 +36,10 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+    const Recognition = isAppleMobileDevice()
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let transcript = ''
     let settled = false
@@ -83,7 +87,11 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     mediaRecorder.start(250)
     maxTimer = window.setTimeout(finish, durationMs)
 
-    if (!recognition) return
+    if (!recognition) {
+      if (maxTimer !== null) window.clearTimeout(maxTimer)
+      maxTimer = window.setTimeout(finish, Math.min(durationMs, 6500))
+      return
+    }
 
     recognition.lang = 'en-US'
     recognition.interimResults = true

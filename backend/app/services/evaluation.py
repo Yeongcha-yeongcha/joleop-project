@@ -3,29 +3,44 @@ import re
 
 SPEECH_NAME_ALIASES = {
     "popo": "popo",
+    "bobo": "popo",
+    "pogo": "popo",
+    "poppy": "popo",
     "purple": "popo",
     "people": "popo",
     "polo": "popo",
     "papa": "popo",
     "toto": "toto",
+    "coco": "toto",
+    "dodo": "toto",
+    "photo": "toto",
     "titi": "toto",
     "total": "toto",
     "pipi": "pipi",
+    "pippi": "pipi",
+    "bibi": "pipi",
+    "pepe": "pipi",
+    "peppy": "pipi",
+    "phoebe": "pipi",
     "peepee": "pipi",
     "pp": "pipi",
     "gigi": "gigi",
+    "geegee": "gigi",
+    "jeejee": "gigi",
     "gg": "gigi",
     "momo": "momo",
+    "mowmow": "momo",
     "mama": "momo",
 }
+STORY_CHARACTER_NAMES = {"popo", "toto", "pipi", "gigi", "momo"}
 
 
 def normalize_story_names(text: str) -> str:
     text = re.sub(r"\bpo\s+po\b", "popo", text, flags=re.I)
     text = re.sub(r"\bto\s+to\b", "toto", text, flags=re.I)
     text = re.sub(r"\bpi\s+pi\b", "pipi", text, flags=re.I)
-    text = re.sub(r"\bgi\s+gi\b", "gigi", text, flags=re.I)
-    text = re.sub(r"\bmo\s+mo\b", "momo", text, flags=re.I)
+    text = re.sub(r"\b(?:gi|gee|jee)\s+(?:gi|gee|jee)\b", "gigi", text, flags=re.I)
+    text = re.sub(r"\b(?:mo|mow)\s+(?:mo|mow)\b", "momo", text, flags=re.I)
     return text
 
 
@@ -93,10 +108,13 @@ class RepeatEvaluationService:
                     recognized = replaced[offset] if offset < len(replaced) else None
                     expected = results[target_index]["normalizedWord"]
                     results[target_index]["recognizedWord"] = recognized
-                    results[target_index]["correct"] = (
-                        recognized is not None
-                        and SequenceMatcher(None, expected, recognized).ratio() >= 0.84
+                    similarity = (
+                        SequenceMatcher(None, expected, recognized).ratio()
+                        if recognized is not None
+                        else 0
                     )
+                    threshold = 0.68 if expected in STORY_CHARACTER_NAMES else 0.80
+                    results[target_index]["correct"] = similarity >= threshold
 
         return results
 

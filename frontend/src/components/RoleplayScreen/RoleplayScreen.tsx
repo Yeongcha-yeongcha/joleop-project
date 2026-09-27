@@ -5,6 +5,8 @@ import type { ChapterResult } from '../../utils/chapterProgress'
 import { IMAGES, SOUNDS } from '../../constants/assets'
 import StarRow from '../StarRow/StarRow'
 import { playEffect, wait } from '../../utils/sound'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import styles from './RoleplayScreen.module.css'
 
 function TrophyAnimation({ className }: { className?: string }) {
@@ -52,13 +54,6 @@ const REVEAL_STAR_START_MS = 250  // 회색 별을 잠깐 보여주고 점등 �
  */
 const STAR_INTERVAL_MS = 500
 
-const ROLEPLAY_RECORDER_OPTIONS = [
-  'audio/webm;codecs=opus',
-  'audio/webm',
-  'audio/mp4',
-  'audio/ogg;codecs=opus',
-]
-
 type RoleplayView = 'intro' | 'chat'
 type RecordState = 'idle' | 'recording' | 'speaking'
 
@@ -77,16 +72,6 @@ interface Props {
   variant?: 'lesson' | 'review'
 }
 
-function supportedRoleplayRecorderOptions(): MediaRecorderOptions | undefined {
-  const mimeType = ROLEPLAY_RECORDER_OPTIONS.find((type) => MediaRecorder.isTypeSupported(type))
-  return mimeType ? { mimeType } : undefined
-}
-
-function isAppleMobileDevice() {
-  return /iPad|iPhone|iPod/i.test(navigator.userAgent)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-}
-
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
   return new Promise(async (resolve, reject) => {
     let stream: MediaStream
@@ -98,7 +83,7 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream, supportedRoleplayRecorderOptions())
+    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
     // WebKit can hang on the second recognition after an audio element plays.
     // On iPad/iPhone, record once and let the backend transcribe the audio instead.
     const Recognition = isAppleMobileDevice()

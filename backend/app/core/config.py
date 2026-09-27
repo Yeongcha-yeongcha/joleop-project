@@ -43,12 +43,19 @@ class Settings(BaseSettings):
     EDGE_TTS_VOICE: str = "en-US-JennyNeural"
     EDGE_TTS_CACHE_DIR: str = str(BACKEND_DIR / ".tts_cache")
 
-    STT_PROVIDER: str = "faster-whisper"
+    STT_PROVIDER: str = "auto"
     STT_LANGUAGE: str = "en"
     FASTER_WHISPER_MODEL_SIZE: str = "base.en"
     FASTER_WHISPER_DEVICE: str = "cpu"
     FASTER_WHISPER_COMPUTE_TYPE: str = "int8"
     FASTER_WHISPER_BEAM_SIZE: int = 1
+    GROQ_API_KEY: str = ""
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_STT_MODEL: str = "whisper-large-v3-turbo"
+    GROQ_STT_TIMEOUT_SECONDS: float = 30
+    GROQ_STT_PROMPT: str = (
+        "Children speaking simple English. Character names are Popo, Toto, Pipi, Gigi, and Momo."
+    )
 
     KAKAO_CLIENT_ID: str = ""
     KAKAO_CLIENT_SECRET: str = ""
