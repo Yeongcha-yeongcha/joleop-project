@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from app.api.deps import (
@@ -18,6 +20,7 @@ from app.services.speech import SpeechToTextService
 
 book_sessions_router = APIRouter(prefix="/books", tags=["Learning - Reading"])
 router = APIRouter(prefix="/learning-sessions", tags=["Learning - Reading"])
+logger = logging.getLogger(__name__)
 
 
 @book_sessions_router.post("/{bookId}/sessions")
@@ -260,6 +263,15 @@ async def create_roleplay_message(
         try:
             transcript = await speech_to_text_service.transcribe(audio)
         except Exception:
+            logger.exception(
+                "Roleplay speech transcription failed",
+                extra={
+                    "session_id": sessionId,
+                    "mission_id": mission_id,
+                    "audio_content_type": getattr(audio, "content_type", None),
+                    "audio_filename": getattr(audio, "filename", None),
+                },
+            )
             transcript = ""
     if not transcript.strip():
         raise AudioValidationException(

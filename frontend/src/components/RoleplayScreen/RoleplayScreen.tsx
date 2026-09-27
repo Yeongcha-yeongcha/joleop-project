@@ -60,7 +60,7 @@ const ROLEPLAY_RECORDER_OPTIONS = [
 ]
 
 type RoleplayView = 'intro' | 'chat'
-type RecordState = 'idle' | 'recording'
+type RecordState = 'idle' | 'recording' | 'speaking'
 
 interface Props {
   roleplay: RoleplayMission
@@ -82,6 +82,11 @@ function supportedRoleplayRecorderOptions(): MediaRecorderOptions | undefined {
   return mimeType ? { mimeType } : undefined
 }
 
+function isAppleMobileDevice() {
+  return /iPad|iPhone|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
   return new Promise(async (resolve, reject) => {
     let stream: MediaStream
@@ -94,7 +99,11 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
 
     const chunks: Blob[] = []
     const mediaRecorder = new MediaRecorder(stream, supportedRoleplayRecorderOptions())
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    // WebKit can hang on the second recognition after an audio element plays.
+    // On iPad/iPhone, record once and let the backend transcribe the audio instead.
+    const Recognition = isAppleMobileDevice()
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let finalTranscript = ''
     let interimTranscript = ''
@@ -302,14 +311,18 @@ export default function RoleplayScreen({
         next[currentIdx + 1] = result.characterText
         return next
       })
-      void onSpeakText?.(result.characterText)
       if (result.missionCompleted) {
         setServerCompleted(true)
       }
       if (result.missionCompleted || currentIdx + 1 >= roleplay.turns.length) {
         setShowFinalNpc(true)
       }
-      setRecordState('idle')
+      setRecordState('speaking')
+      try {
+        await onSpeakText?.(result.characterText)
+      } finally {
+        setRecordState('idle')
+      }
     } catch (error) {
       setSpeechError(error instanceof Error ? error.message : 'Recording failed. Please try again.')
       setRecordState('idle')
@@ -412,10 +425,16 @@ export default function RoleplayScreen({
         <div className={styles.introBottom}>
           <button
             className={styles.imgBtn}
-            onClick={() => {
+            onClick={async () => {
               setView('chat')
-              void onSpeakText?.(roleplay.turns[0]?.npc ?? '')
+              setRecordState('speaking')
+              try {
+                await onSpeakText?.(roleplay.turns[0]?.npc ?? '')
+              } finally {
+                setRecordState('idle')
+              }
             }}
+            disabled={recordState !== 'idle'}
             aria-label="Start"
           >
             <img src={IMAGES.nextBtnActive} alt="Start" className={styles.btnImg} />
@@ -458,8 +477,12 @@ export default function RoleplayScreen({
           <button
             className={styles.imgBtn}
             onClick={handleRecord}
-            disabled={recordState === 'recording'}
-            aria-label={recordState === 'recording' ? 'Recording...' : 'Tap to speak'}
+            disabled={recordState !== 'idle'}
+            aria-label={recordState === 'recording'
+              ? 'Recording...'
+              : recordState === 'speaking'
+                ? 'Please wait for Popo to finish speaking'
+                : 'Tap to speak'}
           >
             <img
               src={recordState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}

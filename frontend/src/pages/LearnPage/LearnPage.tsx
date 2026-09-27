@@ -646,7 +646,12 @@ export default function LearnPage() {
         if (ttsObjectUrlRef.current) URL.revokeObjectURL(ttsObjectUrlRef.current)
         const audioUrl = URL.createObjectURL(audio)
         ttsObjectUrlRef.current = audioUrl
-        await playAudio(audioUrl)
+        await new Promise<void>((resolve, reject) => {
+          playAudio(audioUrl, {
+            onEnded: resolve,
+            onError: () => reject(new Error('Roleplay audio playback failed.')),
+          }).catch(reject)
+        })
         return
       } catch (error) {
         console.warn('Roleplay TTS failed. Falling back to browser speech.', error)
@@ -661,7 +666,11 @@ export default function LearnPage() {
     utterance.rate = 0.95
     utterance.pitch = 1.28
     utterance.volume = 1
-    window.speechSynthesis.speak(utterance)
+    await new Promise<void>((resolve) => {
+      utterance.onend = () => resolve()
+      utterance.onerror = () => resolve()
+      window.speechSynthesis.speak(utterance)
+    })
   }, [isBackendMode, playAudio, speechVoices, stopAudio])
 
   const goToFirstPage = useCallback(() => {
