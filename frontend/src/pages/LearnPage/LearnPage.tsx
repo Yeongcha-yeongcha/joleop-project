@@ -362,9 +362,8 @@ export default function LearnPage() {
 
       const chunks: Blob[] = []
       const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
-      const Recognition = isAppleMobileDevice()
-        ? null
-        : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
+      const isAppleMobile = isAppleMobileDevice()
+      const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
       const recognition = Recognition ? new Recognition() : null
       let finalTranscript = ''
       let interimTranscript = ''
@@ -432,9 +431,14 @@ export default function LearnPage() {
       mediaRecorder.onstop = complete
       mediaRecorder.start(250)
 
-      if (!recognition) {
-        const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
+      const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
+      if (isAppleMobile || !recognition) {
+        // WebKit recognition is preview-only and can stop without firing an event.
+        // Keep the server-STT recording on a deterministic timer as a fallback.
         silenceTimer = window.setTimeout(() => finish(), backendOnlyRecordMs)
+      }
+
+      if (!recognition) {
         return
       }
 
@@ -639,6 +643,13 @@ export default function LearnPage() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
     setSpeakingWordIndex(null)
 
+    // HTML audio playback can prevent a later WebKit recognition session from
+    // producing interim results. Native speech synthesis keeps live preview available.
+    if (isAppleMobileDevice()) {
+      speakWithBrowserVoice()
+      return
+    }
+
     if (isBackendMode) {
       try {
         const audio = await synthesizeSpeech(currentPage.text, speechRate === 0.55 ? 'slow' : 'normal')
@@ -703,7 +714,9 @@ export default function LearnPage() {
 
   // Auto-play audio when the reading or speaking page changes.
   useEffect(() => {
-    if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
+    if ((phase === 'reading' || phase === 'repeat') && currentPage?.text && isAppleMobileDevice()) {
+      void speakCurrentPage()
+    } else if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
       void playAudioWithHighlights(currentPage.audioUrl, currentPage.text).catch(() => {
         speakWithBrowserVoice()
       })
@@ -855,7 +868,11 @@ export default function LearnPage() {
     try {
       const expected = currentPage?.text ?? ''
       const speech = await recordRepeatSpeech(expected)
-      const browserTranscript = speech.result.correct ? speech.transcript : undefined
+      // Apple WebKit recognition only drives live colors. The recorded audio is
+      // always evaluated by server STT because later browser sessions can hang.
+      const browserTranscript = !isAppleMobileDevice() && speech.result.correct
+        ? speech.transcript
+        : undefined
       const result = backendSession && repeat
         ? await createRepeatAttempt(backendSession.sessionId, repeat.content.questionId, speech.audio, browserTranscript).then((attempt) => ({
             recognized: attempt.transcript,
