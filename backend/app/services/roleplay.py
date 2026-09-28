@@ -256,6 +256,35 @@ def _scripted_roleplay_response(
     transcript: str,
     turn: int,
 ) -> str | None:
+    scripted_turn = _matching_scripted_turn(
+        mission,
+        transcript=transcript,
+        turn=turn,
+    )
+    return scripted_turn["response"] if scripted_turn else None
+
+
+def canonicalize_scripted_transcript(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> str:
+    """Replace small STT variations in the demo script with the saved sentence."""
+    scripted_turn = _matching_scripted_turn(
+        mission,
+        transcript=transcript,
+        turn=turn,
+    )
+    return scripted_turn["expected"][0] if scripted_turn else transcript
+
+
+def _matching_scripted_turn(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> dict[str, Any] | None:
     if _normalized_script_text(mission.model_answer or "") != _normalized_script_text(BIRD_DEMO_MODEL_ANSWER):
         return None
     if turn < 1 or turn > len(BIRD_DEMO_SCRIPT):
@@ -263,7 +292,7 @@ def _scripted_roleplay_response(
     scripted_turn = BIRD_DEMO_SCRIPT[turn - 1]
     if not _matches_script_line(transcript, scripted_turn["expected"]):
         return None
-    return scripted_turn["response"]
+    return scripted_turn
 
 
 class RoleplayService:

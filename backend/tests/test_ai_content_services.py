@@ -6,7 +6,12 @@ from ai.roleplay import RoleplaySession, judge_answer, start_roleplay_session
 from app.models import RoleplayMission
 from app.seed.import_ai_content import roleplay_mission_title
 from app.services.evaluation import DescriptionEvaluationService
-from app.services.roleplay import AIRoleplayService, MockRoleplayService, roleplay_runtime_context
+from app.services.roleplay import (
+    AIRoleplayService,
+    MockRoleplayService,
+    canonicalize_scripted_transcript,
+    roleplay_runtime_context,
+)
 from shared.models import RoleplayScenario
 
 
@@ -145,6 +150,29 @@ async def test_ai_roleplay_uses_saved_bird_demo_script_without_llm(
 
     assert result["source"] == "scripted"
     assert result["text"] == expected_response
+
+
+def test_bird_demo_script_corrects_small_speech_recognition_variation() -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help the bird",
+        description="Popo is helping a trapped bird in Sunflower Meadow.",
+        character_name="Popo",
+        opening_message="Can you help me find it?",
+        model_answer="I want to help the little bird!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    transcript = canonicalize_scripted_transcript(
+        mission,
+        transcript="I see little bird in the thorns",
+        turn=2,
+    )
+
+    assert transcript == "I see the little bird in the thorns."
 
 
 def test_roleplay_import_title_uses_story_goal_instead_of_generic_topic() -> None:

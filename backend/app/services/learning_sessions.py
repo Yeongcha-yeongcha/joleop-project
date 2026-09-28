@@ -40,6 +40,7 @@ from app.services.reviews import ReviewService
 from app.services.roleplay import (
     AIRoleplayService,
     RoleplayService,
+    canonicalize_scripted_transcript,
     clean_roleplay_transcript,
     roleplay_runtime_context,
 )
@@ -605,6 +606,11 @@ class LearningSessionService:
         transcript = clean_roleplay_transcript(
             mission,
             transcript or self._roleplay_fallback_transcript(mission, turn),
+        )
+        transcript = canonicalize_scripted_transcript(
+            mission,
+            transcript=transcript,
+            turn=turn,
         )
         roleplay_result = await self.roleplay_service.respond(
             mission=mission,

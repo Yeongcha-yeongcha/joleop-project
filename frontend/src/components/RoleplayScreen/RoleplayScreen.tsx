@@ -36,7 +36,7 @@ const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
 const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 8000
-const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1000
+const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1300
 const ROLEPLAY_MAX_RECORD_MS = 16000
 const ROLEPLAY_VOICE_RMS_THRESHOLD = 0.008
 /**
@@ -284,11 +284,11 @@ export default function RoleplayScreen({
   const [speechError, setSpeechError] = useState('')
   const [finishError, setFinishError] = useState('')
   const chatBottomRef = useRef<HTMLDivElement>(null)
+  const recordInFlightRef = useRef(false)
   const roleplayKey = [
     roleplay.mission,
     roleplay.missionSummary,
     roleplay.turns.length,
-    roleplay.history?.map((turn) => `${turn.user}=>${turn.npc}`).join('|') ?? '',
   ].join('::')
 
   useEffect(() => {
@@ -305,6 +305,7 @@ export default function RoleplayScreen({
     setFinalResult(null)
     setSpeechError('')
     setFinishError('')
+    recordInFlightRef.current = false
   }, [roleplayKey])
 
   useEffect(() => {
@@ -321,7 +322,8 @@ export default function RoleplayScreen({
   const isDone = serverCompleted || userAnswers.length >= roleplay.turns.length
 
   const handleRecord = async () => {
-    if (recordState !== 'idle' || isDone) return
+    if (recordInFlightRef.current || recordState !== 'idle' || isDone) return
+    recordInFlightRef.current = true
     const currentIdx = userAnswers.length
     setRecordState('recording')
     setSpeechError('')
@@ -355,6 +357,8 @@ export default function RoleplayScreen({
     } catch (error) {
       setSpeechError(error instanceof Error ? error.message : 'Recording failed. Please try again.')
       setRecordState('idle')
+    } finally {
+      recordInFlightRef.current = false
     }
   }
 
