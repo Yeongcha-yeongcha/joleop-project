@@ -133,6 +133,8 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
   const [error, setError] = useState('')
   const [feedback, setFeedback] = useState<QuizFeedback>('')
   const [spokenAnswer, setSpokenAnswer] = useState('')
+  const isSentenceAnswer = quiz.answerMode === 'sentence'
+  const sentenceParts = quiz.sentence.split(/_{2,}/, 2)
 
   useEffect(() => {
     setState('idle')
@@ -199,17 +201,24 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
 
       <div className={styles.sentenceBoxWrapper}>
         <div className={styles.sentenceBox}>
-          <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
-            {quiz.sentence}{' '}
-            <span className={[
-              styles.blank,
-              state === 'done' ? styles.blankFilled : '',
-              feedback === 'correct' ? styles.blankCorrect : '',
-              feedback === 'wrong' ? styles.blankWrong : '',
-            ].join(' ')}>
-              {state === 'done' ? spokenAnswer : ''}
-            </span>
-          </p>
+          {isSentenceAnswer ? (
+            <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
+              {state === 'done' ? spokenAnswer : 'Say a full sentence about the picture.'}
+            </p>
+          ) : (
+            <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
+              {sentenceParts[0]}
+              <span className={[
+                styles.blank,
+                state === 'done' ? styles.blankFilled : '',
+                feedback === 'correct' ? styles.blankCorrect : '',
+                feedback === 'wrong' ? styles.blankWrong : '',
+              ].join(' ')}>
+                {state === 'done' ? spokenAnswer : ''}
+              </span>
+              {sentenceParts.length > 1 ? sentenceParts[1] : ''}
+            </p>
+          )}
         </div>
       </div>
 

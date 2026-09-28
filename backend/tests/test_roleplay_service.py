@@ -23,13 +23,11 @@ def test_roleplay_runtime_context_makes_bird_mission_child_facing() -> None:
     context = roleplay_runtime_context(mission)
 
     assert context["player_goal"] == "Tell Popo you want to help the little bird."
-    assert context["opening_message"] == (
-        "I hear a tiny chirp near the bush. Will you help me check on the little bird?"
-    )
-    assert "Tell Popo you want to help the little bird." in context["situation"]
+    assert context["opening_message"] == "I heard a faint chirping sound. Can you help me find it?"
+    assert context["situation"] == "Popo is helping a trapped bird in Sunflower Meadow."
 
 
-def test_roleplay_runtime_context_replaces_generic_direction_opening() -> None:
+def test_roleplay_runtime_context_preserves_direction_opening() -> None:
     mission = RoleplayMission(
         mission_id=2,
         book_id=1,
@@ -47,10 +45,10 @@ def test_roleplay_runtime_context_replaces_generic_direction_opening() -> None:
 
     context = roleplay_runtime_context(mission)
 
-    assert context["opening_message"] == "Hello, little helper. Who are you looking for?"
+    assert context["opening_message"] == "Hi! What should we do?"
 
 
-def test_roleplay_runtime_context_replaces_generic_stuck_chair_opening() -> None:
+def test_roleplay_runtime_context_preserves_stuck_chair_opening() -> None:
     mission = RoleplayMission(
         mission_id=3,
         book_id=1,
@@ -68,7 +66,7 @@ def test_roleplay_runtime_context_replaces_generic_stuck_chair_opening() -> None
 
     context = roleplay_runtime_context(mission)
 
-    assert context["opening_message"] == "I hear you behind the big chair. Are you stuck?"
+    assert context["opening_message"] == "Hi! What should we do?"
 
 
 @pytest.mark.asyncio

@@ -415,6 +415,7 @@ class LearningSessionService:
         questions = await self._description_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         total_steps = len(questions)
+        answer_mode = self._description_answer_mode(question)
         return {
             "courseType": CourseType.DESCRIPTION.value,
             "courseNumber": 3,
@@ -428,6 +429,7 @@ class LearningSessionService:
             "content": {
                 "questionId": question.question_id,
                 "questionType": question.question_type.value,
+                "answerMode": answer_mode,
                 "instruction": question.instruction,
                 "imageUrl": question.image_url,
                 "sentence": question.sentence,
@@ -453,12 +455,13 @@ class LearningSessionService:
         )
         self._ensure_course(learning_session, CourseType.DESCRIPTION)
         question = await self._current_description_question(learning_session, question_id)
+        answer_mode = self._description_answer_mode(question)
         evaluation = self.description_evaluation_service.evaluate(
             instruction=question.instruction,
             sentence=question.sentence,
             transcript=transcript,
-            answer_sentence=question.answer_sentence,
-            blank_word=question.blank_word,
+            answer_sentence=question.answer_sentence if answer_mode == "SENTENCE" else None,
+            blank_word=question.blank_word if answer_mode == "WORD" else None,
         )
         attempt = LearningAttempt(
             session_id=learning_session.session_id,
@@ -481,7 +484,11 @@ class LearningSessionService:
             "passed": attempt.passed,
             "feedback": attempt.feedback,
             "wordResults": attempt.word_results,
-            "modelAnswer": question.answer_sentence or question.sentence,
+            "modelAnswer": (
+                question.blank_word
+                if answer_mode == "WORD"
+                else question.answer_sentence or question.sentence
+            ),
             "guideHint": question.guide_hint,
             "courseProgress": self.progress_service.course_progress(
                 current_step=learning_session.current_step,
@@ -940,6 +947,13 @@ class LearningSessionService:
             .order_by(DescriptionQuestion.step)
         )
         return list(result.scalars().all())
+
+    @staticmethod
+    def _description_answer_mode(question: DescriptionQuestion) -> str:
+        """Level 1 stays word-only; Level 2/3 use a sentence after question 1."""
+        if question.question_type.value == "WORD_GUESS" or question.step == 1:
+            return "WORD"
+        return "SENTENCE"
 
     async def _current_repeat_question(
         self,

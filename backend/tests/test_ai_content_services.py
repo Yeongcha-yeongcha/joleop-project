@@ -75,11 +75,10 @@ def test_roleplay_context_treats_character_name_as_npc() -> None:
 
     assert context["ai_character"] == "Friendly Hunter"
     assert context["child_role"] == "story helper"
-    assert "You are a story helper" in context["situation"]
-    assert "You are Friendly Hunter" not in context["situation"]
+    assert context["situation"] == "Popo's friends need his help to find their way in Sunflower Meadow."
 
 
-def test_roleplay_context_prefers_chapter_context_over_generic_scene() -> None:
+def test_roleplay_context_preserves_stored_scene_description() -> None:
     mission = RoleplayMission(
         mission_id=3,
         book_id=1,
@@ -99,8 +98,53 @@ def test_roleplay_context_prefers_chapter_context_over_generic_scene() -> None:
 
     context = roleplay_runtime_context(mission)
 
-    assert "newly built birdhouse" in context["situation"]
-    assert "ballroom" not in context["situation"].lower()
+    assert context["situation"] == mission.description
+
+
+@pytest.mark.parametrize(
+    ("turn", "transcript", "expected_response"),
+    [
+        (1, "I want to help the little bird!", "Yes! Let's look near the bush together. What do you see?"),
+        (2, "I see the little bird in the thorns.", "You're right. The bird is trapped. How can we help it?"),
+        (3, "Let's remove the thorns carefully.", "Great idea! We were gentle, and the little bird is safe now!"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_ai_roleplay_uses_saved_bird_demo_script_without_llm(
+    monkeypatch: pytest.MonkeyPatch,
+    turn: int,
+    transcript: str,
+    expected_response: str,
+) -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help the bird",
+        description="Popo is helping a trapped bird in Sunflower Meadow.",
+        character_name="Popo the lion",
+        opening_message="I heard a faint chirping sound. Can you help me find it?",
+        player_goal="Encourage the child to help the bird.",
+        model_answer="I want to help the little bird!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+    service = AIRoleplayService(session=SimpleNamespace())
+
+    async def fail_if_restored(**kwargs):
+        raise AssertionError("The scripted response must not call the LLM path.")
+
+    monkeypatch.setattr(service, "_restore_session", fail_if_restored)
+
+    result = await service.respond(
+        mission=mission,
+        session_id=10,
+        transcript=transcript,
+        turn=turn,
+    )
+
+    assert result["source"] == "scripted"
+    assert result["text"] == expected_response
 
 
 def test_roleplay_import_title_uses_story_goal_instead_of_generic_topic() -> None:

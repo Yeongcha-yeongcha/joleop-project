@@ -683,8 +683,13 @@ export default function LearnPage() {
   const currentPage = phase === 'reading' ? backendReadingPage : backendRepeatPage
   const backendQuiz: QuizQuestion | undefined = description ? {
     question: description.content.instruction,
-    sentence: blankedDescriptionSentence(description),
-    answer: description.content.blankWord ?? description.content.answerSentence ?? '',
+    sentence: description.content.answerMode === 'SENTENCE'
+      ? ''
+      : blankedDescriptionSentence(description),
+    answer: description.content.answerMode === 'SENTENCE'
+      ? description.content.answerSentence ?? ''
+      : description.content.blankWord ?? '',
+    answerMode: description.content.answerMode.toLowerCase() as 'word' | 'sentence',
     imageColor: '#D4B8E8',
     imageUrl: description.content.imageUrl ?? undefined,
   } : undefined
@@ -1019,7 +1024,9 @@ export default function LearnPage() {
       playSuccessChime()
     }
     return {
-      transcript: spokenBlankWord(attempt.transcript, description.content.blankWord),
+      transcript: description.content.answerMode === 'SENTENCE'
+        ? attempt.transcript
+        : spokenBlankWord(attempt.transcript, description.content.blankWord),
       passed: attempt.passed,
     }
   }, [backendSession, description])

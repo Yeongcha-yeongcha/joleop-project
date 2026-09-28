@@ -28,6 +28,34 @@ from app.services.evaluation import normalize_story_names
 MIN_ROLEPLAY_TURNS = 3
 logger = logging.getLogger(__name__)
 
+BIRD_DEMO_MODEL_ANSWER = "I want to help the little bird!"
+BIRD_DEMO_SCRIPT = (
+    {
+        "expected": (
+            BIRD_DEMO_MODEL_ANSWER,
+            "Let's help the little bird together!",
+            "The little bird needs our help!",
+        ),
+        "response": "Yes! Let's look near the bush together. What do you see?",
+    },
+    {
+        "expected": (
+            "I see the little bird in the thorns.",
+            "The little bird is trapped in the thorns.",
+            "I see a bird trapped in the thorns.",
+        ),
+        "response": "You're right. The bird is trapped. How can we help it?",
+    },
+    {
+        "expected": (
+            "Let's remove the thorns carefully.",
+            "We can remove the thorns carefully.",
+            "Let's carefully remove the thorns.",
+        ),
+        "response": "Great idea! We were gentle, and the little bird is safe now!",
+    },
+)
+
 
 def roleplay_runtime_context(mission: RoleplayMission) -> dict:
     child_role = "story helper"
@@ -40,19 +68,8 @@ def roleplay_runtime_context(mission: RoleplayMission) -> dict:
         scene_description=mission.description or "",
         ai_character=ai_character,
     ) or mission.description
-    opening_message = mission.opening_message or ""
-    opening_message = _child_facing_opening(
-        opening_message,
-        model_answer=model_answer,
-        scene_description=mission.description or "",
-    )
-    situation = _child_facing_situation(
-        child_role=child_role,
-        ai_character=ai_character,
-        player_goal=player_goal or "",
-        model_answer=model_answer,
-        scene_description=mission.description or "",
-    )
+    opening_message = re.sub(r"\s+", " ", (mission.opening_message or "").strip())
+    situation = re.sub(r"\s+", " ", (mission.description or "").strip())
     if addressed_name and not opening_message:
         opening_message = "Hi! What can I help you with?"
 
@@ -214,6 +231,41 @@ def _closing_response(text: str, *, fallback: str) -> str:
     return closing or fallback
 
 
+def _normalized_script_text(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9']+", text.casefold()))
+
+
+def _matches_script_line(transcript: str, expected_lines: tuple[str, ...]) -> bool:
+    actual = _normalized_script_text(transcript)
+    if not actual:
+        return False
+    actual_words = set(actual.split())
+    for expected_line in expected_lines:
+        expected = _normalized_script_text(expected_line)
+        if actual == expected or SequenceMatcher(None, expected, actual).ratio() >= 0.72:
+            return True
+        expected_words = set(expected.split())
+        if expected_words and len(actual_words & expected_words) / len(expected_words) >= 0.75:
+            return True
+    return False
+
+
+def _scripted_roleplay_response(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> str | None:
+    if _normalized_script_text(mission.model_answer or "") != _normalized_script_text(BIRD_DEMO_MODEL_ANSWER):
+        return None
+    if turn < 1 or turn > len(BIRD_DEMO_SCRIPT):
+        return None
+    scripted_turn = BIRD_DEMO_SCRIPT[turn - 1]
+    if not _matches_script_line(transcript, scripted_turn["expected"]):
+        return None
+    return scripted_turn["response"]
+
+
 class RoleplayService:
     async def respond(
         self,
@@ -248,6 +300,19 @@ class AIRoleplayService(RoleplayService):
                 "speaker": context["ai_character"].upper(),
                 "text": hints[min(max(turn - 1, 0), len(hints) - 1)],
                 "score": 0,
+            }
+
+        scripted_text = _scripted_roleplay_response(
+            mission,
+            transcript=transcript,
+            turn=turn,
+        )
+        if scripted_text:
+            return {
+                "speaker": context["ai_character"].upper(),
+                "text": scripted_text,
+                "score": 100,
+                "source": "scripted",
             }
 
         try:

@@ -42,6 +42,7 @@ export interface QuizQuestion {
   question: string       // "Q. 여왕의 옷 색이 무엇인가요?"
   sentence: string       // 빈칸 앞 문장 (e.g. "The color of the queen's clothes is")
   answer: string         // 빈칸 정답 (e.g. "red.")
+  answerMode?: 'word' | 'sentence'
   imageColor: string
   imageUrl?: string
 }

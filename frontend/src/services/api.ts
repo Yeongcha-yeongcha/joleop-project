@@ -852,6 +852,7 @@ export interface DescriptionData {
   content: {
     questionId: number
     questionType: 'WORD_GUESS' | 'FILL_BLANK' | 'DESCRIPTION' | 'WHY_QUESTION'
+    answerMode: 'WORD' | 'SENTENCE'
     instruction: string
     imageUrl?: string | null
     sentence?: string | null
