@@ -14,6 +14,7 @@ import {
   skipLearningCourse,
   startOrResumeLearningSession,
   synthesizeSpeech,
+  transcribeReviewSpeech,
   updateDescriptionCourse,
   updateReadingCourse,
   updateRepeatCourse,
@@ -42,6 +43,13 @@ import {
   saveChapterResult,
   starsForScore,
 } from '../../utils/chapterProgress'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
+import {
+  prepareAppleAudioCapture,
+  startPcmWavCapture,
+  type PcmWavCapture,
+} from '../../utils/pcmWavRecording'
 import styles from './LearnPage.module.css'
 
 type Phase = 'reading' | 'repeat' | 'quiz' | 'roleplay'
@@ -58,29 +66,73 @@ interface ReadToken {
 
 /** Must match the phaseExit animation duration in LearnPage.module.css */
 const PHASE_EXIT_MS = 230
-const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 4200
-const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 1200
+const REPEAT_INITIAL_SILENCE_TIMEOUT_MS = 5000
+const REPEAT_AFTER_SPEECH_TIMEOUT_MS = 1400
 const REPEAT_AUTO_ADVANCE_MS = 420
+const REPEAT_PREVIEW_FIRST_DELAY_MS = 1000
+const REPEAT_PREVIEW_INTERVAL_MS = 1600
+const REPEAT_MAX_PREVIEW_REQUESTS = 2
 const TTS_HIGHLIGHT_LEAD_SECONDS = 0.1
 const TTS_HIGHLIGHT_START_PADDING_SECONDS = 0.02
 const TTS_HIGHLIGHT_END_PADDING_SECONDS = 0.16
 const SPEECH_NAME_ALIASES: Record<string, string> = {
   popo: 'popo',
+  bobo: 'popo',
+  pogo: 'popo',
+  poppy: 'popo',
+  po: 'popo',
+  poe: 'popo',
+  poh: 'popo',
+  bo: 'popo',
+  bow: 'popo',
+  poepoe: 'popo',
+  bowbow: 'popo',
   purple: 'popo',
   people: 'popo',
   polo: 'popo',
   papa: 'popo',
   toto: 'toto',
+  coco: 'toto',
+  dodo: 'toto',
+  photo: 'toto',
   titi: 'toto',
   total: 'toto',
+  to: 'toto',
+  toe: 'toto',
+  tow: 'toto',
+  doh: 'toto',
+  toetoe: 'toto',
+  towtow: 'toto',
   pipi: 'pipi',
+  pippi: 'pipi',
+  bibi: 'pipi',
+  pepe: 'pipi',
+  peppy: 'pipi',
+  phoebe: 'pipi',
   peepee: 'pipi',
   pp: 'pipi',
+  pee: 'pipi',
+  pea: 'pipi',
+  peapea: 'pipi',
+  beebee: 'pipi',
   gigi: 'gigi',
+  geegee: 'gigi',
+  jeejee: 'gigi',
   gg: 'gigi',
+  gi: 'gigi',
+  gee: 'gigi',
+  ji: 'gigi',
+  jee: 'gigi',
+  jiji: 'gigi',
   momo: 'momo',
+  mowmow: 'momo',
   mama: 'momo',
+  mo: 'momo',
+  mow: 'momo',
+  moe: 'momo',
+  moemoe: 'momo',
 }
+const STORY_CHARACTER_NAMES = new Set(['popo', 'toto', 'pipi', 'gigi', 'momo'])
 
 function normalizeSpeechWord(word: string): string {
   const normalized = word.toLowerCase().replace(/[^a-z0-9']/g, '')
@@ -89,11 +141,11 @@ function normalizeSpeechWord(word: string): string {
 
 function normalizeSpeechText(text: string): string {
   return text
-    .replace(/\bpo\s+po\b/gi, 'Popo')
-    .replace(/\bto\s+to\b/gi, 'Toto')
-    .replace(/\bpi\s+pi\b/gi, 'Pipi')
-    .replace(/\bgi\s+gi\b/gi, 'Gigi')
-    .replace(/\bmo\s+mo\b/gi, 'Momo')
+    .replace(/\b(?:po|poe|poh|bo|bow)[\s-]+(?:po|poe|poh|bo|bow)\b/gi, 'Popo')
+    .replace(/\b(?:to|toe|tow|do|doh)[\s-]+(?:to|toe|tow|do|doh)\b/gi, 'Toto')
+    .replace(/\b(?:pi|pee|pea|pe|bi|bee)[\s-]+(?:pi|pee|pea|pe|bi|bee)\b/gi, 'Pipi')
+    .replace(/\b(?:gi|gee|ji|jee)[\s-]+(?:gi|gee|ji|jee)\b/gi, 'Gigi')
+    .replace(/\b(?:mo|mow|moe)[\s-]+(?:mo|mow|moe)\b/gi, 'Momo')
 }
 
 function getWordHighlights(expected: string, recognized: string) {
@@ -131,7 +183,13 @@ function areSimilarWords(a: string, b: string): boolean {
     }
     previous = current
   }
-  return 1 - previous[b.length] / Math.max(a.length, b.length) >= 0.84
+  const similarity = 1 - previous[b.length] / Math.max(a.length, b.length)
+  const threshold = STORY_CHARACTER_NAMES.has(b)
+    ? 0.55
+    : b.length <= 3
+      ? 0.80
+      : 0.72
+  return similarity >= threshold
 }
 
 function repeatHighlights(expected: string, result: SpeechResult): RepeatWordResult[] {
@@ -218,6 +276,14 @@ function spokenBlankWord(transcript: string, expected?: string | null): string {
     if (matched) return matched
   }
   return words.length === 1 ? words[0] : words[words.length - 1]
+}
+
+function roleplayMissionText(roleplay: RoleplayData): string {
+  const title = roleplay.mission.title.trim()
+  const genericTitles = new Set(['self_intro', 'direction', 'escape', 'roleplay'])
+  const body = roleplay.mission.playerGoal ?? roleplay.mission.description
+  if (!title || genericTitles.has(title.toLowerCase())) return body
+  return `${title}\n${body}`
 }
 
 function getReadTokens(text: string): ReadToken[] {
@@ -324,8 +390,13 @@ export default function LearnPage() {
   const chapterNumber = Math.max(1, Number.parseInt(searchParams.get('chapter') || String(selectedBook?.currentLesson ?? 1), 10) || 1)
   const shouldRestart = searchParams.has('restart')
 
-  const recordRepeatSpeech = useCallback((expected: string): Promise<{ audio: Blob; transcript: string; result: SpeechResult }> => (
+  const recordRepeatSpeech = useCallback((
+    expected: string,
+    onPreview?: (audio: Blob) => Promise<string>,
+  ): Promise<{ audio: Blob; transcript: string; result: SpeechResult }> => (
     new Promise(async (resolve, reject) => {
+      const isAppleMobile = isAppleMobileDevice()
+      if (isAppleMobile) prepareAppleAudioCapture()
       let stream: MediaStream
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -335,28 +406,44 @@ export default function LearnPage() {
       }
 
       const chunks: Blob[] = []
-      const mediaRecorder = new MediaRecorder(stream)
-      const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+      const mediaRecorder = isAppleMobile
+        ? null
+        : new MediaRecorder(stream, supportedAudioRecorderOptions())
+      const Recognition = isAppleMobile
+        ? null
+        : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
       const recognition = Recognition ? new Recognition() : null
+      let pcmCapture: PcmWavCapture | null = null
       let finalTranscript = ''
       let interimTranscript = ''
+      let previewTranscript = ''
       let settled = false
       let hasSpeech = false
       const expectedWordCount = Array.from(expected.matchAll(/[A-Za-z0-9']+/g)).length
-      const maxRecordMs = Math.min(18000, Math.max(8500, expectedWordCount * 950))
-      let silenceTimer = window.setTimeout(() => finish(), REPEAT_INITIAL_SILENCE_TIMEOUT_MS)
+      const maxRecordMs = Math.min(22000, Math.max(12000, expectedWordCount * 1200))
+      let silenceTimer: number | null = null
       const maxRecordTimer = window.setTimeout(() => finish(), maxRecordMs)
       let autoAdvanceTimer: number | null = null
+      let previewTimer: number | null = null
+      let previewRequestCount = 0
+      let previewRequestInFlight = false
+      let lastBrowserResultAt = 0
 
       const cleanup = () => {
-        window.clearTimeout(silenceTimer)
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         window.clearTimeout(maxRecordTimer)
         if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer)
+        if (previewTimer !== null) window.clearTimeout(previewTimer)
         recognition?.abort()
         stream.getTracks().forEach((track) => track.stop())
       }
 
-      const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
+      const currentTranscript = () => {
+        const browserTranscript = `${finalTranscript} ${interimTranscript}`.trim()
+        return browserTranscript.length >= previewTranscript.length
+          ? browserTranscript
+          : previewTranscript
+      }
 
       const updateResult = () => {
         const result = evaluateRepeatSpeech(expected, normalizeSpeechText(currentTranscript()))
@@ -367,8 +454,8 @@ export default function LearnPage() {
       const finish = () => {
         if (settled) return
         settled = true
-        window.clearTimeout(silenceTimer)
-        if (mediaRecorder.state !== 'inactive') {
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop()
           return
         }
@@ -378,34 +465,92 @@ export default function LearnPage() {
       const complete = () => {
         const transcript = normalizeSpeechText(currentTranscript())
         const result = evaluateRepeatSpeech(expected, transcript, true)
+        const audio = pcmCapture
+          ? pcmCapture.stop()
+          : new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' })
         cleanup()
         resolve({
-          audio: new Blob(chunks, { type: 'audio/webm' }),
+          audio,
           transcript,
           result,
         })
       }
 
       const restartSilenceTimer = () => {
-        window.clearTimeout(silenceTimer)
+        if (silenceTimer !== null) window.clearTimeout(silenceTimer)
         silenceTimer = window.setTimeout(
           () => finish(),
           hasSpeech ? REPEAT_AFTER_SPEECH_TIMEOUT_MS : REPEAT_INITIAL_SILENCE_TIMEOUT_MS,
         )
       }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunks.push(event.data)
+      const schedulePreview = (delay: number) => {
+        if (!isAppleMobile || !onPreview || settled || previewRequestCount >= REPEAT_MAX_PREVIEW_REQUESTS) return
+        if (previewTimer !== null) window.clearTimeout(previewTimer)
+        previewTimer = window.setTimeout(async () => {
+          previewTimer = null
+          if (settled || !pcmCapture || previewRequestInFlight) return
+          if (lastBrowserResultAt && performance.now() - lastBrowserResultAt < REPEAT_PREVIEW_INTERVAL_MS) {
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+            return
+          }
+          const audio = pcmCapture.snapshot()
+          if (audio.size <= 44) {
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+            return
+          }
+          previewRequestCount += 1
+          previewRequestInFlight = true
+          try {
+            const transcript = normalizeSpeechText(await onPreview(audio))
+            if (!settled && transcript.trim()) {
+              previewTranscript = transcript.trim()
+              hasSpeech = true
+              updateResult()
+            }
+          } catch {
+            // Final server evaluation still runs with the complete recording.
+          } finally {
+            previewRequestInFlight = false
+            schedulePreview(REPEAT_PREVIEW_INTERVAL_MS)
+          }
+        }, delay)
       }
-      mediaRecorder.onerror = () => {
-        cleanup()
-        reject(new Error('Recording failed.'))
+
+      if (mediaRecorder) {
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunks.push(event.data)
+        }
+        mediaRecorder.onerror = () => {
+          cleanup()
+          reject(new Error('Recording failed.'))
+        }
+        mediaRecorder.onstop = complete
+        mediaRecorder.start(250)
+      } else {
+        try {
+          const capture = await startPcmWavCapture(stream)
+          if (settled) {
+            capture.stop()
+            return
+          }
+          pcmCapture = capture
+          schedulePreview(REPEAT_PREVIEW_FIRST_DELAY_MS)
+        } catch {
+          cleanup()
+          reject(new Error('Recording failed. Please reload the app and try again.'))
+          return
+        }
       }
-      mediaRecorder.onstop = complete
-      mediaRecorder.start()
+
+      const backendOnlyRecordMs = Math.min(maxRecordMs, Math.max(7000, expectedWordCount * 900))
+      if (isAppleMobile || !recognition) {
+        // WebKit recognition is preview-only and can stop without firing an event.
+        // Keep the server-STT recording on a deterministic timer as a fallback.
+        silenceTimer = window.setTimeout(() => finish(), backendOnlyRecordMs)
+      }
 
       if (!recognition) {
-        restartSilenceTimer()
         return
       }
 
@@ -414,6 +559,7 @@ export default function LearnPage() {
       recognition.interimResults = true
       recognition.maxAlternatives = 1
       recognition.onresult = (event) => {
+        lastBrowserResultAt = performance.now()
         interimTranscript = ''
         for (let index = event.resultIndex; index < event.results.length; index += 1) {
           const transcript = event.results[index][0]?.transcript ?? ''
@@ -431,7 +577,10 @@ export default function LearnPage() {
         hasSpeech = hasSpeech || Boolean(currentTranscript())
         restartSilenceTimer()
       }
-      recognition.onerror = () => {
+      recognition.onerror = (event) => {
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          return
+        }
         restartSilenceTimer()
       }
       recognition.onend = () => {
@@ -534,15 +683,20 @@ export default function LearnPage() {
   const currentPage = phase === 'reading' ? backendReadingPage : backendRepeatPage
   const backendQuiz: QuizQuestion | undefined = description ? {
     question: description.content.instruction,
-    sentence: blankedDescriptionSentence(description),
-    answer: description.content.blankWord ?? description.content.answerSentence ?? '',
+    sentence: description.content.answerMode === 'SENTENCE'
+      ? ''
+      : blankedDescriptionSentence(description),
+    answer: description.content.answerMode === 'SENTENCE'
+      ? description.content.answerSentence ?? ''
+      : description.content.blankWord ?? '',
+    answerMode: description.content.answerMode.toLowerCase() as 'word' | 'sentence',
     imageColor: '#D4B8E8',
     imageUrl: description.content.imageUrl ?? undefined,
   } : undefined
   const backendRoleplay: RoleplayMission | undefined = roleplay ? {
     thumbnailColor: '#C4D4B8',
     thumbnailUrl: roleplay.character.imageUrl ?? undefined,
-    mission: roleplay.mission.playerGoal ?? roleplay.mission.description,
+    mission: roleplayMissionText(roleplay),
     missionSummary: roleplay.mission.description,
     turns: Array.from(
       { length: Math.max(3, roleplay.mission.requiredTurns ?? 3) },
@@ -636,7 +790,12 @@ export default function LearnPage() {
         if (ttsObjectUrlRef.current) URL.revokeObjectURL(ttsObjectUrlRef.current)
         const audioUrl = URL.createObjectURL(audio)
         ttsObjectUrlRef.current = audioUrl
-        await playAudio(audioUrl)
+        await new Promise<void>((resolve, reject) => {
+          playAudio(audioUrl, {
+            onEnded: resolve,
+            onError: () => reject(new Error('Roleplay audio playback failed.')),
+          }).catch(reject)
+        })
         return
       } catch (error) {
         console.warn('Roleplay TTS failed. Falling back to browser speech.', error)
@@ -651,7 +810,11 @@ export default function LearnPage() {
     utterance.rate = 0.95
     utterance.pitch = 1.28
     utterance.volume = 1
-    window.speechSynthesis.speak(utterance)
+    await new Promise<void>((resolve) => {
+      utterance.onend = () => resolve()
+      utterance.onerror = () => resolve()
+      window.speechSynthesis.speak(utterance)
+    })
   }, [isBackendMode, playAudio, speechVoices, stopAudio])
 
   const goToFirstPage = useCallback(() => {
@@ -663,9 +826,11 @@ export default function LearnPage() {
   // Auto-play audio when the reading or speaking page changes.
   useEffect(() => {
     if ((phase === 'reading' || phase === 'repeat') && currentPage?.audioUrl) {
-      playAudioWithHighlights(currentPage.audioUrl, currentPage.text)
+      void playAudioWithHighlights(currentPage.audioUrl, currentPage.text).catch(() => {
+        speakWithBrowserVoice()
+      })
     } else if ((phase === 'reading' || phase === 'repeat') && currentPage?.text) {
-      speakCurrentPage()
+      void speakCurrentPage()
     }
     return () => {
       stopAudio()
@@ -811,15 +976,30 @@ export default function LearnPage() {
     setRepeatState('recording')
     try {
       const expected = currentPage?.text ?? ''
-      const speech = await recordRepeatSpeech(expected)
+      const speech = await recordRepeatSpeech(
+        expected,
+        isAppleMobileDevice()
+          ? async (audio) => (await transcribeReviewSpeech(audio)).transcript
+          : undefined,
+      )
+      // iPad uses recorded WAV plus server STT because repeated WebKit speech
+      // recognition sessions can hang after audio playback.
+      const browserTranscript = !isAppleMobileDevice() && speech.result.correct
+        ? speech.transcript
+        : undefined
       const result = backendSession && repeat
-        ? await createRepeatAttempt(backendSession.sessionId, repeat.content.questionId, speech.audio, speech.transcript).then((attempt) => ({
+        ? await createRepeatAttempt(backendSession.sessionId, repeat.content.questionId, speech.audio, browserTranscript).then((attempt) => ({
             recognized: attempt.transcript,
             correct: attempt.passed,
             score: attempt.score / 100,
             wordResults: attempt.wordResults,
           }))
         : speech.result
+      if (!result.correct && (!result.recognized.trim() || result.score <= 0.05)) {
+        setSttResult(null)
+        setRepeatState('idle')
+        return
+      }
       setSttResult(result)
       setRepeatScores((scores) => [...scores, Math.round(result.score * 100)])
       setRepeatState('done')
@@ -844,7 +1024,9 @@ export default function LearnPage() {
       playSuccessChime()
     }
     return {
-      transcript: spokenBlankWord(attempt.transcript, description.content.blankWord),
+      transcript: description.content.answerMode === 'SENTENCE'
+        ? attempt.transcript
+        : spokenBlankWord(attempt.transcript, description.content.blankWord),
       passed: attempt.passed,
     }
   }, [backendSession, description])
@@ -881,10 +1063,34 @@ export default function LearnPage() {
       audio,
       transcript,
     )
+    setRoleplay((current) => {
+      if (!current || current.mission.missionId !== roleplay.mission.missionId) return current
+      const nextMessage = {
+        messageId: result.messageId,
+        turn: result.turn,
+        user: { transcript: result.user.transcript },
+        character: {
+          speaker: result.character.speaker,
+          text: result.character.text,
+        },
+        score: result.score,
+        missionCompleted: result.missionCompleted,
+      }
+      const messages = current.messages?.filter((message) => message.messageId !== result.messageId) ?? []
+      return {
+        ...current,
+        courseProgress: result.courseProgress,
+        totalProgress: result.totalProgress,
+        messages: [...messages, nextMessage],
+      }
+    })
     setRoleplayProgress(0.70 + (result.courseProgress / 100) * 0.30)
     setRoleplayScores((scores) => [...scores, result.score])
+    const heardUserTranscript = result.userTranscriptSource === 'fallback'
+      ? ''
+      : result.user.transcript
     return {
-      userTranscript: result.user.transcript,
+      userTranscript: heardUserTranscript,
       characterText: result.character.text,
       missionCompleted: result.missionCompleted,
       score: result.score,
@@ -973,7 +1179,7 @@ export default function LearnPage() {
             onSpeakText={speakRoleplayText}
             onFinish={finishBackendSession}
             onExit={() => {
-              navigate('/review', { replace: true, state: { completedAt: Date.now() } })
+              navigate(bookId ? `/books/${bookId}/chapters` : '/books', { replace: true })
             }}
           />
         )}

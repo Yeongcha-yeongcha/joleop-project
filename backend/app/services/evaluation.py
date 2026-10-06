@@ -3,29 +3,95 @@ import re
 
 SPEECH_NAME_ALIASES = {
     "popo": "popo",
+    "bobo": "popo",
+    "pogo": "popo",
+    "poppy": "popo",
+    "po": "popo",
+    "poe": "popo",
+    "poh": "popo",
+    "bo": "popo",
+    "bow": "popo",
+    "poepoe": "popo",
+    "bowbow": "popo",
     "purple": "popo",
     "people": "popo",
     "polo": "popo",
     "papa": "popo",
     "toto": "toto",
+    "coco": "toto",
+    "dodo": "toto",
+    "photo": "toto",
     "titi": "toto",
     "total": "toto",
+    "to": "toto",
+    "toe": "toto",
+    "tow": "toto",
+    "doh": "toto",
+    "toetoe": "toto",
+    "towtow": "toto",
     "pipi": "pipi",
+    "pippi": "pipi",
+    "bibi": "pipi",
+    "pepe": "pipi",
+    "peppy": "pipi",
+    "phoebe": "pipi",
     "peepee": "pipi",
     "pp": "pipi",
+    "pee": "pipi",
+    "pea": "pipi",
+    "peapea": "pipi",
+    "beebee": "pipi",
     "gigi": "gigi",
+    "geegee": "gigi",
+    "jeejee": "gigi",
     "gg": "gigi",
+    "gi": "gigi",
+    "gee": "gigi",
+    "ji": "gigi",
+    "jee": "gigi",
+    "jiji": "gigi",
     "momo": "momo",
+    "mowmow": "momo",
     "mama": "momo",
+    "mo": "momo",
+    "mow": "momo",
+    "moe": "momo",
+    "moemoe": "momo",
 }
+STORY_CHARACTER_NAMES = {"popo", "toto", "pipi", "gigi", "momo"}
 
 
 def normalize_story_names(text: str) -> str:
-    text = re.sub(r"\bpo\s+po\b", "popo", text, flags=re.I)
-    text = re.sub(r"\bto\s+to\b", "toto", text, flags=re.I)
-    text = re.sub(r"\bpi\s+pi\b", "pipi", text, flags=re.I)
-    text = re.sub(r"\bgi\s+gi\b", "gigi", text, flags=re.I)
-    text = re.sub(r"\bmo\s+mo\b", "momo", text, flags=re.I)
+    text = re.sub(
+        r"\b(?:po|poe|poh|bo|bow)[\s-]+(?:po|poe|poh|bo|bow)\b",
+        "popo",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:to|toe|tow|do|doh)[\s-]+(?:to|toe|tow|do|doh)\b",
+        "toto",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:pi|pee|pea|pe|bi|bee)[\s-]+(?:pi|pee|pea|pe|bi|bee)\b",
+        "pipi",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:gi|gee|ji|jee)[\s-]+(?:gi|gee|ji|jee)\b",
+        "gigi",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b(?:mo|mow|moe)[\s-]+(?:mo|mow|moe)\b",
+        "momo",
+        text,
+        flags=re.I,
+    )
     return text
 
 
@@ -60,7 +126,9 @@ class RepeatEvaluationService:
     @classmethod
     def word_results(cls, *, target_text: str, transcript: str) -> list[dict]:
         target_words = cls._words(target_text)
-        transcript_words = [word for _, word in cls._words(transcript)]
+        transcript_words = [
+            word for _, word in cls._words(normalize_story_names(transcript))
+        ]
         if not target_words:
             return []
 
@@ -93,10 +161,17 @@ class RepeatEvaluationService:
                     recognized = replaced[offset] if offset < len(replaced) else None
                     expected = results[target_index]["normalizedWord"]
                     results[target_index]["recognizedWord"] = recognized
-                    results[target_index]["correct"] = (
-                        recognized is not None
-                        and SequenceMatcher(None, expected, recognized).ratio() >= 0.84
+                    similarity = (
+                        SequenceMatcher(None, expected, recognized).ratio()
+                        if recognized is not None
+                        else 0
                     )
+                    threshold = (
+                        0.55
+                        if expected in STORY_CHARACTER_NAMES
+                        else 0.80 if len(expected) <= 3 else 0.72
+                    )
+                    results[target_index]["correct"] = similarity >= threshold
 
         return results
 

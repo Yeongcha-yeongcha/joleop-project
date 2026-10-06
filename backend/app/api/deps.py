@@ -17,6 +17,7 @@ from app.services.profiles import ProfileService
 from app.services.reviews import ReviewService
 from app.services.speech import (
     FasterWhisperSpeechToTextService,
+    GroqSpeechToTextService,
     MockSpeechToTextService,
     SpeechToTextService,
 )
@@ -72,6 +73,8 @@ def get_speech_to_text_service() -> SpeechToTextService:
         provider = settings.STT_PROVIDER.strip().lower()
         if provider in {"mock", "none"}:
             _speech_to_text_service = MockSpeechToTextService()
+        elif provider == "groq" or (provider == "auto" and settings.GROQ_API_KEY):
+            _speech_to_text_service = GroqSpeechToTextService()
         else:
             _speech_to_text_service = FasterWhisperSpeechToTextService()
     return _speech_to_text_service

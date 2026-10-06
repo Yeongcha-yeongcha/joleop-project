@@ -44,6 +44,7 @@ tmp/
 # 앱이 실제로 쓰는 프론트엔드 에셋은 추적한다.
 # 위 확장자 규칙보다 뒤에 와야 되살아난다(마지막에 일치한 규칙이 이긴다).
 !frontend/public/**
+!docs/popo-system-architecture-presentation.png
 
 # Local tools / large model files (저장소 루트만)
 /tools/

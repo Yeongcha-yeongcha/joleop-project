@@ -40,6 +40,7 @@ from app.services.reviews import ReviewService
 from app.services.roleplay import (
     AIRoleplayService,
     RoleplayService,
+    canonicalize_scripted_transcript,
     clean_roleplay_transcript,
     roleplay_runtime_context,
 )
@@ -415,6 +416,7 @@ class LearningSessionService:
         questions = await self._description_questions(learning_session.book_id, learning_session.chapter_number)
         question = self._question_for_step(questions, learning_session.current_step)
         total_steps = len(questions)
+        answer_mode = self._description_answer_mode(question)
         return {
             "courseType": CourseType.DESCRIPTION.value,
             "courseNumber": 3,
@@ -428,6 +430,7 @@ class LearningSessionService:
             "content": {
                 "questionId": question.question_id,
                 "questionType": question.question_type.value,
+                "answerMode": answer_mode,
                 "instruction": question.instruction,
                 "imageUrl": question.image_url,
                 "sentence": question.sentence,
@@ -453,12 +456,13 @@ class LearningSessionService:
         )
         self._ensure_course(learning_session, CourseType.DESCRIPTION)
         question = await self._current_description_question(learning_session, question_id)
+        answer_mode = self._description_answer_mode(question)
         evaluation = self.description_evaluation_service.evaluate(
             instruction=question.instruction,
             sentence=question.sentence,
             transcript=transcript,
-            answer_sentence=question.answer_sentence,
-            blank_word=question.blank_word,
+            answer_sentence=question.answer_sentence if answer_mode == "SENTENCE" else None,
+            blank_word=question.blank_word if answer_mode == "WORD" else None,
         )
         attempt = LearningAttempt(
             session_id=learning_session.session_id,
@@ -481,7 +485,11 @@ class LearningSessionService:
             "passed": attempt.passed,
             "feedback": attempt.feedback,
             "wordResults": attempt.word_results,
-            "modelAnswer": question.answer_sentence or question.sentence,
+            "modelAnswer": (
+                question.blank_word
+                if answer_mode == "WORD"
+                else question.answer_sentence or question.sentence
+            ),
             "guideHint": question.guide_hint,
             "courseProgress": self.progress_service.course_progress(
                 current_step=learning_session.current_step,
@@ -593,8 +601,17 @@ class LearningSessionService:
         if mission.mission_id != mission_id:
             raise QuestionNotFoundException()
 
-        transcript = clean_roleplay_transcript(mission, transcript)
         turn = await self._roleplay_message_count(learning_session.session_id) + 1
+        used_fallback_transcript = not transcript.strip()
+        transcript = clean_roleplay_transcript(
+            mission,
+            transcript or self._roleplay_fallback_transcript(mission, turn),
+        )
+        transcript = canonicalize_scripted_transcript(
+            mission,
+            transcript=transcript,
+            turn=turn,
+        )
         roleplay_result = await self.roleplay_service.respond(
             mission=mission,
             session_id=learning_session.session_id,
@@ -640,6 +657,7 @@ class LearningSessionService:
             },
             "score": message.score,
             "source": roleplay_result.get("source"),
+            "userTranscriptSource": "fallback" if used_fallback_transcript else "speech",
             "missionCompleted": mission_completed,
             "courseProgress": self.progress_service.course_progress(
                 current_step=min(turn, required_turns),
@@ -894,6 +912,18 @@ class LearningSessionService:
         )
         return len(result.scalars().all())
 
+    @staticmethod
+    def _roleplay_fallback_transcript(mission: RoleplayMission, turn: int) -> str:
+        examples = [
+            mission.model_answer,
+            *(mission.similar_answers or []),
+            mission.player_goal,
+        ]
+        examples = [example.strip() for example in examples if example and example.strip()]
+        if not examples:
+            return "I can help."
+        return examples[min(max(turn - 1, 0), len(examples) - 1)]
+
     async def _roleplay_messages(self, session_id: int) -> list[RoleplayMessage]:
         result = await self.session.execute(
             select(RoleplayMessage)
@@ -923,6 +953,13 @@ class LearningSessionService:
             .order_by(DescriptionQuestion.step)
         )
         return list(result.scalars().all())
+
+    @staticmethod
+    def _description_answer_mode(question: DescriptionQuestion) -> str:
+        """Level 1 stays word-only; Level 2/3 use a sentence after question 1."""
+        if question.question_type.value == "WORD_GUESS" or question.step == 1:
+            return "WORD"
+        return "SENTENCE"
 
     async def _current_repeat_question(
         self,

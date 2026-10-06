@@ -11,10 +11,15 @@ from typing import Optional
 
 from shared.settings import (
     ANTHROPIC_API_KEY,
+    GROQ_API_KEY,
+    GROQ_BASE_URL,
+    GROQ_MODEL,
+    GROQ_TIMEOUT_SECONDS,
     LLM_PROVIDER,
     MODELS,
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
+    OLLAMA_TIMEOUT_SECONDS,
 )
 
 
@@ -28,6 +33,14 @@ def generate_text(
 ) -> str:
     if LLM_PROVIDER == "ollama":
         return _generate_with_ollama(
+            messages,
+            system=system,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+    if LLM_PROVIDER == "groq":
+        return _generate_with_groq(
             messages,
             system=system,
             model=model,
@@ -93,7 +106,50 @@ def _generate_with_ollama(
                 "temperature": temperature,
             },
         },
-        timeout=120,
+        timeout=OLLAMA_TIMEOUT_SECONDS,
     )
     resp.raise_for_status()
     return resp.json()["message"]["content"].strip()
+
+
+def _generate_with_groq(
+    messages: list[dict],
+    *,
+    system: Optional[str],
+    model: Optional[str],
+    max_tokens: int,
+    temperature: float,
+) -> str:
+    if not GROQ_API_KEY:
+        raise RuntimeError("GROQ_API_KEY is required when LLM_PROVIDER=groq.")
+
+    selected_model = model or GROQ_MODEL
+    groq_messages = []
+    if system:
+        groq_messages.append({"role": "system", "content": system})
+    groq_messages.extend(messages)
+
+    payload = {
+        "model": selected_model,
+        "messages": groq_messages,
+        "max_completion_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    if selected_model.startswith("openai/gpt-oss-"):
+        payload.update({
+            "reasoning_effort": "low",
+            "include_reasoning": False,
+        })
+
+    resp = requests.post(
+        f"{GROQ_BASE_URL.rstrip('/')}/chat/completions",
+        headers={
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=GROQ_TIMEOUT_SECONDS,
+    )
+    resp.raise_for_status()
+    content = resp.json()["choices"][0]["message"].get("content") or ""
+    return content.strip()

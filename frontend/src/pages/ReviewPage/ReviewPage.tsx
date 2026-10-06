@@ -12,6 +12,8 @@ import {
   type ReviewCardData,
   type ReviewMode,
 } from '../../services/api'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import RoleplayScreen from '../../components/RoleplayScreen/RoleplayScreen'
 import type { RoleplayHistoryTurn, RoleplayMission } from '../../types'
 import type { UserStats } from '../../types'
@@ -60,9 +62,9 @@ const smartFlowCards = [
   { label: 'Word', icon: 'C', tone: 'word' },
 ]
 
-const REVIEW_INITIAL_SILENCE_TIMEOUT_MS = 4200
-const REVIEW_AFTER_SPEECH_TIMEOUT_MS = 1200
-const REVIEW_MAX_RECORD_MS = 9000
+const REVIEW_INITIAL_SILENCE_TIMEOUT_MS = 5000
+const REVIEW_AFTER_SPEECH_TIMEOUT_MS = 1400
+const REVIEW_MAX_RECORD_MS = 12000
 
 function activeProfileKey() {
   try {
@@ -171,20 +173,23 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const isAppleMobile = isAppleMobileDevice()
+    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+    const Recognition = isAppleMobile
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let finalTranscript = ''
     let interimTranscript = ''
     let settled = false
     let hasSpeech = false
-    let silenceTimer = window.setTimeout(() => finish(), REVIEW_INITIAL_SILENCE_TIMEOUT_MS)
+    let silenceTimer: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), REVIEW_MAX_RECORD_MS)
 
     const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
 
     const cleanup = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       window.clearTimeout(maxRecordTimer)
       try {
         recognition?.abort()
@@ -197,7 +202,7 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
     const finish = () => {
       if (settled) return
       settled = true
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       if (mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop()
         return
@@ -209,13 +214,13 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
       const transcript = currentTranscript()
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
+        audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
         transcript,
       })
     }
 
     const restartSilenceTimer = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       silenceTimer = window.setTimeout(
         () => finish(),
         hasSpeech ? REVIEW_AFTER_SPEECH_TIMEOUT_MS : REVIEW_INITIAL_SILENCE_TIMEOUT_MS,
@@ -230,10 +235,11 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
       reject(new Error('Recording failed.'))
     }
     mediaRecorder.onstop = complete
-    mediaRecorder.start()
+    if (isAppleMobile) mediaRecorder.start()
+    else mediaRecorder.start(250)
 
     if (!recognition) {
-      restartSilenceTimer()
+      silenceTimer = window.setTimeout(() => finish(), 7000)
       return
     }
 
@@ -259,7 +265,10 @@ function recordReviewSpeech(onTranscript?: (transcript: string) => void): Promis
       hasSpeech = hasSpeech || Boolean(currentTranscript())
       restartSilenceTimer()
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        return
+      }
       restartSilenceTimer()
     }
     recognition.onend = () => {
@@ -666,11 +675,14 @@ export default function ReviewPage() {
     setSpokenTranscript('')
     try {
       const speech = await recordReviewSpeech(setSpokenTranscript)
-      const transcript = speech.transcript.trim()
-        ? speech.transcript
+      const browserTranscript = speech.transcript.trim()
+      const useBrowserTranscript = browserTranscript
+        && isSpokenAnswerCorrect(current.answer, browserTranscript)
+      const transcript = useBrowserTranscript
+        ? browserTranscript
         : usesBackendApi()
           ? (await transcribeReviewSpeech(speech.audio)).transcript
-          : ''
+          : browserTranscript
       setSpokenTranscript(transcript)
       if (!transcript.trim()) {
         setSpokenTranscript('I could not hear you. Please try again.')

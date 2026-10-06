@@ -1,0 +1,355 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="diagram-title diagram-desc">
+  <title id="diagram-title">POPO 시스템 아키텍처</title>
+  <desc id="diagram-desc">AWS 공식 아이콘과 경계 표기 방식으로 정리한 POPO 영어 학습 서비스의 프론트엔드, 네트워크, 백엔드, 데이터베이스, 외부 AI API 및 배포 구조</desc>
+
+  <defs>
+    <filter id="panel-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1D2B24" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#374151"/>
+    </marker>
+    <marker id="arrow-deploy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#7C4DFF"/>
+    </marker>
+    <marker id="arrow-speech" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#F97316"/>
+    </marker>
+    <marker id="arrow-offline" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#65A30D"/>
+    </marker>
+    <style>
+      @font-face {
+        font-family: "Pretendard Variable";
+        src: url("architecture-assets/fonts/PretendardVariable.woff2") format("woff2");
+        font-weight: 45 920;
+      }
+      text { font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", Arial, sans-serif; letter-spacing: 0; }
+      .card-title { font-size: 22px; font-weight: 800; }
+      .card-body { font-size: 16px; font-weight: 520; fill: #2E3833; }
+      .card-meta { font-size: 13px; font-weight: 650; fill: #758079; }
+      .number { font-size: 23px; font-weight: 850; fill: #FFFFFF; text-anchor: middle; dominant-baseline: middle; }
+      .boundary-title { font-size: 18px; font-weight: 750; fill: #202A25; }
+      .boundary-meta { font-size: 12px; font-weight: 600; fill: #66716B; }
+      .service-title { font-size: 16px; font-weight: 750; fill: #202A25; }
+      .service-text { font-size: 13px; font-weight: 540; fill: #59655F; }
+      .service-small { font-size: 11px; font-weight: 600; fill: #758079; }
+      .line-label { font-size: 11px; font-weight: 700; fill: #3E4943; }
+      .runtime { fill: none; stroke: #374151; stroke-width: 2.1; marker-end: url(#arrow); }
+      .runtime-bi { fill: none; stroke: #374151; stroke-width: 2.1; marker-start: url(#arrow); marker-end: url(#arrow); }
+      .deploy { fill: none; stroke: #7C4DFF; stroke-width: 2; stroke-dasharray: 8 7; marker-end: url(#arrow-deploy); }
+      .speech { fill: none; stroke: #F97316; stroke-width: 2.1; marker-end: url(#arrow-speech); }
+      .offline { fill: none; stroke: #65A30D; stroke-width: 2; stroke-dasharray: 3 6; marker-end: url(#arrow-offline); }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#F7FBF9"/>
+  <rect width="1920" height="7" fill="#D9F0E7"/>
+
+  <!-- Left callouts -->
+  <g filter="url(#panel-shadow)">
+    <rect x="24" y="24" width="366" height="245" rx="8" fill="#FFFFFF"/>
+    <rect x="24" y="24" width="6" height="245" rx="3" fill="#7C4DFF"/>
+  </g>
+  <circle cx="65" cy="65" r="22" fill="#7C4DFF"/>
+  <text x="65" y="66" class="number">1</text>
+  <text x="99" y="73" class="card-title" fill="#7C4DFF">프론트와 API를 분리</text>
+  <text x="49" y="114" class="card-body">
+    <tspan x="49" dy="0">브라우저는 Amplify에서 React 앱과 동화</tspan>
+    <tspan x="49" dy="27">정적 자산을 받고, /api/v1 요청은 ECS의</tspan>
+    <tspan x="49" dy="27">공개 HTTPS 엔드포인트로 직접 보낸다.</tspan>
+    <tspan x="49" dy="27">정적 트래픽과 동적 처리를 분리한 구조다.</tspan>
+  </text>
+  <circle cx="54" cy="235" r="7" fill="#7C4DFF"/>
+  <text x="71" y="240" class="card-meta">Amplify · React/Vite · ALB · FastAPI</text>
+
+  <g filter="url(#panel-shadow)">
+    <rect x="24" y="286" width="366" height="245" rx="8" fill="#FFFFFF"/>
+    <rect x="24" y="286" width="6" height="245" rx="3" fill="#F97316"/>
+  </g>
+  <circle cx="65" cy="327" r="22" fill="#F97316"/>
+  <text x="65" y="328" class="number">2</text>
+  <text x="99" y="335" class="card-title" fill="#F97316">기기별 음성 경로 최적화</text>
+  <text x="49" y="376" class="card-body">
+    <tspan x="49" dy="0">PC는 Web Speech의 실시간 결과를 활용하고,</tspan>
+    <tspan x="49" dy="27">iPad는 PCM WAV를 직접 녹음해 전송한다.</tspan>
+    <tspan x="49" dy="27">Groq Whisper가 문장으로 변환하면 서버가</tspan>
+    <tspan x="49" dy="27">발음 유사도와 캐릭터 이름까지 평가한다.</tspan>
+  </text>
+  <circle cx="54" cy="497" r="7" fill="#F97316"/>
+  <text x="71" y="502" class="card-meta">Web Audio · WAV · Groq Whisper STT</text>
+
+  <g filter="url(#panel-shadow)">
+    <rect x="24" y="548" width="366" height="280" rx="8" fill="#FFFFFF"/>
+    <rect x="24" y="548" width="6" height="280" rx="3" fill="#65A30D"/>
+  </g>
+  <circle cx="65" cy="589" r="22" fill="#65A30D"/>
+  <text x="65" y="590" class="number">3</text>
+  <text x="99" y="597" class="card-title" fill="#65A30D">학습 콘텐츠 사전 생성</text>
+  <text x="49" y="638" class="card-body">
+    <tspan x="49" dy="0">동화·퀴즈·롤플레잉은 로컬 파이프라인에서</tspan>
+    <tspan x="49" dy="27">먼저 생성하고 품질 기준을 검증한다.</tspan>
+    <tspan x="49" dy="27">ComfyUI 이미지와 JSON 결과를 정적 자산과</tspan>
+    <tspan x="49" dy="27">DB seed로 반영해 운영 트래픽과 분리한다.</tspan>
+  </text>
+  <circle cx="54" cy="793" r="7" fill="#65A30D"/>
+  <text x="71" y="798" class="card-meta">Ollama/Qwen · ComfyUI/SDXL · Seed</text>
+
+  <!-- Right callouts -->
+  <g filter="url(#panel-shadow)">
+    <rect x="1530" y="24" width="366" height="245" rx="8" fill="#FFFFFF"/>
+    <rect x="1890" y="24" width="6" height="245" rx="3" fill="#E000B8"/>
+  </g>
+  <circle cx="1571" cy="65" r="22" fill="#E000B8"/>
+  <text x="1571" y="66" class="number">4</text>
+  <text x="1605" y="73" class="card-title" fill="#E000B8">동화 맥락형 AI 롤플레잉</text>
+  <text x="1555" y="114" class="card-body">
+    <tspan x="1555" dy="0">장면·목표·모범 답안·지난 대화를 RDS에서</tspan>
+    <tspan x="1555" dy="27">불러와 ECS Task 내부 Ollama에 전달한다.</tspan>
+    <tspan x="1555" dy="27">AI는 캐릭터를 유지해 짧게 응답하고, 장애</tspan>
+    <tspan x="1555" dy="27">시에는 안전한 규칙 기반 답변으로 전환한다.</tspan>
+  </text>
+  <circle cx="1560" cy="235" r="7" fill="#E000B8"/>
+  <text x="1577" y="240" class="card-meta">Context · History · Ollama · Fallback</text>
+
+  <g filter="url(#panel-shadow)">
+    <rect x="1530" y="286" width="366" height="245" rx="8" fill="#FFFFFF"/>
+    <rect x="1890" y="286" width="6" height="245" rx="3" fill="#EC1368"/>
+  </g>
+  <circle cx="1571" cy="327" r="22" fill="#EC1368"/>
+  <text x="1571" y="328" class="number">5</text>
+  <text x="1605" y="335" class="card-title" fill="#EC1368">학습 데이터를 한곳에 저장</text>
+  <text x="1555" y="376" class="card-body">
+    <tspan x="1555" dy="0">부모·아이 프로필, 책과 진도, 발음 시도,</tspan>
+    <tspan x="1555" dy="27">롤플레잉 대화, 복습 카드와 보상을 RDS에</tspan>
+    <tspan x="1555" dy="27">저장한다. 페이지가 바뀌어도 동일한 세션과</tspan>
+    <tspan x="1555" dy="27">대화 문맥을 이어갈 수 있다.</tspan>
+  </text>
+  <circle cx="1560" cy="497" r="7" fill="#EC1368"/>
+  <text x="1577" y="502" class="card-meta">RDS PostgreSQL · SQLAlchemy · JSONB</text>
+
+  <g filter="url(#panel-shadow)">
+    <rect x="1530" y="548" width="366" height="280" rx="8" fill="#FFFFFF"/>
+    <rect x="1890" y="548" width="6" height="280" rx="3" fill="#5F6368"/>
+  </g>
+  <circle cx="1571" cy="589" r="22" fill="#5F6368"/>
+  <text x="1571" y="590" class="number">6</text>
+  <text x="1605" y="597" class="card-title" fill="#5F6368">배포·관측·보안 경로</text>
+  <text x="1555" y="638" class="card-body">
+    <tspan x="1555" dy="0">daeun 브랜치는 Amplify가 자동 빌드한다.</tspan>
+    <tspan x="1555" dy="27">백엔드는 Docker 이미지를 ECR에 올리고</tspan>
+    <tspan x="1555" dy="27">ECS 새 배포로 교체한다. JWT·CORS·환경</tspan>
+    <tspan x="1555" dy="27">변수로 보호하고 CloudWatch에서 추적한다.</tspan>
+  </text>
+  <circle cx="1560" cy="793" r="7" fill="#5F6368"/>
+  <text x="1577" y="798" class="card-meta">GitHub · ECR · ECS · CloudWatch</text>
+
+  <!-- User and source control -->
+  <g transform="translate(432 22)">
+    <circle cx="24" cy="18" r="12" fill="none" stroke="#25322C" stroke-width="2.2"/>
+    <path d="M4 58 C7 34 42 34 45 58" fill="none" stroke="#25322C" stroke-width="2.2"/>
+    <rect x="58" y="7" width="38" height="54" rx="5" fill="none" stroke="#25322C" stroke-width="2.2"/>
+    <circle cx="77" cy="53" r="2.4" fill="#25322C"/>
+    <text x="111" y="27" class="service-title">Learner</text>
+    <text x="111" y="49" class="service-text">iPad · PC browser</text>
+  </g>
+
+  <g transform="translate(1184 20)">
+    <rect x="0" y="0" width="190" height="66" rx="7" fill="#FFFFFF" stroke="#C9D2CD" stroke-width="1.4"/>
+    <circle cx="29" cy="25" r="15" fill="#24292F"/>
+    <path d="M21 29 C21 20 37 20 37 29 M23 24 L20 18 M35 24 L38 18" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="54" y="27" class="service-title">GitHub</text>
+    <text x="54" y="48" class="service-text">branch: daeun</text>
+  </g>
+  <circle cx="1392" cy="52" r="17" fill="#5F6368" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="1392" y="53" class="number" style="font-size:16px">6</text>
+
+  <!-- AWS Cloud boundary -->
+  <rect x="418" y="104" width="1092" height="642" rx="4" fill="#FFFFFF" stroke="#232F3E" stroke-width="2"/>
+  <rect x="418" y="104" width="1092" height="42" fill="#F3F5F4"/>
+  <rect x="433" y="113" width="36" height="24" rx="2" fill="#232F3E"/>
+  <text x="451" y="130" style="font-size:11px;font-weight:800;fill:#FFFFFF;text-anchor:middle">aws</text>
+  <text x="481" y="132" class="boundary-title">AWS Cloud</text>
+
+  <!-- Amplify managed edge -->
+  <rect x="447" y="164" width="235" height="168" rx="5" fill="#FFF7F8" stroke="#DD344C" stroke-width="1.7"/>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BV1MtQW1wbGlmeV82NDwvdGl0bGU+CiAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BV1MtQW1wbGlmeV82NCIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Ikljb24tQXJjaGl0ZWN0dXJlLUJHLzY0L01vYmlsZSIgZmlsbD0iI0REMzQ0QyI+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUiIHg9IjAiIHk9IjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PC9yZWN0PgogICAgICAgIDwvZz4KICAgICAgICA8cGF0aCBkPSJNNTkuNjEwNzM4OSw1OS4xNzkgTDM5LjUwNjczODksMjAgTDQ1LjI1NzczODksMjAgTDY1LjM2MjczODksNTkuMTc5IEw1OS42MTA3Mzg5LDU5LjE3OSBaIE02Ny44ODg3Mzg5LDU5LjcyMiBMNDYuNzU4NzM4OSwxOC41NDQgQzQ2LjU4ODczODksMTguMjEgNDYuMjQ0NzM4OSwxOCA0NS44Njk3Mzg5LDE4IEwzNy44Njk3Mzg5LDE4IEMzNy41MjA3Mzg5LDE4IDM3LjE5NzczODksMTguMTgxIDM3LjAxNTczODksMTguNDc5IEMzNi44MzQ3Mzg5LDE4Ljc3NiAzNi44MjA3Mzg5LDE5LjE0NyAzNi45Nzk3Mzg5LDE5LjQ1NyBMNTguMTA5NzM4OSw2MC42MzYgQzU4LjI4MDczODksNjAuOTY5IDU4LjYyNDczODksNjEuMTc5IDU4Ljk5OTczODksNjEuMTc5IEw2Ni45OTk3Mzg5LDYxLjE3OSBDNjcuMzQ3NzM4OSw2MS4xNzkgNjcuNjcxNzM4OSw2MC45OTggNjcuODUyNzM4OSw2MC43IEM2OC4wMzQ3Mzg5LDYwLjQwMyA2OC4wNDg3Mzg5LDYwLjAzMyA2Ny44ODg3Mzg5LDU5LjcyMiBMNjcuODg4NzM4OSw1OS43MjIgWiBNNDcuNTk4NzM4OSw1OS4xNzkgTDMyLjIxNDczODksMzAuMzMyIEwzNS4zNjU3Mzg5LDI1LjEyMSBMNTMuMzQwNzM4OSw1OS4xNzkgTDQ3LjU5ODczODksNTkuMTc5IFogTTM2LjMwOTczODksMjIuNjI0IEMzNi4xNDA3Mzg5LDIyLjMwNSAzNS44MTQ3Mzg5LDIyLjEwMSAzNS40NTQ3Mzg5LDIyLjA5MSBDMzUuMTA4NzM4OSwyMi4wNyAzNC43NTY3Mzg5LDIyLjI2NSAzNC41Njk3Mzg5LDIyLjU3MyBMMzAuMjA5NzM4OSwyOS43ODQgQzMwLjAyNjczODksMzAuMDg2IDMwLjAxNjczODksMzAuNDYxIDMwLjE4MTczODksMzAuNzcyIEw0Ni4xMTY3Mzg5LDYwLjY1IEM0Ni4yOTA3Mzg5LDYwLjk3NSA0Ni42MzA3Mzg5LDYxLjE3OSA0Ni45OTk3Mzg5LDYxLjE3OSBMNTQuOTk5NzM4OSw2MS4xNzkgQzU1LjM0OTczODksNjEuMTc5IDU1LjY3NDczODksNjAuOTk1IDU1Ljg1NTczODksNjAuNjk1IEM1Ni4wMzY3Mzg5LDYwLjM5NSA1Ni4wNDc3Mzg5LDYwLjAyMiA1NS44ODM3Mzg5LDU5LjcxMiBMMzYuMzA5NzM4OSwyMi42MjQgWiBNMTQuNzcyNzM4OSw1OS4xNzkgTDI4Ljg4NDczODksMzUuODQgTDMxLjc1OTczODksNDEuMjI5IEwyNS4xMzM3Mzg5LDUyLjY3OCBDMjQuOTU0NzM4OSw1Mi45ODggMjQuOTU0NzM4OSw1My4zNjkgMjUuMTMyNzM4OSw1My42NzkgQzI1LjMxMTczODksNTMuOTg4IDI1LjY0MTczODksNTQuMTc5IDI1Ljk5OTczODksNTQuMTc5IEwzOC42NjY3Mzg5LDU0LjE3OSBMNDEuMzMyNzM4OSw1OS4xNzkgTDE0Ljc3MjczODksNTkuMTc5IFogTTQwLjE0ODczODksNTIuNzA4IEMzOS45NzQ3Mzg5LDUyLjM4MyAzOS42MzQ3Mzg5LDUyLjE3OSAzOS4yNjU3Mzg5LDUyLjE3OSBMMjcuNzMzNzM4OSw1Mi4xNzkgTDMzLjc2ODczODksNDEuNzUgQzMzLjk0MjczODksNDEuNDUxIDMzLjk0ODczODksNDEuMDg0IDMzLjc4NjczODksNDAuNzc5IEwyOS44MjI3Mzg5LDMzLjM0NiBDMjkuNjUyNzM4OSwzMy4wMjkgMjkuMzI2NzM4OSwzMi44MjcgMjguOTY2NzM4OSwzMi44MTcgQzI4LjU4MjczODksMzIuOCAyOC4yNjk3Mzg5LDMyLjk5MiAyOC4wODQ3Mzg5LDMzLjI5OSBMMTIuMTQzNzM4OSw1OS42NjEgQzExLjk1NzczODksNTkuOTcxIDExLjk1MTczODksNjAuMzU2IDEyLjEyODczODksNjAuNjcgQzEyLjMwNTczODksNjAuOTg1IDEyLjYzNzczODksNjEuMTc5IDEyLjk5OTczODksNjEuMTc5IEw0Mi45OTk3Mzg5LDYxLjE3OSBDNDMuMzUwNzM4OSw2MS4xNzkgNDMuNjc1NzM4OSw2MC45OTUgNDMuODU2NzM4OSw2MC42OTQgQzQ0LjAzNzczODksNjAuMzkyIDQ0LjA0NzczODksNjAuMDE4IDQzLjg4MTczODksNTkuNzA4IEw0MC4xNDg3Mzg5LDUyLjcwOCBaIiBpZD0iQVdTLUFtcGxpZnlfSWNvbl82NF9TcXVpZCIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4=" x="466" y="183" width="64" height="64"/>
+  <text x="544" y="204" class="service-title">AWS Amplify Hosting</text>
+  <text x="544" y="226" class="service-text">React + TypeScript + Vite</text>
+  <line x1="466" y1="260" x2="661" y2="260" stroke="#E9CDD2"/>
+  <text x="466" y="282" class="service-text">Managed CloudFront CDN · HTTPS</text>
+  <text x="466" y="305" class="service-small">SPA + WebP · icons · audio assets</text>
+
+  <!-- AWS Region boundary -->
+  <rect x="711" y="124" width="772" height="600" rx="4" fill="#FCFDFD" stroke="#00A4A6" stroke-width="1.8" stroke-dasharray="7 5"/>
+  <text x="729" y="151" class="boundary-title">Region</text>
+  <text x="792" y="151" class="boundary-meta">ap-southeast-2 · Sydney</text>
+
+  <!-- VPC boundary -->
+  <rect x="736" y="176" width="505" height="522" rx="4" fill="#FAF8FF" stroke="#8C4FFF" stroke-width="1.8"/>
+  <text x="754" y="203" class="boundary-title">VPC</text>
+  <text x="798" y="203" class="boundary-meta">vpc-0e8636fa59689feb1</text>
+
+  <!-- Public subnet -->
+  <rect x="760" y="222" width="457" height="276" rx="3" fill="#F4FAEB" stroke="#7AA116" stroke-width="1.4"/>
+  <text x="777" y="246" class="service-title" fill="#557A00">Public subnets</text>
+  <text x="777" y="264" class="service-small">ECS Express managed networking</text>
+
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iNDhweCIgaGVpZ2h0PSI0OHB4IiB2aWV3Qm94PSIwIDAgNDggNDgiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1SZXNvdXJjZS9OZXR3b3JraW5nLWFuZC1Db250ZW50LURlbGl2ZXJ5L1Jlc19FbGFzdGljLUxvYWQtQmFsYW5jaW5nX0FwcGxpY2F0aW9uLUxvYWQtQmFsYW5jZXJfNDg8L3RpdGxlPgogICAgPGcgaWQ9Ikljb24tUmVzb3VyY2UvTmV0d29ya2luZy1hbmQtQ29udGVudC1EZWxpdmVyeS9SZXNfRWxhc3RpYy1Mb2FkLUJhbGFuY2luZ19BcHBsaWNhdGlvbi1Mb2FkLUJhbGFuY2VyXzQ4IiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8cGF0aCBkPSJNMzMuNjksMzQuMzc1IEwzNi4wMzUsMzQuMzc1IEwzNi4wMzUsMzIgTDMzLjY5LDMyIEwzMy42OSwzNC4zNzUgWiBNMjYuNzUxLDM0LjM3NSBMMjkuMTI2LDM0LjM3NSBMMjkuMTI2LDMyIEwyNi43NTEsMzIgTDI2Ljc1MSwzNC4zNzUgWiBNMTguODc2LDM0LjM3NSBMMjEuMjUxLDM0LjM3NSBMMjEuMjUxLDMyIEwxOC44NzYsMzIgTDE4Ljg3NiwzNC4zNzUgWiBNMTEuOTY2LDM0LjM3NSBMMTQuMjUxLDM0LjM3NSBMMTQuMjUxLDMyIEwxMS45NjYsMzIgTDExLjk2NiwzNC4zNzUgWiBNMTguMDAxLDE2Ljg3NSBMMzAuMDAxLDE2Ljg3NSBMMzAuMDAxLDExIEwxOC4wMDEsMTEgTDE4LjAwMSwxNi44NzUgWiBNMzcuMDM1LDMwIEwzNS41MDEsMzAgTDM1LjUwMSwyNi42MjUgQzM1LjUwMSwyNi4wNzIgMzUuMDUzLDI1LjYyNSAzNC41MDEsMjUuNjI1IEwzMi4wMDEsMjUuNjI1IEwzMi4wMDEsMjIuMjUgQzMyLjAwMSwyMS42OTcgMzEuNTUzLDIxLjI1IDMxLjAwMSwyMS4yNSBMMjUuMDAxLDIxLjI1IEwyNS4wMDEsMTguODc1IEwzMS4wMDEsMTguODc1IEMzMS41NTMsMTguODc1IDMyLjAwMSwxOC40MjggMzIuMDAxLDE3Ljg3NSBMMzIuMDAxLDEwIEMzMi4wMDEsOS40NDcgMzEuNTUzLDkgMzEuMDAxLDkgTDE3LjAwMSw5IEMxNi40NDgsOSAxNi4wMDEsOS40NDcgMTYuMDAxLDEwIEwxNi4wMDEsMTcuODc1IEMxNi4wMDEsMTguNDI4IDE2LjQ0OCwxOC44NzUgMTcuMDAxLDE4Ljg3NSBMMjMuMDAxLDE4Ljg3NSBMMjMuMDAxLDIxLjI1IEwxNy4wMDEsMjEuMjUgQzE2LjQ0OCwyMS4yNSAxNi4wMDEsMjEuNjk3IDE2LjAwMSwyMi4yNSBMMTYuMDAxLDI1LjYyNSBMMTMuNTAxLDI1LjYyNSBDMTIuOTQ4LDI1LjYyNSAxMi41MDEsMjYuMDcyIDEyLjUwMSwyNi42MjUgTDEyLjUwMSwzMCBMMTAuOTY1LDMwIEMxMC40MTMsMzAgOS45NjUsMzAuNDQ3IDkuOTY1LDMxIEw5Ljk2NSwzNS4zNzUgQzkuOTY1LDM1LjkyOCAxMC40MTMsMzYuMzc1IDEwLjk2NSwzNi4zNzUgTDE1LjI1MSwzNi4zNzUgQzE1LjgwMywzNi4zNzUgMTYuMjUxLDM1LjkyOCAxNi4yNTEsMzUuMzc1IEwxNi4yNTEsMzEgQzE2LjI1MSwzMC40NDcgMTUuODAzLDMwIDE1LjI1MSwzMCBMMTQuNTAxLDMwIEwxNC41MDEsMjcuNjI1IEwxOC42MjYsMjcuNjI1IEwxOC42MjYsMzAgTDE3Ljg3NiwzMCBDMTcuMzIzLDMwIDE2Ljg3NiwzMC40NDcgMTYuODc2LDMxIEwxNi44NzYsMzUuMzc1IEMxNi44NzYsMzUuOTI4IDE3LjMyMywzNi4zNzUgMTcuODc2LDM2LjM3NSBMMjIuMjUxLDM2LjM3NSBDMjIuODAzLDM2LjM3NSAyMy4yNTEsMzUuOTI4IDIzLjI1MSwzNS4zNzUgTDIzLjI1MSwzMSBDMjMuMjUxLDMwLjQ0NyAyMi44MDMsMzAgMjIuMjUxLDMwIEwyMC42MjYsMzAgTDIwLjYyNiwyNi42MjUgQzIwLjYyNiwyNi4wNzIgMjAuMTc4LDI1LjYyNSAxOS42MjYsMjUuNjI1IEwxOC4wMDEsMjUuNjI1IEwxOC4wMDEsMjMuMjUgTDMwLjAwMSwyMy4yNSBMMzAuMDAxLDI1LjYyNSBMMjguMzc2LDI1LjYyNSBDMjcuODIzLDI1LjYyNSAyNy4zNzYsMjYuMDcyIDI3LjM3NiwyNi42MjUgTDI3LjM3NiwzMCBMMjUuNzUxLDMwIEMyNS4xOTgsMzAgMjQuNzUxLDMwLjQ0NyAyNC43NTEsMzEgTDI0Ljc1MSwzNS4zNzUgQzI0Ljc1MSwzNS45MjggMjUuMTk4LDM2LjM3NSAyNS43NTEsMzYuMzc1IEwzMC4xMjYsMzYuMzc1IEMzMC42NzgsMzYuMzc1IDMxLjEyNiwzNS45MjggMzEuMTI2LDM1LjM3NSBMMzEuMTI2LDMxIEMzMS4xMjYsMzAuNDQ3IDMwLjY3OCwzMCAzMC4xMjYsMzAgTDI5LjM3NiwzMCBMMjkuMzc2LDI3LjYyNSBMMzMuNTAxLDI3LjYyNSBMMzMuNTAxLDMwIEwzMi42OSwzMCBDMzIuMTM3LDMwIDMxLjY5LDMwLjQ0NyAzMS42OSwzMSBMMzEuNjksMzUuMzc1IEMzMS42OSwzNS45MjggMzIuMTM3LDM2LjM3NSAzMi42OSwzNi4zNzUgTDM3LjAzNSwzNi4zNzUgQzM3LjU4NywzNi4zNzUgMzguMDM1LDM1LjkyOCAzOC4wMzUsMzUuMzc1IEwzOC4wMzUsMzEgQzM4LjAzNSwzMC40NDcgMzcuNTg3LDMwIDM3LjAzNSwzMCBMMzcuMDM1LDMwIFogTTI0LjAwMSw0NCBDMTIuOTcyLDQ0IDQsMzUuMDI4IDQsMjQgQzQsMTIuOTcyIDEyLjk3Miw0IDI0LjAwMSw0IEMzNS4wMjksNCA0NC4wMDEsMTIuOTcyIDQ0LjAwMSwyNCBDNDQuMDAxLDM1LjAyOCAzNS4wMjksNDQgMjQuMDAxLDQ0IEwyNC4wMDEsNDQgWiBNMjQuMDAxLDIgQzExLjg2OSwyIDIsMTEuODY5IDIsMjQgQzIsMzYuMTMxIDExLjg2OSw0NiAyNC4wMDEsNDYgQzM2LjEzMSw0NiA0Ni4wMDEsMzYuMTMxIDQ2LjAwMSwyNCBDNDYuMDAxLDExLjg2OSAzNi4xMzEsMiAyNC4wMDEsMiBMMjQuMDAxLDIgWiIgaWQ9IkFXUy1FbGFzdGljLUxvYWQtQmFsYW5jaW5nXy1BcHBsaWNhdGlvbi1Mb2FkLUJhbGFuY2VyX1Jlc291cmNlLUljb25fbGlnaHQtYmciIGZpbGw9IiM4QzRGRkYiPjwvcGF0aD4KICAgIDwvZz4KPC9zdmc+" x="789" y="282" width="54" height="54"/>
+  <text x="816" y="354" class="service-title" text-anchor="middle" style="font-size:14px">Application</text>
+  <text x="816" y="371" class="service-title" text-anchor="middle" style="font-size:14px">Load Balancer</text>
+  <text x="816" y="391" class="service-text" text-anchor="middle">HTTPS :443</text>
+  <text x="816" y="409" class="service-small" text-anchor="middle">internet-facing · TLS</text>
+
+  <rect x="900" y="270" width="292" height="198" rx="5" fill="#FFF9F3" stroke="#ED7100" stroke-width="1.8"/>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV82NDwvdGl0bGU+CiAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV82NCIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Ikljb24tQXJjaGl0ZWN0dXJlLUJHLzY0L0NvbXB1dGUiIGZpbGw9IiNFRDcxMDAiPgogICAgICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlIiB4PSIwIiB5PSIwIiB3aWR0aD0iODAiIGhlaWdodD0iODAiPjwvcmVjdD4KICAgICAgICA8L2c+CiAgICAgICAgPHBhdGggZD0iTTY0LDQ4LjIzNDAwOTUgTDU2LDQzLjQzMzAxMTcgTDU2LDMyLjAwMDAxNjkgQzU2LDMxLjY0NDAxNzEgNTUuODEyLDMxLjMxNTAxNzIgNTUuNTA0LDMxLjEzNjAxNzMgTDQ0LDI0LjQyNjAyMDQgTDQ0LDE0Ljc1MjAyNDggTDY0LDI2LjU3MTAxOTQgTDY0LDQ4LjIzNDAwOTUgWiBNNjUuNTA5LDI1LjEzOTAyIEw0My41MDksMTIuMTM5MDI2IEM0My4xOTksMTEuOTU2MDI2MSA0Mi44MTgsMTEuOTU0MDI2MSA0Mi41MDQsMTIuMTMxMDI2IEM0Mi4xOTMsMTIuMzA5MDI1OSA0MiwxMi42NDEwMjU3IDQyLDEzLjAwMDAyNTYgTDQyLDI1LjAwMDAyMDEgQzQyLDI1LjM1NTAxOTkgNDIuMTg5LDI1LjY4NDAxOTggNDIuNDk2LDI1Ljg2NDAxOTcgTDU0LDMyLjU3NDAxNjYgTDU0LDQ0LjAwMDAxMTQgQzU0LDQ0LjM1MTAxMTMgNTQuMTg1LDQ0LjY3NzAxMTEgNTQuNDg2LDQ0Ljg1NzAxMSBMNjQuNDg2LDUwLjg1NzAwODMgQzY0LjY0NCw1MC45NTIwMDgyIDY0LjgyMiw1MSA2NSw1MSBDNjUuMTcsNTEgNjUuMzQsNTAuOTU3MDA4MiA2NS40OTMsNTAuODcwMDA4MyBDNjUuODA3LDUwLjY5MzAwODQgNjYsNTAuMzYwMDA4NSA2Niw1MCBMNjYsMjYuMDAwMDE5NiBDNjYsMjUuNjQ2MDE5OCA2NS44MTQsMjUuMzE5MDIgNjUuNTA5LDI1LjEzOTAyIEw2NS41MDksMjUuMTM5MDIgWiBNNDAuNDQ1LDY2Ljg2MzAwMSBMMTcsNTQuMzk5MDA2NyBMMTcsMjYuNTcxMDE5NCBMMzcsMTQuNzUyMDI0OCBMMzcsMjQuNDUxMDIwNCBMMjYuNDYzLDMxLjE1NjAxNzMgQzI2LjE3NSwzMS4zNDAwMTcyIDI2LDMxLjY1ODAxNzEgMjYsMzIuMDAwMDE2OSBMMjYsNDkuMDAwMDA5MSBDMjYsNDkuMzczMDA5IDI2LjIwOCw0OS43MTUwMDg4IDI2LjUzOCw0OS44ODcwMDg3IEwzOS45OTEsNTYuODg3MDA1NSBDNDAuMjgsNTcuMDM3MDA1NSA0MC42MjQsNTcuMDM4MDA1NSA0MC45MTIsNTYuODg4MDA1NSBMNTMuOTY0LDUwLjE0NDAwODYgTDYxLjk5Niw1NC45NjQwMDY0IEw0MC40NDUsNjYuODYzMDAxIFogTTY0LjUxNSw1NC4xNDIwMDY4IEw1NC41MTUsNDguMTQyMDA5NSBDNTQuMjE3LDQ3Ljk2NDAwOTYgNTMuODQ5LDQ3Ljk1MjAwOTYgNTMuNTQxLDQ4LjExMjAwOTUgTDQwLjQ1NSw1NC44NzMwMDY1IEwyOCw0OC4zOTMwMDk0IEwyOCwzMi41NDkwMTY3IEwzOC41MzcsMjUuODQ0MDE5NyBDMzguODI1LDI1LjY2MDAxOTggMzksMjUuMzQyMDE5OSAzOSwyNS4wMDAwMjAxIEwzOSwxMy4wMDAwMjU2IEMzOSwxMi42NDEwMjU3IDM4LjgwOCwxMi4zMDkwMjU5IDM4LjQ5NiwxMi4xMzEwMjYgQzM4LjE4NCwxMS45NTQwMjYxIDM3LjgwMiwxMS45NTYwMjYxIDM3LjQ5MSwxMi4xMzkwMjYgTDE1LjQ5MSwyNS4xMzkwMiBDMTUuMTg3LDI1LjMxOTAyIDE1LDI1LjY0NjAxOTggMTUsMjYuMDAwMDE5NiBMMTUsNTUgQzE1LDU1LjM2OTAwNjIgMTUuMjA0LDU1LjcwOTAwNjEgMTUuNTMsNTUuODgzMDA2IEwzOS45ODQsNjguODgzMDAwMSBDNDAuMTMxLDY4Ljk2MSA0MC4yOTIsNjkgNDAuNDUzLDY5IEM0MC42Miw2OSA0MC43ODYsNjguOTU4IDQwLjkzNyw2OC44NzUwMDAxIEw2NC40ODQsNTUuODc1MDA2IEM2NC43OTcsNTUuNzAyMDA2MSA2NC45OTMsNTUuMzc1MDA2MiA2NS4wMDAxNDE2LDU1LjAxODAwNjQgQzY1LjAwNiw1NC42NjAwMDY2IDY0LjgyMSw1NC4zMjYwMDY3IDY0LjUxNSw1NC4xNDIwMDY4IEw2NC41MTUsNTQuMTQyMDA2OCBaIiBpZD0iQW1hem9uLUVsYXN0aWMtQ29udGFpbmVyLVNlcnZpY2VfSWNvbl82NF9TcXVpZCIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4=" x="916" y="287" width="58" height="58"/>
+  <text x="988" y="306" class="service-title">ECS Express Mode</text>
+  <text x="988" y="327" class="service-text">Service + Auto Scaling</text>
+
+  <rect x="916" y="357" width="258" height="92" rx="4" fill="#FFFFFF" stroke="#F2B27B"/>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iNDhweCIgaGVpZ2h0PSI0OHB4IiB2aWV3Qm94PSIwIDAgNDggNDgiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1SZXNvdXJjZS9Db250YWluZXJzL1Jlc19BbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV9UYXNrXzQ4PC90aXRsZT4KICAgIDxnIGlkPSJJY29uLVJlc291cmNlL0NvbnRhaW5lcnMvUmVzX0FtYXpvbi1FbGFzdGljLUNvbnRhaW5lci1TZXJ2aWNlX1Rhc2tfNDgiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxwYXRoIGQ9Ik0yMC4yNSwzNi4zNzUgTDM2LDM2LjM3NSBMMzYsMzQuMzc1IEwyMC4yNSwzNC4zNzUgTDIwLjI1LDM2LjM3NSBaIE0yMC4yNSwyNC4xMjUgTDM2LDI0LjEyNSBMMzYsMjIuMTI1IEwyMC4yNSwyMi4xMjUgTDIwLjI1LDI0LjEyNSBaIE0yMC4yNSwxMS44NzUgTDM2LDExLjg3NSBMMzYsOS44NzUgTDIwLjI1LDkuODc1IEwyMC4yNSwxMS44NzUgWiBNMTMuMzc1LDM3IEwxNi42MjUsMzcgTDE2LjYyNSwzMy43NSBMMTMuMzc1LDMzLjc1IEwxMy4zNzUsMzcgWiBNMTIuMzc1LDM5IEwxNy42MjUsMzkgQzE4LjE3OCwzOSAxOC42MjUsMzguNTUzIDE4LjYyNSwzOCBMMTguNjI1LDMyLjc1IEMxOC42MjUsMzIuMTk4IDE4LjE3OCwzMS43NSAxNy42MjUsMzEuNzUgTDEyLjM3NSwzMS43NSBDMTEuODIyLDMxLjc1IDExLjM3NSwzMi4xOTggMTEuMzc1LDMyLjc1IEwxMS4zNzUsMzggQzExLjM3NSwzOC41NTMgMTEuODIyLDM5IDEyLjM3NSwzOSBMMTIuMzc1LDM5IFogTTEzLjM3NSwyNC43NSBMMTYuNjI1LDI0Ljc1IEwxNi42MjUsMjEuNSBMMTMuMzc1LDIxLjUgTDEzLjM3NSwyNC43NSBaIE0xMi4zNzUsMjYuNzUgTDE3LjYyNSwyNi43NSBDMTguMTc4LDI2Ljc1IDE4LjYyNSwyNi4zMDMgMTguNjI1LDI1Ljc1IEwxOC42MjUsMjAuNSBDMTguNjI1LDE5Ljk0OCAxOC4xNzgsMTkuNSAxNy42MjUsMTkuNSBMMTIuMzc1LDE5LjUgQzExLjgyMiwxOS41IDExLjM3NSwxOS45NDggMTEuMzc1LDIwLjUgTDExLjM3NSwyNS43NSBDMTEuMzc1LDI2LjMwMyAxMS44MjIsMjYuNzUgMTIuMzc1LDI2Ljc1IEwxMi4zNzUsMjYuNzUgWiBNMTMuMzc1LDEyLjUgTDE2LjYyNSwxMi41IEwxNi42MjUsOS4yNSBMMTMuMzc1LDkuMjUgTDEzLjM3NSwxMi41IFogTTEyLjM3NSwxNC41IEwxNy42MjUsMTQuNSBDMTguMTc4LDE0LjUgMTguNjI1LDE0LjA1MyAxOC42MjUsMTMuNSBMMTguNjI1LDguMjUgQzE4LjYyNSw3LjY5OCAxOC4xNzgsNy4yNSAxNy42MjUsNy4yNSBMMTIuMzc1LDcuMjUgQzExLjgyMiw3LjI1IDExLjM3NSw3LjY5OCAxMS4zNzUsOC4yNSBMMTEuMzc1LDEzLjUgQzExLjM3NSwxNC4wNTMgMTEuODIyLDE0LjUgMTIuMzc1LDE0LjUgTDEyLjM3NSwxNC41IFogTTksNDQgTDM4LjUsNDQgTDM4LjUsNCBMOSw0IEw5LDQ0IFogTTM5LjUsMiBMOCwyIEM3LjQ0NywyIDcsMi40NDggNywzIEw3LDQ1IEM3LDQ1LjU1MyA3LjQ0Nyw0NiA4LDQ2IEwzOS41LDQ2IEM0MC4wNTMsNDYgNDAuNSw0NS41NTMgNDAuNSw0NSBMNDAuNSwzIEM0MC41LDIuNDQ4IDQwLjA1MywyIDM5LjUsMiBMMzkuNSwyIFoiIGlkPSJBbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV9UYXNrX1Jlc291cmNlLUljb25fbGlnaHQtYmciIGZpbGw9IiNFRDcxMDAiPjwvcGF0aD4KICAgIDwvZz4KPC9zdmc+" x="929" y="375" width="44" height="44"/>
+  <text x="985" y="379" class="service-title">Fargate Task</text>
+  <text x="985" y="400" class="service-text">FastAPI :8000 · Ollama</text>
+  <text x="985" y="420" class="service-small">Roleplay · Learning · Review</text>
+  <text x="985" y="439" class="service-small">STT/TTS · JWT · CORS · API keys</text>
+
+  <!-- Private database subnet -->
+  <rect x="760" y="520" width="457" height="151" rx="3" fill="#EAF7FB" stroke="#00A4A6" stroke-width="1.4"/>
+  <text x="777" y="545" class="service-title" fill="#007C83">Private DB subnets</text>
+  <text x="777" y="563" class="service-small">RDS DB subnet group</text>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tUkRTXzY0PC90aXRsZT4KICAgIDxnIGlkPSJJY29uLUFyY2hpdGVjdHVyZS82NC9BcmNoX0FtYXpvbi1SRFNfNjQiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxnIGlkPSJJY29uLUFyY2hpdGVjdHVyZS1CRy82NC9EYXRhYmFzZSIgZmlsbD0iI0M5MjVEMSI+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUiIHg9IjAiIHk9IjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PC9yZWN0PgogICAgICAgIDwvZz4KICAgICAgICA8cGF0aCBkPSJNMTUuNDE0LDE0IEwyNC43MDcsMjMuMjkzIEwyMy4yOTMsMjQuNzA3IEwxNCwxNS40MTQgTDE0LDIzIEwxMiwyMyBMMTIsMTMgQzEyLDEyLjQ0OCAxMi40NDcsMTIgMTMsMTIgTDIzLDEyIEwyMywxNCBMMTUuNDE0LDE0IFogTTY4LDEzIEw2OCwyMyBMNjYsMjMgTDY2LDE1LjQxNCBMNTYuNzA3LDI0LjcwNyBMNTUuMjkzLDIzLjI5MyBMNjQuNTg2LDE0IEw1NywxNCBMNTcsMTIgTDY3LDEyIEM2Ny41NTMsMTIgNjgsMTIuNDQ4IDY4LDEzIEw2OCwxMyBaIE02Niw1NyBMNjgsNTcgTDY4LDY3IEM2OCw2Ny41NTIgNjcuNTUzLDY4IDY3LDY4IEw1Nyw2OCBMNTcsNjYgTDY0LjU4Niw2NiBMNTUuMjkzLDU2LjcwNyBMNTYuNzA3LDU1LjI5MyBMNjYsNjQuNTg2IEw2Niw1NyBaIE02NS41LDM5LjIxMyBDNjUuNSwzNS44OTQgNjEuNjY4LDMyLjYxNSA1NS4yNSwzMC40NDIgTDU1Ljg5MSwyOC41NDggQzYzLjI2OCwzMS4wNDUgNjcuNSwzNC45MzIgNjcuNSwzOS4yMTMgQzY3LjUsNDMuNDk1IDYzLjI2OCw0Ny4zODMgNTUuODksNDkuODc5IEw1NS4yNDksNDcuOTg0IEM2MS42NjgsNDUuODEyIDY1LjUsNDIuNTM0IDY1LjUsMzkuMjEzIEw2NS41LDM5LjIxMyBaIE0xNC41NTYsMzkuMjEzIEMxNC41NTYsNDIuMzkzIDE4LjE0Myw0NS41ODUgMjQuMTUyLDQ3Ljc1MyBMMjMuNDczLDQ5LjYzNCBDMTYuNTM1LDQ3LjEzMSAxMi41NTYsNDMuMzMzIDEyLjU1NiwzOS4yMTMgQzEyLjU1NiwzNS4wOTQgMTYuNTM1LDMxLjI5NiAyMy40NzMsMjguNzkyIEwyNC4xNTIsMzAuNjczIEMxOC4xNDMsMzIuODQyIDE0LjU1NiwzNi4wMzQgMTQuNTU2LDM5LjIxMyBMMTQuNTU2LDM5LjIxMyBaIE0yNC43MDcsNTYuNzA3IEwxNS40MTQsNjYgTDIzLDY2IEwyMyw2OCBMMTMsNjggQzEyLjQ0Nyw2OCAxMiw2Ny41NTIgMTIsNjcgTDEyLDU3IEwxNCw1NyBMMTQsNjQuNTg2IEwyMy4yOTMsNTUuMjkzIEwyNC43MDcsNTYuNzA3IFogTTQwLDMxLjI4NiBDMzIuODU0LDMxLjI4NiAyOSwyOS40NCAyOSwyOC42ODYgQzI5LDI3LjkzMSAzMi44NTQsMjYuMDg2IDQwLDI2LjA4NiBDNDcuMTQ1LDI2LjA4NiA1MSwyNy45MzEgNTEsMjguNjg2IEM1MSwyOS40NCA0Ny4xNDUsMzEuMjg2IDQwLDMxLjI4NiBMNDAsMzEuMjg2IFogTTQwLjAyOSwzOS4wMzEgQzMzLjE4NywzOS4wMzEgMjksMzcuMTYyIDI5LDM2LjE0NSBMMjksMzEuMjg0IEMzMS40NjMsMzIuNjQzIDM1LjgzMiwzMy4yODYgNDAsMzMuMjg2IEM0NC4xNjgsMzMuMjg2IDQ4LjUzNywzMi42NDMgNTEsMzEuMjg0IEw1MSwzNi4xNDUgQzUxLDM3LjE2MyA0Ni44MzUsMzkuMDMxIDQwLjAyOSwzOS4wMzEgTDQwLjAyOSwzOS4wMzEgWiBNNDAuMDI5LDQ2LjY2NyBDMzMuMTg3LDQ2LjY2NyAyOSw0NC43OTggMjksNDMuNzgxIEwyOSwzOC44NjIgQzMxLjQzMSw0MC4yOTEgMzUuNzQyLDQxLjAzMSA0MC4wMjksNDEuMDMxIEM0NC4yOTIsNDEuMDMxIDQ4LjU3OCw0MC4yOTIgNTEsMzguODY3IEw1MSw0My43ODEgQzUxLDQ0Ljc5OSA0Ni44MzUsNDYuNjY3IDQwLjAyOSw0Ni42NjcgTDQwLjAyOSw0Ni42NjcgWiBNNDAsNTMuNTE4IEMzMi44ODMsNTMuNTE4IDI5LDUxLjYwNSAyOSw1MC42MjIgTDI5LDQ2LjQ5OCBDMzEuNDMxLDQ3LjkyNyAzNS43NDIsNDguNjY3IDQwLjAyOSw0OC42NjcgQzQ0LjI5Miw0OC42NjcgNDguNTc4LDQ3LjkyOSA1MSw0Ni41MDMgTDUxLDUwLjYyMiBDNTEsNTEuNjA1IDQ3LjExNyw1My41MTggNDAsNTMuNTE4IEw0MCw1My41MTggWiBNNDAsMjQuMDg2IEMzMy43MzksMjQuMDg2IDI3LDI1LjUyNSAyNywyOC42ODYgTDI3LDUwLjYyMiBDMjcsNTMuODM2IDMzLjU0LDU1LjUxOCA0MCw1NS41MTggQzQ2LjQ2LDU1LjUxOCA1Myw1My44MzYgNTMsNTAuNjIyIEw1MywyOC42ODYgQzUzLDI1LjUyNSA0Ni4yNjEsMjQuMDg2IDQwLDI0LjA4NiBMNDAsMjQuMDg2IFoiIGlkPSJBbWF6b24tUkRTX0ljb25fNjRfU3F1aWQiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KICAgIDwvZz4KPC9zdmc+" x="828" y="566" width="70" height="70"/>
+  <text x="914" y="586" class="service-title">Amazon RDS for PostgreSQL</text>
+  <text x="914" y="608" class="service-text">story_learning · port 5432</text>
+  <text x="914" y="630" class="service-small">profiles · progress · attempts · conversations</text>
+  <text x="914" y="650" class="service-small">accessible from service security group</text>
+
+  <!-- Regional managed services outside the VPC -->
+  <rect x="1270" y="177" width="185" height="112" rx="5" fill="#FFF8F1" stroke="#ED7100" stroke-width="1.5"/>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tRWxhc3RpYy1Db250YWluZXItUmVnaXN0cnlfNjQ8L3RpdGxlPgogICAgPGcgaWQ9Ikljb24tQXJjaGl0ZWN0dXJlLzY0L0FyY2hfQW1hem9uLUVsYXN0aWMtQ29udGFpbmVyLVJlZ2lzdHJ5XzY0IiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUtQkcvNjQvQ29tcHV0ZSIgZmlsbD0iI0VENzEwMCI+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUiIHg9IjAiIHk9IjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PC9yZWN0PgogICAgICAgIDwvZz4KICAgICAgICA8cGF0aCBkPSJNMzguNzg4MDc0MSwzNy41Nzc2OTQ1IEMzOC4yOTMzODQ1LDM3Ljg2NTUxMjUgMzcuOTg1NTc3NywzOC40MDAwMzE3IDM3Ljk4NTU3NzcsMzguOTczNjYyIEwzNy45ODU1Nzc3LDY2LjcxOTUxODYgTDE2Ljk5ODc0NTksNTQuOTg0MTY1NSBMMTYuOTk4NzQ1OSwyNy43MDc2NDI4IEw0MC41NTY5NjQzLDE0LjA1ODg1MTUgTDYxLjQ4NDgzMywyNC40MjgzMjI2IEwzOC43ODgwNzQxLDM3LjU3NzY5NDUgWiBNNjMuOTIwMzA0OSwyNC40MDIyNDg1IEM2My45MjAzMDQ5LDIzLjgyNzYxNTMgNjMuNjEzNDk3NCwyMy4yOTIwOTMzIDYzLjA1OTg0NDgsMjIuOTc1MTkyNyBMNDEuMzQ2NDY4OSwxMi4yMTQ2MDk5IEM0MC44NTA3Nzk5LDExLjkyODc5NzYgNDAuMjM1MTY2MiwxMS45Mjc3OTQ4IDM5Ljc0MDQ3NjYsMTIuMjE1NjEyOCBMMTUuODAyNDk2NSwyNi4wODQwMjgzIEMxNS4zMDc4MDY5LDI2LjM3MTg0NjMgMTUsMjYuOTA2MzY1NSAxNSwyNy40Nzk5OTU4IEwxNSw1NS4yMTU4MjM5IEMxNSw1NS43ODk0NTQyIDE1LjMwNzgwNjksNTYuMzIzOTczNCAxNS44MTc0ODcxLDU2LjYxOTgxNDIgTDM3LjU3MzgzNiw2OC43ODUzOTAxIEMzNy44MjE2ODA1LDY4LjkyODc5NzYgMzguMTAwNTA1Niw2OSAzOC4zNzgzMzEyLDY5IEMzOC42NTUxNTc1LDY5IDM4LjkzMzk4MjYsNjguOTI4Nzk3NiAzOS4xODA4Mjc3LDY4Ljc4NTM5MDEgQzM5LjY3NjUxNjcsNjguNDk4NTc0OSAzOS45ODQzMjM2LDY3Ljk2NDA1NTcgMzkuOTg0MzIzNiw2Ny4zODk0MjI2IEwzOS45ODQzMjM2LDM5LjIwMTMwOSBMNjMuMTE3ODA4NCwyNS43OTgyMTYgQzYzLjYxMzQ5NzQsMjUuNTExNDAwOCA2My45MjAzMDQ5LDI0Ljk3Njg4MTcgNjMuOTIwMzA0OSwyNC40MDIyNDg1IEw2My45MjAzMDQ5LDI0LjQwMjI0ODUgWiBNNjMuOTY5Mjc0Miw1NS4wNDczNDUxIEw0NC45ODExODgzLDY2LjY2MTM1MzMgTDQ0Ljk4MTE4ODMsNTYuMjYxNzk2NyBMNTQuODgxOTc2LDQ5Ljg3MjYzOCBMNTQuOTQ5OTMzNCw0OS40MjQzNjQgQzU0Ljk2NzkyMjEsNDkuMzA3MDMwNSA1NC45NzQ5MTc3LDQ5LjMwNzAzMDUgNTQuOTc0OTE3Nyw0OC43NjY0OTQyIEw1NS4wMDU4OTgzLDM2LjM2MDIzNDQgTDY0LjAwMDI1NDcsMzEuMTQ4NDIxOCBMNjMuOTY5Mjc0Miw1NS4wNDczNDUxIFogTTY1LjE5NjUwNDIsMjkuMDcxNTE5MSBDNjQuNjk5ODE1OCwyOC43ODE2OTUzIDY0LjA4NDIwMjEsMjguNzgyNjk4MiA2My41ODg1MTMxLDI5LjA3MTUxOTEgTDU0LjAxMzUyMDksMzQuNjE4MjgzNSBDNTMuNzEzNzA5LDM0Ljc4MTc0ODEgNTMuMDA4MTUxNywzNS4xNjU4Mzk4IDUzLjAwODE1MTcsMzUuOTU4MDkxNCBMNTIuOTc2MTcxOCw0OC43MTczNTQ2IEw0My44NTA4OTc1LDU0LjYwNjA5MSBDNDMuMzA2MjM5Miw1NC45MzEwMTQ1IDQyLjk4MjQ0MjQsNTUuNDQ1NDc2NiA0Mi45ODI0NDI0LDU1Ljk4OTAyMTQgTDQyLjk4MjQ0MjQsNjcuMzA4MTkxNyBDNDIuOTgyNDQyNCw2Ny44NzQ4MDIxIDQzLjI4NzI1MTEsNjguMzkxMjY5OSA0My43OTc5MzA3LDY4LjY4NzExMDcgQzQ0LjA2NDc2MzMsNjguODQwNTQ2OCA0NC4zNjE1NzcsNjguOTE4NzY5MSA0NC42NTczOTE0LDY4LjkxODc2OTEgQzQ0Ljk0ODIwOSw2OC45MTg3NjkxIDQ1LjIzOTAyNjUsNjguODQ0NTU4MiA0NS41MDE4NjE2LDY4LjY5MjEyNSBMNjUuMTY3NTIyMyw1Ni42NjM5Mzk2IEM2NS42NjIyMTE5LDU2LjM3NjEyMTYgNjUuOTY4MDIwMSw1NS44NDE2MDI0IDY1Ljk2ODAyMDEsNTUuMjcwOTgwNyBMNjYsMzAuNDY2NDgzNyBDNjYsMjkuODkyODUzNCA2NS42OTIxOTMxLDI5LjM1ODMzNDIgNjUuMTk2NTA0MiwyOS4wNzE1MTkxIEw2NS4xOTY1MDQyLDI5LjA3MTUxOTEgWiIgaWQ9IkFtYXpvbi1FbGFzdGljLUNvbnRhaW5lci1SZWdpc3RyeV9JY29uXzY0X1NxdWlkIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPg==" x="1284" y="194" width="54" height="54"/>
+  <text x="1349" y="211" class="service-title">Amazon ECR</text>
+  <text x="1349" y="233" class="service-text">backend:latest</text>
+  <text x="1284" y="270" class="service-small">Docker image registry</text>
+
+  <rect x="1270" y="313" width="185" height="112" rx="5" fill="#FFF5FA" stroke="#E7157B" stroke-width="1.5"/>
+  <image xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8dGl0bGU+SWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tQ2xvdWRXYXRjaF82NDwvdGl0bGU+CiAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tQ2xvdWRXYXRjaF82NCIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Ikljb24tQXJjaGl0ZWN0dXJlLUJHLzY0L01hbmFnZW1lbnQtR292ZXJuYW5jZSIgZmlsbD0iI0U3MTU3QiI+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUiIHg9IjAiIHk9IjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PC9yZWN0PgogICAgICAgIDwvZz4KICAgICAgICA8cGF0aCBkPSJNNTUuMDU5MjMxNSw0Ni43NzczNzA3IEM1NS4wNTkyMzE1LDQyLjg2ODAyODEgNTEuODU3NTU4OCwzOS42ODc2MzA1IDQ3LjkyMjA2NDYsMzkuNjg3NjMwNSBDNDMuOTg2NTcwNSwzOS42ODc2MzA1IDQwLjc4NTkwMyw0Mi44NjgwMjgxIDQwLjc4NTkwMyw0Ni43NzczNzA3IEM0MC43ODU5MDMsNTAuNjg2NzEzMyA0My45ODY1NzA1LDUzLjg2NzExMDggNDcuOTIyMDY0Niw1My44NjcxMTA4IEM1MS44NTc1NTg4LDUzLjg2NzExMDggNTUuMDU5MjMxNSw1MC42ODY3MTMzIDU1LjA1OTIzMTUsNDYuNzc3MzcwNyBNNTcuMDY5NzAxMSw0Ni43NzczNzA3IEM1Ny4wNjk3MDExLDUxLjc4ODExOTQgNTIuOTY2MzMyNyw1NS44NjQyMjA3IDQ3LjkyMjA2NDYsNTUuODY0MjIwNyBDNDIuODc4ODAxOCw1NS44NjQyMjA3IDM4Ljc3NTQzMzQsNTEuNzg4MTE5NCAzOC43NzU0MzM0LDQ2Ljc3NzM3MDcgQzM4Ljc3NTQzMzQsNDEuNzY2NjIxOSA0Mi44Nzg4MDE4LDM3LjY5MDUyMDYgNDcuOTIyMDY0NiwzNy42OTA1MjA2IEM1Mi45NjYzMzI3LDM3LjY5MDUyMDYgNTcuMDY5NzAxMSw0MS43NjY2MjE5IDU3LjA2OTcwMTEsNDYuNzc3MzcwNyBNNjUuNTA5NjUyMiw2MC40NzM1NTA0IEw1OC41MDExNTU0LDU0LjIwMjYyNTMgQzU3LjkzNTIwODIsNTQuOTk0NDc5NCA1Ny4yODA4MDA0LDU1LjcxNzQzMzIgNTYuNTU0MDE1Niw1Ni4zNjM0OTgyIEw2My41NTI0NjAxLDYyLjYzMzQyNDggQzY0LjE0OTU2OTYsNjMuMTY4NjUwMiA2NS4wNzg0MDY1LDYzLjExODcyMjUgNjUuNjE4MjE3Niw2Mi41MjU1ODA4IEM2Ni4xNTUwMTMsNjEuOTMyNDM5MiA2Ni4xMDY3NjE3LDYxLjAxMDc3MyA2NS41MDk2NTIyLDYwLjQ3MzU1MDQgTTQ3LjkyMjA2NDYsNTcuNjYxNjE5NyBDNTMuOTY0NTMwOSw1Ny42NjE2MTk3IDU4Ljg4MDEyODksNTIuNzc4Njg1OSA1OC44ODAxMjg5LDQ2Ljc3NzM3MDcgQzU4Ljg4MDEyODksNDAuNzc1MDU2OSA1My45NjQ1MzA5LDM1Ljg5MzEyMTcgNDcuOTIyMDY0NiwzNS44OTMxMjE3IEM0MS44ODA2MDM2LDM1Ljg5MzEyMTcgMzYuOTY1MDA1Niw0MC43NzUwNTY5IDM2Ljk2NTAwNTYsNDYuNzc3MzcwNyBDMzYuOTY1MDA1Niw1Mi43Nzg2ODU5IDQxLjg4MDYwMzYsNTcuNjYxNjE5NyA0Ny45MjIwNjQ2LDU3LjY2MTYxOTcgTTY3LjExMTk5NjUsNjMuODYyNjQ1OSBDNjYuNDI2NDI2NCw2NC42MTY1NTQ5IDY1LjQ3ODQ5LDY1IDY0LjUyODU0MzEsNjUgQzYzLjcwMDIyOTYsNjUgNjIuODY5OTA1Nyw2NC43MDg0MjIgNjIuMjA3NDU2LDY0LjExNzI3NzQgTDU0LjkzMDU2MTUsNTcuNTk4NzEwNyBDNTIuOTA3MDIzOSw1OC44OTY4MzIxIDUwLjUwNTUxOCw1OS42NTg3Mjk2IDQ3LjkyMjA2NDYsNTkuNjU4NzI5NiBDNDAuNzcxODI5Nyw1OS42NTg3Mjk2IDM0Ljk1NDUzNjEsNTMuODgwMDkyMSAzNC45NTQ1MzYxLDQ2Ljc3NzM3MDcgQzM0Ljk1NDUzNjEsMzkuNjc0NjQ5MyA0MC43NzE4Mjk3LDMzLjg5NjAxMTggNDcuOTIyMDY0NiwzMy44OTYwMTE4IEM1NS4wNzMzMDQ4LDMzLjg5NjAxMTggNjAuODkwNTk4NSwzOS42NzQ2NDkzIDYwLjg5MDU5ODUsNDYuNzc3MzcwNyBDNjAuODkwNTk4NSw0OC44MTU0MjEzIDYwLjM5OTAzODcsNTAuNzM2NjQxMSA1OS41NDY1OTk2LDUyLjQ1MTE1OTkgTDY2Ljg1NTY2MTYsNTguOTkwNjk2MyBDNjguMjc1MDUzMSw2MC4yNjU4NTEgNjguMzg5NjQ5OSw2Mi40NDk2OTA3IDY3LjExMTk5NjUsNjMuODYyNjQ1OSBNMjEuMjgwMzI3NCwyOS4zOTI1MjkgQzIxLjI4MDMyNzQsMjkuOTExNzc3NiAyMS4zMTI0OTQ5LDMwLjQyOTAyOSAyMS4zNzM4MTQzLDMwLjkyOTMwNTEgQzIxLjQwODk5NzUsMzEuMjEzODkzMiAyMS4zMjA1MzY4LDMxLjQ5ODQ4MTQgMjEuMTI5NTQyMiwzMS43MTMxNzA3IEMyMC45Nzc3NTE4LDMxLjg4MzkyMzYgMjAuNzczNjg5MSwzMS45OTY3NjAzIDIwLjU1MDUyNywzMi4wMzQ3MDU0IEMxOC4wNzg2NTQ3LDMyLjY2ODc4NzggMTQuMDEwNDY5NSwzNC41ODgwMTA0IDE0LjAxMDQ2OTUsNDAuMzQ1Njc4MiBDMTQuMDEwNDY5NSw0NC42OTMzODY1IDE2LjQyNDAzODIsNDcuMDkyOTE0MSAxOC40NDk1ODYzLDQ4LjM0MTEwNzcgQzE5LjE0MTE4NzgsNDguNzc0NDgwNiAxOS45NTk0NDg5LDQ5LjAwNTE0NjggMjAuODIyOTQ1Niw0OS4wMTQxMzM4IEwzMi45NDUwNzE3LDQ5LjAyNTExNzkgTDMyLjk0MzA2MTMsNTEuMDIyMjI3OCBMMjAuODExODg4LDUxLjAxMTI0MzcgQzE5LjU2NjQwMjEsNTAuOTk4MjYyNSAxOC4zODQyNDYsNTAuNjYwNzUwOSAxNy4zODQwMzc0LDUwLjAzNDY1NjkgQzE1LjM3NjU4MzYsNDguNzk3NDQ3NCAxMiw0NS44ODk2NTUzIDEyLDQwLjM0NTY3ODIgQzEyLDMzLjY2MjM1IDE2LjU5OTk1NDMsMzEuMTkxOTI1IDE5LjMwMDAxNDksMzAuMzE5MTg4IEMxOS4yNzk5MTAyLDMwLjAxMTYzMzEgMTkuMjY5ODU3OSwyOS43MDIwODEgMTkuMjY5ODU3OSwyOS4zOTI1MjkgQzE5LjI2OTg1NzksMjMuOTMyNDMwNSAyMi45OTgyNzM3LDE4LjI2OTYyNTQgMjcuOTQyMDE4MywxNi4yMjE1ODkyIEMzMy43MjQxMjg3LDEzLjgxNTA3MTcgMzkuODUwMDI5NCwxNS4wMDgzNDQ5IDQ0LjMyNjMzOTksMTkuNDEwOTczNyBDNDUuNzEzNTYzOCwyMC43NzQ5OTk4IDQ2Ljg1NDUwNTMsMjIuNDMxNjAyNCA0Ny43MzAwNjQ4LDI0LjM0NzgyOTQgQzQ4LjkwNjE4OTUsMjMuMzgwMjI5NiA1MC4zNTU3MzgsMjIuODQ2MDAyNyA1MS44ODM2OTQ5LDIyLjg0NjAwMjcgQzU0Ljg4NjMzMTIsMjIuODQ2MDAyNyA1OC4yNjU5MzA1LDI1LjEwOTcyNjggNTguODY4MDY2MSwzMC4wNjA1NjIyIEM2MS42Nzk3MDc4LDMwLjcwNDYzMDIgNjcuNjIwNjQ1MywzMi45NTUzNzMxIDY3LjYyMDY0NTMsNDAuNDIyNTY3IEM2Ny42MjA2NDUzLDQzLjQwNDI1MjEgNjYuNjc5NzQ1NSw0NS44NjY2ODg2IDY0LjgyMzA3NjksNDcuNzQxOTc0OCBMNjMuMzg5NjEyMSw0Ni4zNDEwMDIyIEM2NC44NjMyODYzLDQ0Ljg1MzE1NTMgNjUuNjEwMTc1Nyw0Mi44NjIwMzY3IDY1LjYxMDE3NTcsNDAuNDIyNTY3IEM2NS42MTAxNzU3LDMzLjg5MTAxOSA2MC4xMDU1MTAxLDMyLjI2NjM3MDEgNTcuNzM3MTc3LDMxLjg3MTk0MDkgQzU3LjQ2Nzc3NDEsMzEuODI3MDA2IDU3LjIyOTUzMzQsMzEuNjc1MjI1NiA1Ny4wNzU3MzI1LDMxLjQ1MTU0OTMgQzU2LjkyNTk1MjUsMzEuMjM1ODYxNCA1Ni44Njg2NTQxLDMwLjk3MTI0NDQgNTYuOTEzODg5NywzMC43MTQ2MTU3IEM1Ni41ODUxNzc5LDI2LjY2MDQ4MjYgNTQuMTYwNTUxNiwyNC44NDMxMTI2IDUxLjg4MzY5NDksMjQuODQzMTEyNiBDNTAuNDQ3MjE0NCwyNC44NDMxMTI2IDQ5LjEwMDE5OTgsMjUuNTM4MTA2OSA0OC4xODc0NDY2LDI2Ljc1MDM1MjYgQzQ3Ljk2NTI4OTcsMjcuMDQzOTI3NyA0Ny42MDQ0MTA1LDI3LjE5MzcxMSA0Ny4yMzQ0ODQxLDI3LjEzOTc4OSBDNDYuODY5NTgzOCwyNy4wODU4NjcgNDYuNTYyOTg3MiwyNi44MzYyMjgzIDQ2LjQzNzMzMjksMjYuNDkxNzI2OCBDNDUuNjE0MDQ1NiwyNC4yMjYwMDU3IDQ0LjQyNzg2ODYsMjIuMzIwNzYyOCA0Mi45MTE5NzQ1LDIwLjgzMDkxODggQzM5LjAzMjc3MzUsMTcuMDE1NDQwNCAzMy43MjgxNDk2LDE1Ljk4MDkzNzQgMjguNzE3MDU0MywxOC4wNjQ5MjE2IEMyNC41NDYzMzUyLDE5Ljc5MjQyMTcgMjEuMjgwMzI3NCwyNC43NjcyMjI0IDIxLjI4MDMyNzQsMjkuMzkyNTI5IiBpZD0iQW1hem9uLUNsb3VkV2F0Y2hfSWNvbl82NF9TcXVpZCIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4=" x="1284" y="330" width="54" height="54"/>
+  <text x="1349" y="347" class="service-title">CloudWatch</text>
+  <text x="1349" y="369" class="service-text">Logs · metrics</text>
+  <text x="1284" y="406" class="service-small">runtime · deployment signals</text>
+  <circle cx="1455" cy="369" r="17" fill="#5F6368" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="1455" y="370" class="number" style="font-size:16px">6</text>
+
+  <!-- Accurate browser request paths -->
+  <path d="M578 79 V151 H565 V164" class="runtime"/>
+  <rect x="480" y="105" width="105" height="22" rx="3" fill="#FFFFFF"/>
+  <text x="532" y="120" class="line-label" text-anchor="middle">GET static app</text>
+
+  <path d="M590 79 H700 V318 H783" class="runtime"/>
+  <rect x="617" y="86" width="123" height="22" rx="3" fill="#FFFFFF"/>
+  <text x="678" y="101" class="line-label" text-anchor="middle">HTTPS /api/v1/*</text>
+
+  <path d="M841 319 H900" class="runtime"/>
+  <text x="870" y="309" class="line-label" text-anchor="middle">route</text>
+  <path d="M1045 468 V520" class="runtime-bi"/>
+  <rect x="951" y="485" width="76" height="21" rx="3" fill="#FFFFFF"/>
+  <text x="989" y="500" class="line-label" text-anchor="middle">SQL :5432</text>
+
+  <!-- Deployment and observability paths -->
+  <path d="M1184 52 H650 V164" class="deploy"/>
+  <text x="792" y="43" class="line-label" fill="#7C4DFF">push → Amplify auto build</text>
+  <path d="M1374 52 H1467 V161 H1362 V177" class="deploy"/>
+  <text x="1379" y="79" class="line-label" fill="#7C4DFF">CloudShell build / push</text>
+  <path d="M1270 232 H1239 V292 H1192" class="deploy"/>
+  <rect x="1144" y="225" width="88" height="36" rx="3" fill="#FFFFFF"/>
+  <text x="1188" y="239" class="line-label" fill="#7C4DFF" text-anchor="middle">image pull</text>
+  <text x="1188" y="254" class="line-label" fill="#7C4DFF" text-anchor="middle">new deploy</text>
+  <path d="M1192 399 H1248 V369 H1270" class="runtime"/>
+  <text x="1227" y="418" class="line-label">logs</text>
+
+  <!-- Security group labels -->
+  <rect x="796" y="437" width="103" height="26" rx="13" fill="#FFFFFF" stroke="#96B65A"/>
+  <text x="847" y="454" class="service-small" text-anchor="middle">Load balancer SG</text>
+  <rect x="1071" y="477" width="101" height="24" rx="12" fill="#FFFFFF" stroke="#F0A363"/>
+  <text x="1121" y="493" class="service-small" text-anchor="middle">Service SG</text>
+  <rect x="1080" y="647" width="91" height="20" rx="10" fill="#FFFFFF" stroke="#55B4BA"/>
+  <text x="1125" y="661" class="service-small" text-anchor="middle">Database SG</text>
+
+  <!-- Number markers attached to their exact targets -->
+  <circle cx="682" cy="248" r="17" fill="#7C4DFF" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="682" y="249" class="number" style="font-size:16px">1</text>
+  <line x1="777" y1="319" x2="789" y2="319" stroke="#7C4DFF" stroke-width="2.5"/>
+  <circle cx="760" cy="319" r="17" fill="#7C4DFF" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="760" y="320" class="number" style="font-size:16px">1</text>
+  <line x1="1174" y1="403" x2="1179" y2="403" stroke="#E000B8" stroke-width="2.5"/>
+  <circle cx="1196" cy="403" r="17" fill="#E000B8" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="1196" y="404" class="number" style="font-size:16px">4</text>
+  <line x1="1175" y1="610" x2="1183" y2="610" stroke="#EC1368" stroke-width="2.5"/>
+  <circle cx="1200" cy="610" r="17" fill="#EC1368" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="1200" y="611" class="number" style="font-size:16px">5</text>
+
+  <!-- External services outside AWS -->
+  <text x="438" y="779" class="boundary-title">External AI &amp; identity services</text>
+  <rect x="438" y="795" width="305" height="92" rx="5" fill="#FFFFFF" stroke="#F97316" stroke-width="1.6"/>
+  <rect x="454" y="813" width="52" height="52" rx="4" fill="#F97316"/>
+  <text x="480" y="845" style="font-size:14px;font-weight:800;fill:#FFFFFF;text-anchor:middle">STT</text>
+  <text x="521" y="824" class="service-title">Groq API</text>
+  <text x="521" y="846" class="service-text">Whisper large-v3-turbo</text>
+  <text x="521" y="867" class="service-small">PCM WAV / WebM → transcript</text>
+  <circle cx="743" cy="795" r="17" fill="#F97316" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="743" y="796" class="number" style="font-size:16px">2</text>
+
+  <rect x="774" y="795" width="305" height="92" rx="5" fill="#FFFFFF" stroke="#00A67D" stroke-width="1.6"/>
+  <rect x="790" y="813" width="52" height="52" rx="4" fill="#00A67D"/>
+  <text x="816" y="845" style="font-size:14px;font-weight:800;fill:#FFFFFF;text-anchor:middle">TTS</text>
+  <text x="857" y="824" class="service-title">Microsoft Speech</text>
+  <text x="857" y="846" class="service-text">edge-tts · Jenny Neural</text>
+  <text x="857" y="867" class="service-small">text → cheerful MP3</text>
+
+  <rect x="1110" y="795" width="305" height="92" rx="5" fill="#FFFFFF" stroke="#F4C542" stroke-width="1.6"/>
+  <rect x="1126" y="813" width="52" height="52" rx="4" fill="#F4C542"/>
+  <text x="1152" y="845" style="font-size:14px;font-weight:800;fill:#2E2915;text-anchor:middle">ID</text>
+  <text x="1193" y="824" class="service-title">Kakao OAuth</text>
+  <text x="1193" y="846" class="service-text">parent sign-in · user info</text>
+  <text x="1193" y="867" class="service-small">authorization code → identity</text>
+
+  <!-- Shared outbound HTTPS bus from the ECS task -->
+  <path d="M1192 435 H1252 V758 H590" fill="none" stroke="#F97316" stroke-width="2"/>
+  <text x="1262" y="632" class="line-label" fill="#F97316">HTTPS outbound</text>
+  <path d="M590 758 V795" class="speech"/>
+  <path d="M926 758 V795" class="runtime"/>
+  <path d="M1262 758 V795" class="runtime"/>
+
+  <!-- Offline content pipeline -->
+  <rect x="418" y="914" width="1092" height="112" rx="5" fill="#FBFFF5" stroke="#65A30D" stroke-width="1.7" stroke-dasharray="5 5"/>
+  <circle cx="418" cy="948" r="17" fill="#65A30D" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="418" y="949" class="number" style="font-size:16px">3</text>
+  <text x="481" y="947" class="service-title">Offline content pipeline</text>
+  <text x="481" y="969" class="service-small">운영 트래픽과 분리된 생성·검수·반영 과정</text>
+
+  <rect x="706" y="936" width="150" height="66" rx="5" fill="#FFFFFF" stroke="#9DBC5E"/>
+  <text x="781" y="962" class="service-title" text-anchor="middle" style="font-size:14px">Ollama / Qwen</text>
+  <text x="781" y="984" class="service-small" text-anchor="middle">story · judge · quiz</text>
+  <path d="M856 969 H882" class="offline"/>
+
+  <rect x="884" y="936" width="150" height="66" rx="5" fill="#FFFFFF" stroke="#9DBC5E"/>
+  <text x="959" y="962" class="service-title" text-anchor="middle" style="font-size:14px">ComfyUI / SDXL</text>
+  <text x="959" y="984" class="service-small" text-anchor="middle">storybook WebP</text>
+  <path d="M1034 969 H1060" class="offline"/>
+
+  <rect x="1062" y="936" width="150" height="66" rx="5" fill="#FFFFFF" stroke="#9DBC5E"/>
+  <text x="1137" y="962" class="service-title" text-anchor="middle" style="font-size:14px">JSON + assets</text>
+  <text x="1137" y="984" class="service-small" text-anchor="middle">reviewed output</text>
+  <path d="M1212 969 H1238" class="offline"/>
+
+  <rect x="1240" y="936" width="150" height="66" rx="5" fill="#FFFFFF" stroke="#9DBC5E"/>
+  <text x="1315" y="962" class="service-title" text-anchor="middle" style="font-size:14px">Seed + build</text>
+  <text x="1315" y="984" class="service-small" text-anchor="middle">RDS · Amplify assets</text>
+
+  <!-- Legend and attribution -->
+  <line x1="430" y1="1053" x2="468" y2="1053" class="runtime"/>
+  <text x="479" y="1058" class="service-small">실시간 요청</text>
+  <line x1="575" y1="1053" x2="613" y2="1053" class="deploy"/>
+  <text x="624" y="1058" class="service-small">배포 경로</text>
+  <line x1="720" y1="1053" x2="758" y2="1053" class="offline"/>
+  <text x="769" y="1058" class="service-small">오프라인 생성</text>
+  <text x="1506" y="1058" class="service-small" text-anchor="end">AWS Architecture Icons · 2026-07 release</text>
+</svg>

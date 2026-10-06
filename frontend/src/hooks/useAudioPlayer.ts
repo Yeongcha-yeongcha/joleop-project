@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { getSharedAudioElement } from '../utils/audioPlayback'
 
 interface AudioPlayOptions {
   onTimeUpdate?: (audio: HTMLAudioElement) => void
@@ -20,7 +21,9 @@ export function useAudioPlayer() {
   const play = useCallback((url: string, options: AudioPlayOptions = {}): Promise<void> => {
     stopFrame()
     audioRef.current?.pause()
-    const audio = new Audio(url)
+    const audio = getSharedAudioElement()
+    audio.pause()
+    audio.src = url
     const tick = () => {
       options.onTimeUpdate?.(audio)
       if (!audio.paused && !audio.ended) {
@@ -38,7 +41,7 @@ export function useAudioPlayer() {
       options.onError?.()
     }
     audioRef.current = audio
-    return audio.play().catch(() => {})
+    return audio.play()
   }, [stopFrame])
 
   const stop = useCallback(() => {

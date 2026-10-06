@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from app.api.deps import (
@@ -18,6 +20,7 @@ from app.services.speech import SpeechToTextService
 
 book_sessions_router = APIRouter(prefix="/books", tags=["Learning - Reading"])
 router = APIRouter(prefix="/learning-sessions", tags=["Learning - Reading"])
+logger = logging.getLogger(__name__)
 
 
 @book_sessions_router.post("/{bookId}/sessions")
@@ -254,11 +257,22 @@ async def create_roleplay_message(
     speech_to_text_service: SpeechToTextService = Depends(get_speech_to_text_service),
 ) -> dict:
     submitted_transcript = transcript if isinstance(transcript, str) else None
-    transcript = (
-        submitted_transcript.strip()
-        if submitted_transcript and submitted_transcript.strip()
-        else await speech_to_text_service.transcribe(audio)
-    )
+    if submitted_transcript and submitted_transcript.strip():
+        transcript = submitted_transcript.strip()
+    else:
+        try:
+            transcript = await speech_to_text_service.transcribe(audio)
+        except Exception:
+            logger.exception(
+                "Roleplay speech transcription failed",
+                extra={
+                    "session_id": sessionId,
+                    "mission_id": mission_id,
+                    "audio_content_type": getattr(audio, "content_type", None),
+                    "audio_filename": getattr(audio, "filename", None),
+                },
+            )
+            transcript = ""
     if not transcript.strip():
         raise AudioValidationException(
             code="SPEECH_NOT_RECOGNIZED",

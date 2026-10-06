@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../types'
 import { IMAGES } from '../../constants/assets'
 import ResponsiveSceneImage from '../ResponsiveSceneImage/ResponsiveSceneImage'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
 import styles from './QuizScreen.module.css'
 
-const QUIZ_MAX_RECORD_MS = 3800
-const QUIZ_SILENCE_MS = 650
+const QUIZ_MAX_RECORD_MS = 9000
+const QUIZ_SILENCE_MS = 1400
 
 type QuizState = 'idle' | 'recording' | 'done'
 type QuizFeedback = 'correct' | 'wrong' | ''
@@ -34,8 +36,11 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const isAppleMobile = isAppleMobileDevice()
+    const mediaRecorder = new MediaRecorder(stream, supportedAudioRecorderOptions())
+    const Recognition = isAppleMobile
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let transcript = ''
     let settled = false
@@ -75,15 +80,20 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
     mediaRecorder.onstop = () => {
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
+        audio: new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' }),
         transcript: transcript.trim(),
       })
     }
 
-    mediaRecorder.start()
+    if (isAppleMobile) mediaRecorder.start()
+    else mediaRecorder.start(250)
     maxTimer = window.setTimeout(finish, durationMs)
 
-    if (!recognition) return
+    if (!recognition) {
+      if (maxTimer !== null) window.clearTimeout(maxTimer)
+      maxTimer = window.setTimeout(finish, Math.min(durationMs, 6500))
+      return
+    }
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
@@ -100,7 +110,10 @@ function recordQuizSpeech(durationMs = QUIZ_MAX_RECORD_MS): Promise<{ audio: Blo
       }
       restartSilenceTimer()
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        return
+      }
       if (transcript.trim()) finish()
     }
     recognition.onend = () => {
@@ -120,6 +133,8 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
   const [error, setError] = useState('')
   const [feedback, setFeedback] = useState<QuizFeedback>('')
   const [spokenAnswer, setSpokenAnswer] = useState('')
+  const isSentenceAnswer = quiz.answerMode === 'sentence'
+  const sentenceParts = quiz.sentence.split(/_{2,}/, 2)
 
   useEffect(() => {
     setState('idle')
@@ -145,6 +160,11 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
           setFeedback(result >= 70 ? 'correct' : 'wrong')
         } else if (result && typeof result === 'object') {
           setSpokenAnswer(result.transcript)
+          if (!result.passed && (!result.transcript.trim() || result.transcript.trim().length <= 1)) {
+            setState('idle')
+            setError('Could not hear that. Please try again.')
+            return
+          }
           setFeedback(result.passed ? 'correct' : 'wrong')
         }
         setState('done')
@@ -181,17 +201,24 @@ export default function QuizScreen({ quiz, onNext, onRecord, currentStep, totalS
 
       <div className={styles.sentenceBoxWrapper}>
         <div className={styles.sentenceBox}>
-          <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
-            {quiz.sentence}{' '}
-            <span className={[
-              styles.blank,
-              state === 'done' ? styles.blankFilled : '',
-              feedback === 'correct' ? styles.blankCorrect : '',
-              feedback === 'wrong' ? styles.blankWrong : '',
-            ].join(' ')}>
-              {state === 'done' ? spokenAnswer : ''}
-            </span>
-          </p>
+          {isSentenceAnswer ? (
+            <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
+              {state === 'done' ? spokenAnswer : 'Say a full sentence about the picture.'}
+            </p>
+          ) : (
+            <p className={`${styles.sentence} ${state === 'done' ? styles.sentenceDone : ''}`}>
+              {sentenceParts[0]}
+              <span className={[
+                styles.blank,
+                state === 'done' ? styles.blankFilled : '',
+                feedback === 'correct' ? styles.blankCorrect : '',
+                feedback === 'wrong' ? styles.blankWrong : '',
+              ].join(' ')}>
+                {state === 'done' ? spokenAnswer : ''}
+              </span>
+              {sentenceParts.length > 1 ? sentenceParts[1] : ''}
+            </p>
+          )}
         </div>
       </div>
 

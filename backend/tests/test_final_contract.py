@@ -11,7 +11,11 @@ from app.api.v1.learning_sessions import (
     get_learning_session_result,
     get_roleplay,
 )
-from app.core.exceptions import SessionAlreadyCompletedException, validation_exception_handler
+from app.core.exceptions import (
+    AudioValidationException,
+    SessionAlreadyCompletedException,
+    validation_exception_handler,
+)
 from app.main import app
 from app.models import (
     Book,
@@ -68,6 +72,13 @@ class FakeUploadFile:
         return b"Hello test character"
 
 
+class EmptyUploadFile:
+    content_type = "audio/wav"
+
+    async def read(self) -> bytes:
+        return b""
+
+
 class FakeRoleplayStore:
     def __init__(self) -> None:
         self.profile = ChildProfile(
@@ -114,6 +125,8 @@ class FakeRoleplayStore:
             character_name="Test Character",
             character_image_url="https://cdn.example.com/test-character.png",
             opening_message="Can you help me?",
+            model_answer="I can help the test character.",
+            similar_answers=["Let us help together."],
             required_turns=3,
         )
         self.messages: list[RoleplayMessage] = []
@@ -328,6 +341,21 @@ async def test_roleplay_audio(roleplay_context) -> None:
     assert response["data"]["missionCompleted"] is False
     assert response["data"]["courseProgress"] == 33
     assert response["data"]["totalProgress"] == 83
+
+
+@pytest.mark.asyncio
+async def test_roleplay_empty_audio_requires_retry(roleplay_context) -> None:
+    with pytest.raises(AudioValidationException) as exc:
+        await create_roleplay_message(
+            128,
+            audio=EmptyUploadFile(),
+            mission_id=401,
+            current_profile=roleplay_context["profile"],
+            learning_session_service=roleplay_context["service"],
+            speech_to_text_service=roleplay_context["speech"],
+        )
+
+    assert exc.value.error_code == "SPEECH_NOT_RECOGNIZED"
 
 
 @pytest.mark.asyncio

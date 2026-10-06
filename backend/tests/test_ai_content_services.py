@@ -1,8 +1,18 @@
+from types import SimpleNamespace
+
 import pytest
 
+from ai.roleplay import RoleplaySession, judge_answer, start_roleplay_session
 from app.models import RoleplayMission
+from app.seed.import_ai_content import roleplay_mission_title
 from app.services.evaluation import DescriptionEvaluationService
-from app.services.roleplay import MockRoleplayService
+from app.services.roleplay import (
+    AIRoleplayService,
+    MockRoleplayService,
+    canonicalize_scripted_transcript,
+    roleplay_runtime_context,
+)
+from shared.models import RoleplayScenario
 
 
 def test_word_guess_description_uses_blank_word() -> None:
@@ -28,6 +38,199 @@ def test_description_returns_model_answer_feedback_for_mismatch() -> None:
 
     assert result["passed"] is False
     assert result["feedback"] == "모범 답안을 보고 다시 말해볼까요?"
+
+
+def test_roleplay_context_preserves_chapter_scene_details() -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Find the bird",
+        description="Popo and friends found a lost baby bird trapped in the bush.",
+        character_name="Popo",
+        opening_message="Can you tell me what's wrong?",
+        player_goal="The child should express concern for the baby bird's safety.",
+        model_answer="It's stuck in the thorns!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert "lost baby bird trapped in the bush" in context["situation"]
+    assert context["situation"] != "You are Popo. You are stuck. Ask Popo for help."
+
+
+def test_roleplay_context_treats_character_name_as_npc() -> None:
+    mission = RoleplayMission(
+        mission_id=2,
+        book_id=1,
+        title="Ask directions",
+        description="Popo's friends need his help to find their way in Sunflower Meadow.",
+        character_name="Friendly Hunter",
+        opening_message="",
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert context["ai_character"] == "Friendly Hunter"
+    assert context["child_role"] == "story helper"
+    assert context["situation"] == "Popo's friends need his help to find their way in Sunflower Meadow."
+
+
+def test_roleplay_context_preserves_stored_scene_description() -> None:
+    mission = RoleplayMission(
+        mission_id=3,
+        book_id=1,
+        title="Leave safely",
+        description=(
+            "You notice a safe side door while music fills the ballroom. "
+            "Story context: Popo stood proudly in Sunflower Meadow, looking at their newly built birdhouse."
+        ),
+        character_name="Popo",
+        opening_message="",
+        player_goal="Talk about the new birdhouse with Popo.",
+        model_answer="The birdhouse looks wonderful!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    context = roleplay_runtime_context(mission)
+
+    assert context["situation"] == mission.description
+
+
+@pytest.mark.parametrize(
+    ("turn", "transcript", "expected_response"),
+    [
+        (1, "I want to help the little bird!", "Yes! Let's look near the bush together. What do you see?"),
+        (2, "I see the little bird in the thorns.", "You're right. The bird is trapped. How can we help it?"),
+        (3, "Let's remove the thorns carefully.", "Great idea! We were gentle, and the little bird is safe now!"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_ai_roleplay_uses_saved_bird_demo_script_without_llm(
+    monkeypatch: pytest.MonkeyPatch,
+    turn: int,
+    transcript: str,
+    expected_response: str,
+) -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help the bird",
+        description="Popo is helping a trapped bird in Sunflower Meadow.",
+        character_name="Popo the lion",
+        opening_message="I heard a faint chirping sound. Can you help me find it?",
+        player_goal="Encourage the child to help the bird.",
+        model_answer="I want to help the little bird!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+    service = AIRoleplayService(session=SimpleNamespace())
+
+    async def fail_if_restored(**kwargs):
+        raise AssertionError("The scripted response must not call the LLM path.")
+
+    monkeypatch.setattr(service, "_restore_session", fail_if_restored)
+
+    result = await service.respond(
+        mission=mission,
+        session_id=10,
+        transcript=transcript,
+        turn=turn,
+    )
+
+    assert result["source"] == "scripted"
+    assert result["text"] == expected_response
+
+
+def test_bird_demo_script_corrects_small_speech_recognition_variation() -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help the bird",
+        description="Popo is helping a trapped bird in Sunflower Meadow.",
+        character_name="Popo",
+        opening_message="Can you help me find it?",
+        model_answer="I want to help the little bird!",
+        similar_answers=[],
+        hint_sequence=[],
+        required_turns=3,
+    )
+
+    transcript = canonicalize_scripted_transcript(
+        mission,
+        transcript="I see little bird in the thorns",
+        turn=2,
+    )
+
+    assert transcript == "I see the little bird in the thorns."
+
+
+def test_roleplay_import_title_uses_story_goal_instead_of_generic_topic() -> None:
+    title = roleplay_mission_title(
+        {
+            "topic": "self_intro",
+            "player_goal": "Ask Popo if you can help him untangle his mane.",
+            "scene_description": "Popo's mane is tangled with thorns.",
+        },
+        lesson=3,
+        index=1,
+    )
+
+    assert title == "Ask Popo if you can help him untangle his mane"
+
+
+def test_roleplay_judge_rejects_too_short_unrelated_response() -> None:
+    scenario = RoleplayScenario(
+        scenario_id="direction-1",
+        topic="direction",
+        level=2,
+        scene_description="Popo's friends need help finding their way.",
+        character_name="Friendly Hunter",
+        character_personality="Kind and helpful.",
+        opening_line="Hi! What can I help you with?",
+        max_turns=3,
+        conversation_flow=[],
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=["Can you show me where my friends are?"],
+        hint_sequence=[],
+    )
+
+    passed, _ = judge_answer(scenario, "Hey")
+
+    assert passed is False
+
+
+def test_roleplay_opening_uses_direction_context_without_llm() -> None:
+    scenario = RoleplayScenario(
+        scenario_id="direction-1",
+        topic="direction",
+        level=2,
+        scene_description="Popo's friends need his help to find their way in Sunflower Meadow.",
+        character_name="Friendly Hunter",
+        character_personality="Kind and helpful.",
+        opening_line="",
+        max_turns=3,
+        conversation_flow=[],
+        player_goal="Ask the friendly hunter for directions to get back to the group.",
+        model_answer="Where is my friend Toto?",
+        similar_answers=[],
+        hint_sequence=[],
+    )
+
+    opening = start_roleplay_session(RoleplaySession(scenario))
+
+    assert opening == "Hello, I am Friendly Hunter. Are you looking for someone?"
 
 
 @pytest.mark.asyncio
@@ -78,4 +281,40 @@ async def test_roleplay_returns_hint_for_unrelated_answer() -> None:
     )
 
     assert result["score"] < 70
+    assert result["text"] == "Say you can help."
+
+
+@pytest.mark.asyncio
+async def test_ai_roleplay_falls_back_when_llm_returns_empty_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    mission = RoleplayMission(
+        mission_id=1,
+        book_id=1,
+        title="Help Hana",
+        description="Encourage Hana.",
+        character_name="Hana",
+        opening_message="Can you help me?",
+        model_answer="I can help!",
+        similar_answers=[],
+        hint_sequence=["Say you can help."],
+        required_turns=1,
+    )
+    service = AIRoleplayService(session=SimpleNamespace())
+
+    async def restore_session(*, mission, session_id, history=None):
+        return SimpleNamespace(goal_achieved=False, completed=False)
+
+    monkeypatch.setattr(service, "_restore_session", restore_session)
+    monkeypatch.setattr(
+        "app.services.roleplay.process_roleplay_text_turn",
+        lambda session, transcript: SimpleNamespace(ai_response=" ", hint_given=False),
+    )
+
+    result = await service.respond(
+        mission=mission,
+        session_id=10,
+        transcript="I want pizza.",
+        turn=1,
+    )
+
+    assert result["source"] == "fallback"
     assert result["text"] == "Say you can help."

@@ -28,38 +28,50 @@ from app.services.evaluation import normalize_story_names
 MIN_ROLEPLAY_TURNS = 3
 logger = logging.getLogger(__name__)
 
+BIRD_DEMO_MODEL_ANSWER = "I want to help the little bird!"
+BIRD_DEMO_SCRIPT = (
+    {
+        "expected": (
+            BIRD_DEMO_MODEL_ANSWER,
+            "Let's help the little bird together!",
+            "The little bird needs our help!",
+        ),
+        "response": "Yes! Let's look near the bush together. What do you see?",
+    },
+    {
+        "expected": (
+            "I see the little bird in the thorns.",
+            "The little bird is trapped in the thorns.",
+            "I see a bird trapped in the thorns.",
+        ),
+        "response": "You're right. The bird is trapped. How can we help it?",
+    },
+    {
+        "expected": (
+            "Let's remove the thorns carefully.",
+            "We can remove the thorns carefully.",
+            "Let's carefully remove the thorns.",
+        ),
+        "response": "Great idea! We were gentle, and the little bird is safe now!",
+    },
+)
+
 
 def roleplay_runtime_context(mission: RoleplayMission) -> dict:
-    child_role = mission.character_name or "your story character"
+    child_role = "story helper"
     model_answer = mission.model_answer or ""
     addressed_name = _addressed_character(model_answer)
-    ai_character = addressed_name if addressed_name and addressed_name.lower() != child_role.lower() else child_role
-    player_goal = mission.player_goal or mission.description
-    opening_message = mission.opening_message or ""
-    situation = _child_facing_situation(
-        child_role=child_role,
-        ai_character=ai_character,
-        player_goal=player_goal or "",
+    ai_character = addressed_name or mission.character_name or "your story friend"
+    player_goal = _child_facing_goal(
+        mission.player_goal or "",
         model_answer=model_answer,
         scene_description=mission.description or "",
-    )
-
-    if addressed_name and addressed_name.lower() != child_role.lower():
-        opening_message = (
-            f"{child_role}, are you okay? What happened?"
-            if child_role and child_role.lower() != "your story friend"
-            else "Are you okay? What happened?"
-        )
-        player_goal = (
-            f"You are {child_role}. Talk to {ai_character} and ask for help in this story scene."
-        )
-        situation = _child_facing_situation(
-            child_role=child_role,
-            ai_character=ai_character,
-            player_goal=mission.player_goal or "",
-            model_answer=model_answer,
-            scene_description=mission.description or "",
-        )
+        ai_character=ai_character,
+    ) or mission.description
+    opening_message = re.sub(r"\s+", " ", (mission.opening_message or "").strip())
+    situation = re.sub(r"\s+", " ", (mission.description or "").strip())
+    if addressed_name and not opening_message:
+        opening_message = "Hi! What can I help you with?"
 
     return {
         "ai_character": ai_character,
@@ -83,6 +95,61 @@ def clean_roleplay_transcript(mission: RoleplayMission, transcript: str) -> str:
     return cleaned
 
 
+def _child_facing_goal(
+    player_goal: str,
+    *,
+    model_answer: str,
+    scene_description: str,
+    ai_character: str,
+) -> str:
+    goal = re.sub(r"\s+", " ", player_goal.strip())
+    lowered = f"{goal} {model_answer} {scene_description}".lower()
+    if "trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered:
+        return "Tell Popo you want to help the little bird."
+    if "stuck behind" in lowered and "chair" in lowered:
+        return f"Ask {ai_character} for help because you are stuck behind the chair."
+    if "direction" in lowered or "find my friends" in lowered or "find their way" in lowered:
+        return "Ask where your friends are."
+    if "safe side door" in lowered or "side door" in lowered:
+        return "Tell your friend to use the safe side door."
+    if goal.lower().startswith(("encourage the child", "ask the child", "have the child")):
+        if model_answer:
+            return f'Say: "{model_answer}"'
+        return ""
+    return goal
+
+
+def _child_facing_opening(
+    opening_message: str,
+    *,
+    model_answer: str,
+    scene_description: str,
+) -> str:
+    opening = re.sub(r"\s+", " ", opening_message.strip())
+    lowered = f"{opening} {model_answer} {scene_description}".lower()
+    generic_opening = opening.lower() in {
+        "",
+        "hi! what should we do?",
+        "hi! what can i help you with?",
+        "hi, what should we do?",
+    }
+    if ("trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered) and (
+        generic_opening or "chirp" in lowered or "chirping" in lowered
+    ):
+        return "I hear a tiny chirp near the bush. Will you help me check on the little bird?"
+    if "stuck behind" in lowered and "chair" in lowered:
+        return "I hear you behind the big chair. Are you stuck?"
+    if generic_opening and (
+        "direction" in lowered
+        or "find my friend" in lowered
+        or "find their way" in lowered
+        or "friends need" in lowered
+        or "friends are lost" in lowered
+    ):
+        return "Hello, little helper. Who are you looking for?"
+    return opening
+
+
 def _addressed_character(text: str) -> str | None:
     match = re.match(r"\s*([A-Z][A-Za-z]{1,20})[!,]", text)
     if not match:
@@ -104,21 +171,42 @@ def _child_facing_situation(
     clean_scene = _clean_scene_description(scene_description)
     lowered = f"{player_goal} {model_answer} {clean_scene}".lower()
     if "stuck behind" in lowered and "chair" in lowered:
-        return f"You are {child_role}. You are stuck behind a chair. Ask {ai_character} for help."
-    if "stuck" in lowered or "trapped" in lowered:
-        return f"You are {child_role}. You are stuck. Ask {ai_character} for help."
+        scene = clean_scene or "Someone is stuck behind a chair."
+        return f"You are a {child_role}. {scene} Ask {ai_character} for help."
     if "safe side door" in lowered or "side door" in lowered:
-        return "You are with your story friend in a crowded ballroom. You see a safe side door. Tell your friend how to leave safely."
-    if "help" in lowered:
-        return f"You are {child_role}. Talk to {ai_character} and ask for help."
+        scene = clean_scene or "You see a safe side door in the story scene."
+        return f"You are a {child_role}. {scene} Tell your friend how to leave safely."
     if clean_scene:
-        return clean_scene
-    return f"You are {child_role}. Talk to {ai_character} in this story scene."
+        if player_goal and player_goal.strip().lower().startswith(("ask ", "tell ", "say ", "help ")):
+            return f"You are a {child_role}. {clean_scene} {player_goal.strip()}"
+        if "stuck" in lowered or "trapped" in lowered or "help" in lowered:
+            return f"You are a {child_role}. {clean_scene} Talk to {ai_character} and help with the story problem."
+        return f"You are a {child_role}. {clean_scene}"
+    return f"You are a {child_role}. Talk to {ai_character} in this story scene."
 
 
 def _clean_scene_description(scene_description: str) -> str:
-    scene = re.sub(r"\s*Story context:\s*.*$", "", scene_description.strip(), flags=re.I)
+    raw_scene = re.sub(r"\s+", " ", scene_description.strip())
+    parts = re.split(r"\s*Story context:\s*", raw_scene, maxsplit=1, flags=re.I)
+    if len(parts) == 2:
+        scene, story_context = (part.strip() for part in parts)
+        if _is_generic_roleplay_scene(scene):
+            return story_context
+        scene = f"{scene} In this chapter, {story_context}"
+    else:
+        scene = raw_scene
     return re.sub(r"\s+", " ", scene).strip()
+
+
+def _is_generic_roleplay_scene(scene: str) -> bool:
+    lowered = scene.lower()
+    generic_markers = (
+        "safe side door",
+        "music fills the ballroom",
+        "leaving the ballroom",
+        "crowded ballroom",
+    )
+    return any(marker in lowered for marker in generic_markers)
 
 
 def _closing_response(text: str, *, fallback: str) -> str:
@@ -141,6 +229,70 @@ def _closing_response(text: str, *, fallback: str) -> str:
     else:
         closing = ""
     return closing or fallback
+
+
+def _normalized_script_text(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9']+", text.casefold()))
+
+
+def _matches_script_line(transcript: str, expected_lines: tuple[str, ...]) -> bool:
+    actual = _normalized_script_text(transcript)
+    if not actual:
+        return False
+    actual_words = set(actual.split())
+    for expected_line in expected_lines:
+        expected = _normalized_script_text(expected_line)
+        if actual == expected or SequenceMatcher(None, expected, actual).ratio() >= 0.72:
+            return True
+        expected_words = set(expected.split())
+        if expected_words and len(actual_words & expected_words) / len(expected_words) >= 0.75:
+            return True
+    return False
+
+
+def _scripted_roleplay_response(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> str | None:
+    scripted_turn = _matching_scripted_turn(
+        mission,
+        transcript=transcript,
+        turn=turn,
+    )
+    return scripted_turn["response"] if scripted_turn else None
+
+
+def canonicalize_scripted_transcript(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> str:
+    """Replace small STT variations in the demo script with the saved sentence."""
+    scripted_turn = _matching_scripted_turn(
+        mission,
+        transcript=transcript,
+        turn=turn,
+    )
+    return scripted_turn["expected"][0] if scripted_turn else transcript
+
+
+def _matching_scripted_turn(
+    mission: RoleplayMission,
+    *,
+    transcript: str,
+    turn: int,
+) -> dict[str, Any] | None:
+    if _normalized_script_text(mission.model_answer or "") != _normalized_script_text(BIRD_DEMO_MODEL_ANSWER):
+        return None
+    if turn < 1 or turn > len(BIRD_DEMO_SCRIPT):
+        return None
+    scripted_turn = BIRD_DEMO_SCRIPT[turn - 1]
+    if not _matches_script_line(transcript, scripted_turn["expected"]):
+        return None
+    return scripted_turn
 
 
 class RoleplayService:
@@ -179,6 +331,19 @@ class AIRoleplayService(RoleplayService):
                 "score": 0,
             }
 
+        scripted_text = _scripted_roleplay_response(
+            mission,
+            transcript=transcript,
+            turn=turn,
+        )
+        if scripted_text:
+            return {
+                "speaker": context["ai_character"].upper(),
+                "text": scripted_text,
+                "score": 100,
+                "source": "scripted",
+            }
+
         try:
             ai_session = await self._restore_session(mission=mission, session_id=session_id, history=history)
             result = process_roleplay_text_turn(ai_session, transcript)
@@ -189,6 +354,21 @@ class AIRoleplayService(RoleplayService):
                 session_id,
                 turn,
                 exc,
+            )
+            return await MockRoleplayService().respond(
+                mission=mission,
+                session_id=session_id,
+                transcript=transcript,
+                turn=turn,
+            )
+
+        if not result.ai_response.strip():
+            logger.warning(
+                "Roleplay LLM returned an empty response; using fallback response. "
+                "mission_id=%s session_id=%s turn=%s",
+                mission.mission_id,
+                session_id,
+                turn,
             )
             return await MockRoleplayService().respond(
                 mission=mission,
@@ -330,6 +510,13 @@ class MockRoleplayService(RoleplayService):
         child_role = context["child_role"]
         lowered = f"{context['situation']} {mission.model_answer or ''}".lower()
 
+        if "trapped bird" in lowered or "little bird" in lowered or "baby bird" in lowered:
+            if turn <= 1:
+                return "Yes, let's help the little bird together."
+            if turn == 2:
+                return "Good idea. Let's look near the bush and move slowly."
+            return "Wonderful. We were gentle, and the little bird is safe now!"
+
         if "stuck behind" in lowered and "chair" in lowered:
             if turn <= 1:
                 if score >= 50:
@@ -345,6 +532,13 @@ class MockRoleplayService(RoleplayService):
             if turn == 2:
                 return "Let's move slowly and stay together."
             return "We did it. You are safe now!"
+
+        if "direction" in lowered or "find their way" in lowered or "where" in lowered:
+            if turn <= 1:
+                return "Yes, I can help. Who are you looking for?"
+            if turn == 2:
+                return "Look near the sunflowers. Your friends may be that way."
+            return "Great asking. Let's follow the path together."
 
         if score >= 70:
             return "Thank you! That helps a lot."

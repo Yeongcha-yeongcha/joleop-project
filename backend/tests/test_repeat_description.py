@@ -454,6 +454,7 @@ async def test_description_lookup(course_context) -> None:
     assert response["data"]["courseType"] == "DESCRIPTION"
     assert response["data"]["content"]["questionId"] == 301
     assert response["data"]["content"]["questionType"] == "WORD_GUESS"
+    assert response["data"]["content"]["answerMode"] == "WORD"
     assert response["data"]["content"]["pageNumber"] == 1
     assert response["data"]["content"]["blankWord"] == "red"
     assert response["data"]["content"]["answerSentence"] == "red"
@@ -481,6 +482,35 @@ async def test_description_attempt(course_context) -> None:
     assert response["data"]["feedback"] == "Great!"
     assert response["data"]["modelAnswer"] == "red"
     assert response["data"]["guideHint"] == "Look at the queen's clothes."
+
+
+def test_level_two_or_three_description_uses_sentence_mode_after_first_question(course_context) -> None:
+    question = course_context["store"].description_questions[1]
+    question.question_type = DescriptionQuestionType.FILL_BLANK
+
+    assert LearningSessionService._description_answer_mode(question) == "SENTENCE"
+
+
+@pytest.mark.asyncio
+async def test_sentence_mode_scores_answer_sentence_instead_of_blank_word(course_context) -> None:
+    store = course_context["store"]
+    store.learning_session.current_course = CourseType.DESCRIPTION
+    store.learning_session.current_course_number = 3
+    store.learning_session.current_step = 2
+    question = store.description_questions[1]
+    question.question_type = DescriptionQuestionType.FILL_BLANK
+    question.blank_word = "bird"
+    question.answer_sentence = "Popo sees a small bird trapped."
+
+    response = await course_context["service"].create_description_attempt(
+        profile=course_context["profile"],
+        session_id=128,
+        question_id=question.question_id,
+        transcript="bird",
+    )
+
+    assert response["passed"] is False
+    assert response["modelAnswer"] == "Popo sees a small bird trapped."
 
 
 @pytest.mark.asyncio
@@ -556,6 +586,20 @@ async def test_invalid_mime(course_context) -> None:
             speech_to_text_service=course_context["speech"],
         )
     assert exc.value.error_code == "INVALID_AUDIO_MIME_TYPE"
+
+
+@pytest.mark.asyncio
+async def test_audio_mime_with_codec_parameter(course_context) -> None:
+    response = await create_repeat_attempt(
+        128,
+        audio=upload_file(content_type="audio/webm;codecs=opus"),
+        question_id=201,
+        current_profile=course_context["profile"],
+        learning_session_service=course_context["service"],
+        speech_to_text_service=course_context["speech"],
+    )
+
+    assert response["data"]["transcript"] == "She is reading a book."
 
 
 @pytest.mark.asyncio

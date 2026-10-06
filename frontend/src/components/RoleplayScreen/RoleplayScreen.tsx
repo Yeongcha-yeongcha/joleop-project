@@ -5,6 +5,13 @@ import type { ChapterResult } from '../../utils/chapterProgress'
 import { IMAGES, SOUNDS } from '../../constants/assets'
 import StarRow from '../StarRow/StarRow'
 import { playEffect, wait } from '../../utils/sound'
+import { isAppleMobileDevice } from '../../utils/appleDevice'
+import { supportedAudioRecorderOptions } from '../../utils/audioRecording'
+import {
+  prepareAppleAudioCapture,
+  startPcmWavCapture,
+  type PcmWavCapture,
+} from '../../utils/pcmWavRecording'
 import styles from './RoleplayScreen.module.css'
 
 function TrophyAnimation({ className }: { className?: string }) {
@@ -28,9 +35,10 @@ function TrophyAnimation({ className }: { className?: string }) {
 const PROGRESS_INTRO = 0.70
 const PROGRESS_CHAT_RANGE = 0.30
 
-const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 4200
-const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1200
-const ROLEPLAY_MAX_RECORD_MS = 9000
+const ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS = 8000
+const ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS = 1300
+const ROLEPLAY_MAX_RECORD_MS = 16000
+const ROLEPLAY_VOICE_RMS_THRESHOLD = 0.008
 /**
  * 결과 화면 등장 순서.
  * 트로피(+소리) → Nice Try → 회색 별 3개 → 보상 별 하나씩(+소리) → 포인트 → 설명 → 버튼
@@ -53,7 +61,7 @@ const REVEAL_STAR_START_MS = 250  // 회색 별을 잠깐 보여주고 점등 �
 const STAR_INTERVAL_MS = 500
 
 type RoleplayView = 'intro' | 'chat'
-type RecordState = 'idle' | 'recording'
+type RecordState = 'idle' | 'recording' | 'speaking'
 
 interface Props {
   roleplay: RoleplayMission
@@ -72,6 +80,8 @@ interface Props {
 
 function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ audio: Blob; transcript: string }> {
   return new Promise(async (resolve, reject) => {
+    const isAppleMobile = isAppleMobileDevice()
+    if (isAppleMobile) prepareAppleAudioCapture()
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -81,20 +91,29 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     }
 
     const chunks: Blob[] = []
-    const mediaRecorder = new MediaRecorder(stream)
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    const mediaRecorder = isAppleMobile
+      ? null
+      : new MediaRecorder(stream, supportedAudioRecorderOptions())
+    // WebKit can hang on the second recognition after an audio element plays.
+    // On iPad/iPhone, record once and let the backend transcribe the audio instead.
+    const Recognition = isAppleMobile
+      ? null
+      : (window.SpeechRecognition ?? window.webkitSpeechRecognition)
     const recognition = Recognition ? new Recognition() : null
     let finalTranscript = ''
     let interimTranscript = ''
     let settled = false
     let hasSpeech = false
-    let silenceTimer = window.setTimeout(() => finish(), ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS)
+    let recognitionRetries = 0
+    let silenceTimer: number | null = null
+    let pcmCapture: PcmWavCapture | null = null
+    let quietStartedAt: number | null = null
     const maxRecordTimer = window.setTimeout(() => finish(), durationMs)
 
     const currentTranscript = () => `${finalTranscript} ${interimTranscript}`.trim()
 
     const cleanup = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       window.clearTimeout(maxRecordTimer)
       try {
         recognition?.abort()
@@ -107,8 +126,8 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
     const finish = () => {
       if (settled) return
       settled = true
-      window.clearTimeout(silenceTimer)
-      if (mediaRecorder.state !== 'inactive') {
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop()
         return
       }
@@ -117,39 +136,71 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
 
     const complete = () => {
       const transcript = currentTranscript()
+      const audio = pcmCapture
+        ? pcmCapture.stop()
+        : new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' })
       cleanup()
       resolve({
-        audio: new Blob(chunks, { type: 'audio/webm' }),
+        audio,
         transcript,
       })
     }
 
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) chunks.push(event.data)
+    if (mediaRecorder) {
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunks.push(event.data)
+      }
+      mediaRecorder.onerror = () => {
+        cleanup()
+        reject(new Error('Recording failed.'))
+      }
+      mediaRecorder.onstop = complete
+      mediaRecorder.start(250)
     }
-    mediaRecorder.onerror = () => {
-      cleanup()
-      reject(new Error('Recording failed.'))
-    }
-    mediaRecorder.onstop = complete
-    mediaRecorder.start()
 
     const restartSilenceTimer = () => {
-      window.clearTimeout(silenceTimer)
+      if (silenceTimer !== null) window.clearTimeout(silenceTimer)
       silenceTimer = window.setTimeout(
         () => finish(),
         hasSpeech ? ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS : ROLEPLAY_INITIAL_SILENCE_TIMEOUT_MS,
       )
     }
+    restartSilenceTimer()
 
     if (!recognition) {
-      restartSilenceTimer()
+      if (isAppleMobile) {
+        try {
+          const capture = await startPcmWavCapture(stream, (rms) => {
+            if (settled) return
+            const now = performance.now()
+            if (rms >= ROLEPLAY_VOICE_RMS_THRESHOLD) {
+              hasSpeech = true
+              quietStartedAt = null
+              if (silenceTimer !== null) {
+                window.clearTimeout(silenceTimer)
+                silenceTimer = null
+              }
+            } else if (hasSpeech) {
+              quietStartedAt ??= now
+              if (now - quietStartedAt >= ROLEPLAY_AFTER_SPEECH_TIMEOUT_MS) finish()
+            }
+          })
+          if (settled) {
+            capture.stop()
+            return
+          }
+          pcmCapture = capture
+        } catch {
+          cleanup()
+          reject(new Error('Recording failed. Please reload the app and try again.'))
+        }
+      }
       return
     }
 
     recognition.lang = 'en-US'
     recognition.interimResults = true
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.maxAlternatives = 1
     recognition.onresult = (event) => {
       interimTranscript = ''
@@ -165,16 +216,24 @@ function recordRoleplaySpeech(durationMs = ROLEPLAY_MAX_RECORD_MS): Promise<{ au
       hasSpeech = hasSpeech || Boolean(currentTranscript())
       restartSilenceTimer()
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        restartSilenceTimer()
+        return
+      }
       restartSilenceTimer()
     }
     recognition.onend = () => {
-      if (!settled && !hasSpeech) {
-        try {
-          recognition.start()
-        } catch {
-          restartSilenceTimer()
-        }
+      if (!settled && !hasSpeech && recognitionRetries < 2) {
+        recognitionRetries += 1
+        window.setTimeout(() => {
+          if (settled || hasSpeech) return
+          try {
+            recognition.start()
+          } catch {
+            restartSilenceTimer()
+          }
+        }, 250)
         return
       }
       if (!settled) restartSilenceTimer()
@@ -213,6 +272,7 @@ export default function RoleplayScreen({
   const [userAnswers, setUserAnswers] = useState<string[]>(() => initialUserAnswers(roleplay))
   const [npcReplies, setNpcReplies] = useState<string[]>(() => initialNpcReplies(roleplay))
   const [recordState, setRecordState] = useState<RecordState>('idle')
+  const [serverCompleted, setServerCompleted] = useState(false)
   const [showFinalNpc, setShowFinalNpc] = useState(false)
   const [showCompletion, setShowCompletion] = useState(false)
   const [revealStage, setRevealStage] = useState(REVEAL_TROPHY)
@@ -224,11 +284,11 @@ export default function RoleplayScreen({
   const [speechError, setSpeechError] = useState('')
   const [finishError, setFinishError] = useState('')
   const chatBottomRef = useRef<HTMLDivElement>(null)
+  const recordInFlightRef = useRef(false)
   const roleplayKey = [
     roleplay.mission,
     roleplay.missionSummary,
     roleplay.turns.length,
-    roleplay.history?.map((turn) => `${turn.user}=>${turn.npc}`).join('|') ?? '',
   ].join('::')
 
   useEffect(() => {
@@ -236,6 +296,7 @@ export default function RoleplayScreen({
     setUserAnswers(initialUserAnswers(roleplay))
     setNpcReplies(initialNpcReplies(roleplay))
     setRecordState('idle')
+    setServerCompleted(false)
     setShowFinalNpc(Boolean(roleplay.history?.length && roleplay.history.length >= roleplay.turns.length))
     setShowCompletion(false)
     setRevealStage(REVEAL_TROPHY)
@@ -244,6 +305,7 @@ export default function RoleplayScreen({
     setFinalResult(null)
     setSpeechError('')
     setFinishError('')
+    recordInFlightRef.current = false
   }, [roleplayKey])
 
   useEffect(() => {
@@ -257,10 +319,11 @@ export default function RoleplayScreen({
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [userAnswers])
 
-  const isDone = userAnswers.length >= roleplay.turns.length
+  const isDone = serverCompleted || userAnswers.length >= roleplay.turns.length
 
   const handleRecord = async () => {
-    if (recordState !== 'idle' || isDone) return
+    if (recordInFlightRef.current || recordState !== 'idle' || isDone) return
+    recordInFlightRef.current = true
     const currentIdx = userAnswers.length
     setRecordState('recording')
     setSpeechError('')
@@ -268,20 +331,34 @@ export default function RoleplayScreen({
       const { audio: blob, transcript } = await recordRoleplaySpeech()
       const cleanTranscript = transcript.trim()
       const result = await onRecord(blob, cleanTranscript || undefined)
+      if (!result.userTranscript.trim()) {
+        setSpeechError('Could not hear that. Please try again.')
+        setRecordState('idle')
+        return
+      }
       setUserAnswers(prev => [...prev, result.userTranscript])
       setNpcReplies(prev => {
         const next = [...prev]
         next[currentIdx + 1] = result.characterText
         return next
       })
-      void onSpeakText?.(result.characterText)
-      if (currentIdx + 1 >= roleplay.turns.length) {
+      if (result.missionCompleted) {
+        setServerCompleted(true)
+      }
+      if (result.missionCompleted || currentIdx + 1 >= roleplay.turns.length) {
         setShowFinalNpc(true)
       }
-      setRecordState('idle')
+      setRecordState('speaking')
+      try {
+        await onSpeakText?.(result.characterText)
+      } finally {
+        setRecordState('idle')
+      }
     } catch (error) {
       setSpeechError(error instanceof Error ? error.message : 'Recording failed. Please try again.')
       setRecordState('idle')
+    } finally {
+      recordInFlightRef.current = false
     }
   }
 
@@ -381,10 +458,16 @@ export default function RoleplayScreen({
         <div className={styles.introBottom}>
           <button
             className={styles.imgBtn}
-            onClick={() => {
+            onClick={async () => {
               setView('chat')
-              void onSpeakText?.(roleplay.turns[0]?.npc ?? '')
+              setRecordState('speaking')
+              try {
+                await onSpeakText?.(roleplay.turns[0]?.npc ?? '')
+              } finally {
+                setRecordState('idle')
+              }
             }}
+            disabled={recordState !== 'idle'}
             aria-label="Start"
           >
             <img src={IMAGES.nextBtnActive} alt="Start" className={styles.btnImg} />
@@ -427,8 +510,12 @@ export default function RoleplayScreen({
           <button
             className={styles.imgBtn}
             onClick={handleRecord}
-            disabled={recordState === 'recording'}
-            aria-label={recordState === 'recording' ? 'Recording...' : 'Tap to speak'}
+            disabled={recordState !== 'idle'}
+            aria-label={recordState === 'recording'
+              ? 'Recording...'
+              : recordState === 'speaking'
+                ? 'Please wait for Popo to finish speaking'
+                : 'Tap to speak'}
           >
             <img
               src={recordState === 'recording' ? IMAGES.recordBtnActive : IMAGES.recordBtnInactive}
